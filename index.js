@@ -1,10 +1,16 @@
-const Joi = require('@hapi/joi');
 const express = require('express');
 const schemasValidation = require('./schemas');
+const {logging, authenticating} = require('./logger.js');
+
 
 const app = express();
-
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); //POST http://localhost:3000/api/courses (key=value&key=value)
+app.use(express.static('public')); //Archivos públicos
+
+app.use(logging);
+app.use(authenticating);
+
 
 const courses = [
    { id: 1, name: 'course1' },
@@ -76,6 +82,7 @@ app.delete('/api/courses/:id', (req, res) => {
    courses.splice(index, 1);
    res.send(course);
 });
+
 
 // PORT 
 const port = process.env.PORT || 3000;
