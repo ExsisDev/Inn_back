@@ -1,0 +1,6 @@
+{
+   "name": "Innovalab - production",
+   "mail": {
+      "host": "dev-mail-server"
+   }
+}
