@@ -29,7 +29,7 @@ router.get('/:year/:month', (req, res) => {
 
 router.post('/', (req, res) => {
    //Validación del body
-   const {error} = schemasValidation.validateCourse(req.body);
+   const {error} = validateCourse(req.body);
    if (error) return res.status(400).send(result.error.details[0].message);
 
    //Cración del curso
@@ -49,7 +49,7 @@ router.put('/:id', (req, res) => {
    if (!course) return res.status(404).send("No se encontró el elemento");
 
    //Validación del body
-   const {error} = schemasValidation.validateCourse(req.body); //Destructuring result.error
+   const {error} = validateCourse(req.body); //Destructuring res.error
    if (error) return res.status(400).send(result.error.details[0].message);
 
    //Actualización del elemento

@@ -1,12 +1,10 @@
-const logs = {
-   logging: (req, res, next) => {
-      console.log('Logging...');
-      next();
-   },
-   authenticating: (req, res, next) => {
-      console.log('Authenticating...');
-      next();
-   }
+export function logging(req, res, next) {
+   console.log('Logging...');
+   next();
 }
 
-module.exports = logs;
+export function authenticating(req, res, next) {
+   console.log('Authenticating...');
+   next();
+}
+

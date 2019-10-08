@@ -6,6 +6,7 @@ const {logging, authenticating} = require('./middleware/logger');
 
 const courses = require('./routes/courses');
 const home = require('./routes/home');
+const artist = require('./routes/artist.route');
 
 
 //Configuration
@@ -32,8 +33,9 @@ if (app.get('env') === 'development') {
 
 
 //Routes
-app.use('/api/courses', courses);
 app.use('/', home);
+app.use('/api/artists', artist);
+app.use('/api/courses', courses);
 
 
 module.exports = app;

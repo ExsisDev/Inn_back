@@ -12,7 +12,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@babel/polyfill": "^7.6.0",
     "@hapi/joi": "^16.1.5",
     "config": "^3.2.3",
     "debug": "^4.1.1",
@@ -26,6 +25,7 @@
     "@babel/cli": "^7.6.2",
     "@babel/core": "^7.6.2",
     "@babel/node": "^7.6.2",
+    "@babel/polyfill": "^7.6.0",
     "@babel/preset-env": "^7.6.2",
     "nodemon": "^1.19.3"
   }
