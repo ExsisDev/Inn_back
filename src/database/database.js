@@ -3,7 +3,7 @@ const config = require('config');
 
 
 //Constructor de sequalize con la conexión
-const sequelize =  new Sequalize('TTDB', 'postgres', `${config.get('db.password')}`, {
+const sequelize = new Sequalize('TTDB', 'postgres', `${config.get('db.password')}`, {
    host: 'localhost',
    dialect: 'postgres',
    pool: {

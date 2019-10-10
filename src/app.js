@@ -2,9 +2,8 @@ const express = require('express');
 const morgan = require('morgan'); //Imprimir las peticiones
 const config = require('config');
 const debug = require('debug')('app:startup'); //export DEBUG=app:startup
-const {logging, authenticating} = require('./middleware/logger');
+const { logging, authenticating } = require('./middleware/logger');
 
-const courses = require('./routes/courses');
 const home = require('./routes/home');
 const artist = require('./routes/artist.route');
 
@@ -35,7 +34,6 @@ if (app.get('env') === 'development') {
 //Routes
 app.use('/', home);
 app.use('/api/artists', artist);
-app.use('/api/courses', courses);
 
 
 module.exports = app;
