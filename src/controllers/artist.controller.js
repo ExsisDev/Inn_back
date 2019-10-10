@@ -35,7 +35,7 @@ export async function getAllArtists(req, res) {
     })
 }
 
-export async function getById(req, res) {
+export async function getByArtistId(req, res) {
     //Obtener el elemento
     const { id } = req.params;
     return Artist.findOne({
@@ -56,7 +56,6 @@ export async function updateArtist(req, res) {
 
     //Actualización del artista
     const { id } = req.params;
-    const { full_name, email, address, phone_number, start_date, birth_date } = req.body;
     const bodyAttributes = req.body;
     Artist.findByPk(id).then((result) => {
         if (!result) res.status(404).send(`No existe el elemento con id ${id}`);

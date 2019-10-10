@@ -4,9 +4,8 @@ const config = require('config');
 const debug = require('debug')('app:startup'); //export DEBUG=app:startup
 const { logging, authenticating } = require('./middleware/logger');
 
-const home = require('./routes/home');
 const artist = require('./routes/artist.route');
-
+const category = require('./routes/category.route');
 
 //Configuration
 console.log('Application Name: ' + config.get('name'));
@@ -32,8 +31,8 @@ if (app.get('env') === 'development') {
 
 
 //Routes
-app.use('/', home);
 app.use('/api/artists', artist);
+app.use('/api/categories', category);
 
 
 module.exports = app;
