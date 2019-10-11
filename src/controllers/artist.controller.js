@@ -1,5 +1,8 @@
 const { validateBodyArtistCreation, validateBodyArtistUpdate } = require('../schemas/artist.validation');
 const Artist = require('../models/Artist');
+const Artist_Category = require('../models/Artist_Category');
+const Category = require('../models/Category');
+
 
 export async function createArtist(req, res) {
     //Validación del body
@@ -86,6 +89,26 @@ export async function deleteArtist(req, res) {
         });
     }).catch((error) => {
         res.status(500).send(error);
+    });
+}
+
+export async function getArtistsByIdCategory(req, res) {
+    const { id_category } = req.params;
+    return Artist.findAll({
+        include: [{
+            model: Artist_Category,
+            where: { fk_id_category: id_category },
+            attributes: [],
+            include: [{
+                model: Category,
+                attributes: ['category_name']
+            }]
+        }],
+        raw: true
+    }).then((result) => {
+        (result.length > 0) ? res.status(200).send(result) : res.status(404).send(`No existe el elemento con id ${id}`);
+    }).catch((error) => {
+        res.status(404).send(`No existe el elemento con id ${id_category}`);
     });
 }
 
