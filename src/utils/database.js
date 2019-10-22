@@ -12,7 +12,7 @@ const sequelize = new Sequalize('TTDB', 'postgres', `${config.get('db.password')
       require: 30000,
       idle: 10000
    },
-   logging: false,
+   logging: true,
    freezeTableName: true
 });
 

@@ -1,3 +1,8 @@
+export db_password=4Fx7ClGV6m
+export app_password=123
+export DEBUG=app:startup
+export NODE_ENV=production
+
 ----------------------PROMESAS-------------------------
 
 const p = new Promise((resolve, reject) => {

@@ -1,25 +1,27 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../utils/database');
 
-const Artist_Category = sequelize.define('artists_categories', {
-   id_artists_categories: {
+const User = sequelize.define('users', {
+   id_user: {
       type: Sequelize.INTEGER,
       autoIncrement: true,
       primaryKey: true
    },
-   fk_id_artist: {
-      type: Sequelize.INTEGER,
-      allowNull: false
-   },
-   fk_id_category: {
-      type: Sequelize.INTEGER,
-      allowNull: false
-   },
-   details: {
+   name: {
       type: Sequelize.STRING,
+      allowNull: false
+   },
+   password: {
+      type: Sequelize.STRING,
+      allowNull: false
+   },
+   email: {
+      type: Sequelize.STRING,
+      allowNull: false,
+      unique: true
    }
 }, {
    timestamps: false
 });
 
-module.exports = Artist_Category;
+module.exports = User;

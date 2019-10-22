@@ -6,6 +6,7 @@ const { logging, authenticating } = require('./middleware/logger');
 
 const artist = require('./routes/artist.route');
 const category = require('./routes/category.route');
+const user = require('./routes/user.route');
 
 //Configuration
 console.log('Application Name: ' + config.get('name'));
@@ -33,6 +34,7 @@ if (app.get('env') === 'development') {
 //Routes
 app.use('/api/artists', artist);
 app.use('/api/categories', category);
+app.use('/api/users', user);
 
 
 module.exports = app;

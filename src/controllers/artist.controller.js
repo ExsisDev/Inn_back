@@ -95,6 +95,7 @@ export async function deleteArtist(req, res) {
 export async function getArtistsByIdCategory(req, res) {
     const { id_category } = req.params;
     return Artist.findAll({
+        attributes: ['id_artist', 'full_name', 'email', 'address', 'phone_number', 'start_date', 'birth_date'],
         include: [{
             model: Artist_Category,
             where: { fk_id_category: id_category },

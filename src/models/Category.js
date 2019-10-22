@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-const sequelize = require('../database/database');
+const sequelize = require('../utils/database');
 const Artist_Category = require('./Artist_Category');
 
 const Category = sequelize.define('categories', {
