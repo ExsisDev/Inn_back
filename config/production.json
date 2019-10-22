@@ -3,6 +3,5 @@
    "mail": {
       "host": "dev-mail-server"
    },
-   ,
    "jwtPrivateKey": "jwtPrivateKey"
 }

@@ -2,6 +2,7 @@ const { validateBodyUserCreation, validateUserAuth, validateBodyUserUpdate } = r
 const _ = require('lodash');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const config = require('config');
 const User = require('../models/User');
 
 export async function createUser(req, res) {
@@ -21,14 +22,18 @@ export async function createUser(req, res) {
 
       bcrypt.hash(userAttributes.password, 10).then(function (hash) {
          userAttributes.password = hash;
-         return User.create(
+         User.create(
             userAttributes,
             {
                fields: ['name', 'password', 'email']
             }).then((created) => {
-               created ? res.status(200).send(_.pick(created, ['id_user', 'name', 'email'])) : res.status(500).send("User could not be created");
+               if (!created) return res.status(500).send("User could not be created");
+
+               const token = jwt.sign({ _id: userAttributes.id }, config.get('jwtPrivateKey'));
+               return res.header('x-auth-token', token).status(200).send(_.pick(created, ['id_user', 'name', 'email']))
+
             }).catch((creationError) => {
-               res.status(409).send(creationError);
+               return res.status(409).send(creationError);
             });
       });
    }).catch((error) => {
@@ -36,7 +41,7 @@ export async function createUser(req, res) {
    });
 }
 
-export async function authenticateUser(req, res){
+export async function authenticateUser(req, res) {
    //Validacion del body
    const { error } = validateUserAuth(req.body);
    if (error) return res.status(400).send(error.details[0].message);
@@ -50,13 +55,13 @@ export async function authenticateUser(req, res){
       }
    }).then((result) => {
       if (!result) return res.status(400).send("Invalid email or password");
-      
-      bcrypt.compare(userAttributes.password, result.password, function(compareError, compareResponse){
-         if (!compareResponse) return res.status(400).send("Invalid email or password");
 
-         const token = jwt.sign({_id: userAttributes.id}, 'Jeffer');
-         return res.send(token);
+      bcrypt.compare(userAttributes.password, result.password, function (compareError, compareResponse) {
+         if (!compareResponse) return res.status(400).send("Invalid email or password");
+         const token2 = User.generateAuthToken();
+         return res.header('x-auth-token', token2).send("User authenticated");
       });
+
    }).catch((error) => {
       res.status(500).send(error);
    });
