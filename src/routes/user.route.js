@@ -6,6 +6,8 @@ const {
    authenticateUser
 } = require('../controllers/user.controller');
 
+// (/api/users)
+
 router.post('/', createUser);
 router.post('/auth', authenticateUser);
 

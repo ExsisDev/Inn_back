@@ -10,6 +10,8 @@ const {
    getCategoriesByIdArtist 
 } = require('../controllers/category.controller');
 
+// (/api/categories)
+
 router.post('/', createCategory);
 router.get('/', getAllCategories);
 router.get('/:id', getByCategoryId);
