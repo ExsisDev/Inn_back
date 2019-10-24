@@ -27,8 +27,16 @@ const User = sequelize.define('users', {
    timestamps: false
 });
 
-User.generateAuthToken = function () {
-   return jwt.sign({ _id: this.id }, config.get('jwtPrivateKey'));
-};
+
+/**
+ * Método de instancia que genera un token conteniendo:
+ * 1. El id del usuario instancia.
+ * 
+ * @return {string} token
+ */
+User.prototype.generateAuthToken = function () {
+   return jwt.sign({ id_user: this.id_user }, config.get('jwtPrivateKey'), { algorithm: 'HS384' });
+}
+
 
 module.exports = User;
