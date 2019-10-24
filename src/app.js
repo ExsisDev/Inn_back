@@ -8,18 +8,22 @@ const artist = require('./routes/artist.route');
 const category = require('./routes/category.route');
 const user = require('./routes/user.route');
 
-//Configuration
+
 console.log('Application Name: ' + config.get('name'));
 
 
-//Express
+/**
+ * Inicialización de express
+ */
 const app = express();
 debug(`NODE_ENV: ${process.env.NODE_ENV}`); //export NODE_ENV=production
 debug(`app: ${app.get('env')}`);
 debug(`password: ${config.get('mail.password')}`);
 
 
-//Middleware
+/**
+ * Middlewares
+ */
 app.use(logging);
 app.use(authenticating);
 app.use(express.json());
@@ -31,7 +35,9 @@ if (app.get('env') === 'development') {
 }
 
 
-//Routes
+/**
+ * Rutas
+ */
 app.use('/api/artists', artist);
 app.use('/api/categories', category);
 app.use('/api/users', user);

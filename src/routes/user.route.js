@@ -15,7 +15,6 @@ const {
  * obtención del usuario actual
  * 
  */
-
 router.post('/', createUser);
 router.post('/auth', authenticateUser);
 router.get('/me', auth, getCurrentUser);

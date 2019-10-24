@@ -14,7 +14,6 @@ const User = require('../models/User');
  * @param {Response} res 
  * @return {promise} promise
  */
-
 export async function createUser(req, res) {
    // Validacion del body
    const userAttributes = req.body;
@@ -59,7 +58,6 @@ export async function createUser(req, res) {
  * @param {Response} res 
  * @return {promise} promise
  */
-
 export async function authenticateUser(req, res) {
    // Validacion del body
    const userAttributes = req.body;
@@ -91,7 +89,6 @@ export async function authenticateUser(req, res) {
  * @param {Response} res 
  * @return {promise} promise
  */
-
 export async function getCurrentUser(req, res){
    // Encontrar el usuario con id en req.user.id_user
    User.findByPk(req.user.id_user).then((result) => {
