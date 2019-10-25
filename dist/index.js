@@ -1,51 +1,41 @@
 "use strict";
 
-var express = require('express');
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
 
-var morgan = require('morgan'); //Imprimir las peticiones
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
-
-var config = require('config');
-
-var debug = require('debug')('app:startup'); //export DEBUG=app:startup
-
-
-var _require = require('./middleware/logger'),
-    logging = _require.logging,
-    authenticating = _require.authenticating;
-
-var courses = require('./routes/courses');
-
-var home = require('./routes/home'); //Configuration
-
-
-console.log('Application Name: ' + config.get('name')); //Express
-
-var app = express();
-debug("NODE_ENV: ".concat(process.env.NODE_ENV)); //export NODE_ENV=production
-
-debug("app: ".concat(app.get('env')));
-debug("password: ".concat(config.get('mail.password')));
-app.use(express.json());
-app.use(express.urlencoded({
-  extended: true
-})); //POST http://localhost:3000/api/courses (key=value&key=value)
-
-app.use(express["static"]('public')); //Archivos públicos
-
-if (app.get('env') === 'development') {
-  app.use(morgan('tiny'));
-  debug('Morgan is enabled...');
-} //Middlewares
-
-
-app.use(logging);
-app.use(authenticating);
-app.use(morgan('tiny'));
-app.use('/api/courses', courses);
-app.use('/', home); // PORT 
+var app = require('./app');
 
 var port = process.env.PORT || 3000;
-app.listen(port, function () {
-  return console.log("Listening on port ".concat(port, " ..."));
-});
+/**
+ * Lanzador del servidor express
+ */
+
+function main() {
+  return _main.apply(this, arguments);
+}
+
+function _main() {
+  _main = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee() {
+    return regeneratorRuntime.wrap(function _callee$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            _context.next = 2;
+            return app.listen(port, function () {
+              return console.log("Listening on port ".concat(port, " ..."));
+            });
+
+          case 2:
+          case "end":
+            return _context.stop();
+        }
+      }
+    }, _callee);
+  }));
+  return _main.apply(this, arguments);
+}
+
+main();

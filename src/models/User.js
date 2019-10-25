@@ -22,6 +22,10 @@ const User = sequelize.define('users', {
       type: Sequelize.STRING,
       allowNull: false,
       unique: true
+   },
+   is_admin: {
+      type: Sequelize.BOOLEAN,
+      allowNull: false
    }
 }, {
    timestamps: false
@@ -29,13 +33,14 @@ const User = sequelize.define('users', {
 
 
 /**
- * Método de instancia que genera un token conteniendo:
+ * Método de instancia de User que genera un token con:
  * 1. El id del usuario instancia.
+ * 2. Un bool identificando si es administrador o no
  * 
  * @return {string} token
  */
 User.prototype.generateAuthToken = function () {
-   return jwt.sign({ id_user: this.id_user }, config.get('jwtPrivateKey'), { algorithm: 'HS384' });
+   return jwt.sign({ id_user: this.id_user, is_admin: this.is_admin }, config.get('jwtPrivateKey'), { algorithm: 'HS384' });
 }
 
 
