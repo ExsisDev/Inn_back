@@ -163,7 +163,7 @@ export async function updateUser(req, res) {
       result.update(userAttributes).then((updateResult) => {
             return res.status(200).send(_.pick(updateResult, ['id_user', 'name', 'email', 'is_admin']));
             
-         }).catch((updateError) => {
+         }).catch((updateError) => { 
             return res.status(409).send(updateError);
 
          });
