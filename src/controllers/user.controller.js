@@ -112,8 +112,8 @@ export async function getCurrentUser(req, res) {
 
 
 /**
- * Eliminación de los usuarios solo por el administrador con token de admin en el header 
- * y id en la ruta de petición
+ * Eliminación de los usuarios con token de admin en el header 
+ * y id en la ruta
  * 
  * @param {Request} req 
  * @param {Response} res 
@@ -142,7 +142,14 @@ export async function deleteUser(req, res) {
 }
 
 
-
+/**
+ * Actualizar el usuario con token de admin en el header 
+ * y id en la ruta
+ * 
+ * @param {Request} req 
+ * @param {Response} res
+ * @return {Promise} promise 
+ */
 export async function updateUser(req, res) {
    const { id } = req.params;
 
