@@ -75,6 +75,7 @@ export async function authenticateUser(req, res) {
       if (!userAttributes.is_admin && result.is_admin) return res.status(403).send("Access denied. Only user access");
 
       bcrypt.compare(userAttributes.password, result.password, function (compareError, compareResponse) {
+         if (compareError) return res.status(500).send("Error verifying password: ", compareError);
          if (!compareResponse) return res.status(400).send("Invalid email or password");
 
          const token = result.generateAuthToken();
@@ -103,6 +104,9 @@ export async function getCurrentUser(req, res) {
       const token = result.generateAuthToken();
       return res.header('x-auth-token', token).send(_.pick(result, ['id_user', 'name', 'email', 'is_admin']));
 
+   }).catch((error)=>{
+      return res.status(500).send(error);
+
    });
 }
 
@@ -116,22 +120,55 @@ export async function getCurrentUser(req, res) {
  * @return {Promise} promise
  */
 export async function deleteUser(req, res) {
+   const { id } = req.params;
+
    // Encontrar el usuario a borrar
-   User.findByPk(req.params.id).then((result) => {
+   User.findByPk(id).then((result) => {
       if (!result) return res.status(404).send("User not found");
 
       User.destroy({
-         where: { id_user: req.params.id }
+         where: { id_user: id }
       }).then((deleteResult) => {
-         if (deleteResult == 1) return res.status(200).send("Successfully deleted");
+         if (deleteResult == 1) return res.status(200).send(_.pick(result, ['id_user', 'name', 'email', 'is_admin']));
 
       }).catch((deleteError) => {
-         return res.status(500).send(deleteError);
+         return res.status(409).send(deleteError);
 
       });
    }).catch((error) => {
       return res.status(500).send(error);
+
    });
-
-
 }
+
+
+
+export async function updateUser(req, res) {
+   const { id } = req.params;
+
+   // Validacion del body
+   const userAttributes = getValidParams(req, res, validateBodyUserUpdate);
+
+   // Hash del password
+   if(userAttributes.password) {
+      bcrypt.hash(userAttributes.password, 10).then(function (hash) {
+         userAttributes.password = hash;
+      });
+   }
+
+   // Actualizacion del usuario
+   User.findByPk(id).then((result) => {
+      if (!result) return res.status(404).send("User not found");
+
+      result.update(userAttributes).then((updateResult) => {
+            return res.status(200).send(_.pick(updateResult, ['id_user', 'name', 'email', 'is_admin']));
+            
+         }).catch((updateError) => {
+            return res.status(409).send(updateError);
+
+         });
+   }).catch((error) => {
+      return res.status(500).send(error);
+   });
+}
+
