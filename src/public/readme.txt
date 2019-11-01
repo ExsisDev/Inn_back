@@ -1,8 +1,18 @@
 export db_password=
+export db_host=
 export app_password=
 export DEBUG=app:startup
-export NODE_ENV=production
+export NODE_ENV=development
 export jwtPrivateKey=
+
+
+----------------------ORDER-------------------------
+- validación
+- modelo
+- controlador
+- endpoints
+- registro en el index
+
 
 ----------------------PROMESAS-------------------------
 

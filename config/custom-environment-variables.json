@@ -3,6 +3,7 @@
       "password": "app_password"
    },
    "db": {
+      "host": "db_host",
       "password": "db_password"
    }
 }
