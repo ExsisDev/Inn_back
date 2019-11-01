@@ -35,8 +35,9 @@ var User = sequelize.define('users', {
   timestamps: false
 });
 /**
- * Método de instancia que genera un token conteniendo:
+ * Método de instancia de User que genera un token con:
  * 1. El id del usuario instancia.
+ * 2. Un bool identificando si es administrador o no
  * 
  * @return {string} token
  */

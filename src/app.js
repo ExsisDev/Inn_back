@@ -2,11 +2,10 @@ const express = require('express');
 const morgan = require('morgan'); //Imprimir las peticiones
 const config = require('config');
 const debug = require('debug')('app:startup'); //export DEBUG=app:startup
-const { logging, authenticating } = require('./middleware/logger');
 
-const artistRoutes = require('./routes/artist.route');
-const categoryRoutes = require('./routes/category.route');
-const userRoutes = require('./routes/user.route');
+// const artistRoutes = require('./routes/artist.route');
+// const categoryRoutes = require('./routes/category.route');
+// const userRoutes = require('./routes/user.route');
 const surveyRoutes = require('./routes/survey.route');
 
 
@@ -26,8 +25,6 @@ debug(`db host: ${config.get('db.host')}`);
 /**
  * Middlewares
  */
-app.use(logging);
-app.use(authenticating);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); //POST http://localhost:3000/api/courses (key=value&key=value)
 app.use(express.static('public')); //Archivos públicos
@@ -40,9 +37,9 @@ if (app.get('env') === 'development') {
 /**
  * Rutas
  */
-app.use('/api/artists', artistRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/users', userRoutes);
+// app.use('/api/artists', artistRoutes);
+// app.use('/api/categories', categoryRoutes);
+// app.use('/api/users', userRoutes);
 app.use('/api/surveys', surveyRoutes);
 
 

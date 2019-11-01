@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 
 const {
-   getAllSurveys
+   getAllSurveys,
+   createSurvey
 } = require('../controllers/survey.controller');
 
 
@@ -12,5 +13,10 @@ const {
  * Obtener todas las encuestas
  */
 router.get('/', getAllSurveys);
+
+/**
+ * Crear una encuesta
+ */
+router.post('/', createSurvey);
 
 module.exports = router;

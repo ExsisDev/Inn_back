@@ -21,7 +21,7 @@ const Artist = sequelize.define('artists', {
       allowNull: false
    },
    phone_number: {
-      type: Sequelize.NUMBER,
+      type: Sequelize.BIGINT,
       allowNull: false
    },
    start_date: {

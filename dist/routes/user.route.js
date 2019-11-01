@@ -14,28 +14,38 @@ var _require3 = require('../controllers/user.controller'),
     createUser = _require3.createUser,
     authenticateUser = _require3.authenticateUser,
     deleteUser = _require3.deleteUser,
-    getCurrentUser = _require3.getCurrentUser;
+    getCurrentUser = _require3.getCurrentUser,
+    updateUser = _require3.updateUser;
 /*** Rutas para /api/users*/
 
 /** 
- * Creación de un usuario con body {name, email, password, is_admin} retornando el token en el header 
+ * Creación de un usuario {name, email, password, is_admin} retornando el token en el header 
+ * (Solo para admin)
  */
 
 
 router.post('/', [auth, isAdmin], createUser);
 /** 
- * Login de un usuario o administrador con body {name, password, is_admin} retornando el token en el header
+ * Login de usuario o admin con body {name, password, is_admin} retornando el token en el header
  */
 
 router.post('/auth', authenticateUser);
 /** 
- * Obtener {id_user, name, email, is_admin} dado un token 
+ * Obtener {id_user, name, email, is_admin} dado un token usuario o admin
+ * (para usuarios y admin autenticados)
  */
 
-router.get('/me', [auth, isAdmin], getCurrentUser);
+router.get('/me', [auth], getCurrentUser);
 /**
  * Borrar un usuario dado un id
+ * (Solo para admin)
  */
 
-router["delete"]('/:id', deleteUser);
+router["delete"]('/:id', [auth, isAdmin], deleteUser);
+/**
+ * Actualizar un uasuario dado un id y {name, password, email}
+ * (Solo para admin)
+ */
+
+router.put('/:id', [auth, isAdmin], updateUser);
 module.exports = router;

@@ -7,6 +7,7 @@ exports.createUser = createUser;
 exports.authenticateUser = authenticateUser;
 exports.getCurrentUser = getCurrentUser;
 exports.deleteUser = deleteUser;
+exports.updateUser = updateUser;
 
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
 
@@ -131,6 +132,7 @@ function _authenticateUser() {
               if (userAttributes.is_admin && !result.is_admin) return res.status(403).send("Access denied. Only admin access");
               if (!userAttributes.is_admin && result.is_admin) return res.status(403).send("Access denied. Only user access");
               bcrypt.compare(userAttributes.password, result.password, function (compareError, compareResponse) {
+                if (compareError) return res.status(500).send("Error verifying password: ", compareError);
                 if (!compareResponse) return res.status(400).send("Invalid email or password");
                 var token = result.generateAuthToken();
                 return res.header('x-auth-token', token).send("User authenticated");
@@ -153,8 +155,8 @@ function getCurrentUser(_x5, _x6) {
   return _getCurrentUser.apply(this, arguments);
 }
 /**
- * Eliminación de los usuarios solo por el administrador con token de admin en el header 
- * y id en la ruta de petición
+ * Eliminación de los usuarios con token de admin en el header 
+ * y id en la ruta
  * 
  * @param {Request} req 
  * @param {Response} res 
@@ -173,7 +175,10 @@ function _getCurrentUser() {
             // Encontrar el usuario con id en req.user.id_user
             User.findByPk(req.user.id_user).then(function (result) {
               if (!result) return res.status(400).send("User does not exist");
-              return res.send(_.pick(result, ['id_user', 'name', 'email', 'is_admin']));
+              var token = result.generateAuthToken();
+              return res.header('x-auth-token', token).send(_.pick(result, ['id_user', 'name', 'email', 'is_admin']));
+            })["catch"](function (error) {
+              return res.status(500).send(error);
             });
 
           case 1:
@@ -189,29 +194,43 @@ function _getCurrentUser() {
 function deleteUser(_x7, _x8) {
   return _deleteUser.apply(this, arguments);
 }
+/**
+ * Actualizar el usuario con token de admin en el header 
+ * y id en la ruta
+ * 
+ * @param {Request} req 
+ * @param {Response} res
+ * @return {Promise} promise 
+ */
+
 
 function _deleteUser() {
   _deleteUser = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee4(req, res) {
+    var id;
     return regeneratorRuntime.wrap(function _callee4$(_context4) {
       while (1) {
         switch (_context4.prev = _context4.next) {
           case 0:
-            // Encontrar el usuario a borrar
-            User.destroy({
-              where: {
-                id_user: req.params.id
-              }
-            }).then(function (result) {
-              return res.status(200).send(result.toString());
-              console.log(result);
+            id = req.params.id; // Encontrar el usuario a borrar
+
+            User.findByPk(id).then(function (result) {
+              if (!result) return res.status(404).send("User not found");
+              User.destroy({
+                where: {
+                  id_user: id
+                }
+              }).then(function (deleteResult) {
+                if (deleteResult == 1) return res.status(200).send(_.pick(result, ['id_user', 'name', 'email', 'is_admin']));
+              })["catch"](function (deleteError) {
+                return res.status(409).send(deleteError);
+              });
             })["catch"](function (error) {
-              console.log(error);
               return res.status(500).send(error);
             });
 
-          case 1:
+          case 2:
           case "end":
             return _context4.stop();
         }
@@ -219,4 +238,49 @@ function _deleteUser() {
     }, _callee4);
   }));
   return _deleteUser.apply(this, arguments);
+}
+
+function updateUser(_x9, _x10) {
+  return _updateUser.apply(this, arguments);
+}
+
+function _updateUser() {
+  _updateUser = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee5(req, res) {
+    var id, userAttributes;
+    return regeneratorRuntime.wrap(function _callee5$(_context5) {
+      while (1) {
+        switch (_context5.prev = _context5.next) {
+          case 0:
+            id = req.params.id; // Validacion del body
+
+            userAttributes = getValidParams(req, res, validateBodyUserUpdate); // Hash del password
+
+            if (userAttributes.password) {
+              bcrypt.hash(userAttributes.password, 10).then(function (hash) {
+                userAttributes.password = hash;
+              });
+            } // Actualizacion del usuario
+
+
+            User.findByPk(id).then(function (result) {
+              if (!result) return res.status(404).send("User not found");
+              result.update(userAttributes).then(function (updateResult) {
+                return res.status(200).send(_.pick(updateResult, ['id_user', 'name', 'email', 'is_admin']));
+              })["catch"](function (updateError) {
+                return res.status(409).send(updateError);
+              });
+            })["catch"](function (error) {
+              return res.status(500).send(error);
+            });
+
+          case 4:
+          case "end":
+            return _context5.stop();
+        }
+      }
+    }, _callee5);
+  }));
+  return _updateUser.apply(this, arguments);
 }

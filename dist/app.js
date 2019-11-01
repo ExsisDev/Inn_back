@@ -14,11 +14,13 @@ var _require = require('./middleware/logger'),
     logging = _require.logging,
     authenticating = _require.authenticating;
 
-var artist = require('./routes/artist.route');
+var artistRoutes = require('./routes/artist.route');
 
-var category = require('./routes/category.route');
+var categoryRoutes = require('./routes/category.route');
 
-var user = require('./routes/user.route');
+var userRoutes = require('./routes/user.route');
+
+var surveyRoutes = require('./routes/survey.route');
 
 console.log('Application Name: ' + config.get('name'));
 /**
@@ -28,8 +30,9 @@ console.log('Application Name: ' + config.get('name'));
 var app = express();
 debug("NODE_ENV: ".concat(process.env.NODE_ENV)); //export NODE_ENV=production
 
-debug("app: ".concat(app.get('env')));
-debug("password: ".concat(config.get('mail.password')));
+debug("app environment: ".concat(app.get('env')));
+debug("mailer password: ".concat(config.get('mail.password')));
+debug("db host: ".concat(config.get('db.host')));
 /**
  * Middlewares
  */
@@ -52,7 +55,8 @@ if (app.get('env') === 'development') {
  */
 
 
-app.use('/api/artists', artist);
-app.use('/api/categories', category);
-app.use('/api/users', user);
+app.use('/api/artists', artistRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/surveys', surveyRoutes);
 module.exports = app;
