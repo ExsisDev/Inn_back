@@ -13,8 +13,10 @@ const User = require('../models/User');
 export async function createUser(userAttributes) {
    console.log("Inicio");
    const userExists = await verifyUser(userAttributes);
-   if (userExists) return userExists;
+   // if (userExists) return userExists;
    const passwordHashed = await hashPassword(userAttributes);
+   userAttributes.user_password = passwordHashed;
+   const userSaved = await saveUser(userAttributes);
 }
 
 
@@ -38,6 +40,27 @@ function hashPassword(userAttributes) {
    return new Promise((resolve, reject) => {
       bcrypt.hash(userAttributes.user_password, 10).then(function (hash) {
          resolve(hash);
+      });
+   });
+}
+
+
+function saveUser(userAttributes) {
+   return new Promise((resolve, reject) => {
+      User.create(
+         userAttributes,
+         {
+            fields: ['fk_id_role', "fk_user_state", "user_email", "user_password", "user_last_login", "created_at", "updated_at"]
+         }
+      ).then((created) => {
+         if (created) {
+            console.log("created");
+            resolve(created);
+         }
+      }).catch((creationError) => {
+         console.log(creationError);
+         reject(creationError);
+
       });
    });
 }

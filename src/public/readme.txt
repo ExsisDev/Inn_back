@@ -1,5 +1,5 @@
 export db_password=
-export db_host=
+export db_host=innovalab-dev-db.postgres.database.azure.com
 export app_password=
 export DEBUG=app:startup
 export NODE_ENV=development
