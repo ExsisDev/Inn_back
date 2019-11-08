@@ -3,10 +3,8 @@ const morgan = require('morgan'); //Imprimir las peticiones
 const config = require('config');
 const debug = require('debug')('app:startup'); //export DEBUG=app:startup
 
-// const artistRoutes = require('./routes/artist.route');
-// const categoryRoutes = require('./routes/category.route');
-// const userRoutes = require('./routes/user.route');
-const surveyRoutes = require('./routes/survey.route');
+
+const allyRoutes = require('./routes/Ally.routes');
 
 
 console.log('Application Name: ' + config.get('name'));
@@ -37,10 +35,7 @@ if (app.get('env') === 'development') {
 /**
  * Rutas
  */
-// app.use('/api/artists', artistRoutes);
-// app.use('/api/categories', categoryRoutes);
-// app.use('/api/users', userRoutes);
-app.use('/api/surveys', surveyRoutes);
+app.use('/api/allies', allyRoutes);
 
 
 module.exports = app;

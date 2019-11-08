@@ -1,53 +1,44 @@
-const { validateBodyUserCreation, validateUserAuth, validateBodyUserUpdate } = require('../schemas/user.validation');
 const _ = require('lodash');
 const bcrypt = require('bcrypt');
 const User = require('../models/User');
 
 
-function getValidParams(req, res, callBackValidation) {
-   const { error } = callBackValidation(req.body);
-   return (error) ? res.status(400).send(error.details[0].message) : req.body;
+/**
+ * Crear un usuario: 
+ * 1. verificando la existencia del usuario,
+ * 2. creando el usuario 
+ * 
+ * @param {Object} Atributos
+ */
+export async function createUser(userAttributes) {
+   console.log("Inicio");
+   const userExists = await verifyUser(userAttributes);
+   if (userExists) return userExists;
+   const passwordHashed = await hashPassword(userAttributes);
 }
 
 
-/**
- * Creación de un usuario: 
- * 1. verificando el body, 
- * 2. verificando la existencia del usuario,
- * 3. creando el usuario 
- * 
- * @param {Request} req 
- * @param {Response} res 
- * @return {promise} promise
- */
-export async function createUser(req, res) {
-   // Validacion del body
-   const userAttributes = getValidParams(req, res, validateBodyUserCreation);
+function verifyUser(userAttributes) {
+   return new Promise((resolve, reject) => {
+      User.findOne({
+         where: { user_email: userAttributes.user_email }
+      }).then((result) => {
+         console.log("Medio")
+         if (result) resolve("User already registered");
+         resolve();
 
-   // Cración del usuario
-   User.findOne({
-      where: { email: userAttributes.email }
-   }).then((result) => {
-      if (result) return res.status(400).send("User already registered");
-
-      bcrypt.hash(userAttributes.password, 10).then(function (hash) {
-         userAttributes.password = hash;
-         User.create(
-            userAttributes,
-            {
-               fields: ['name', 'password', 'email', 'is_admin']
-            }).then((created) => {
-               const token = created.generateAuthToken();
-               return res.header('x-auth-token', token).status(200).send(_.pick(created, ['id_user', 'name', 'email', 'is_admin']));
-
-            }).catch((creationError) => {
-               return res.status(409).send(creationError);
-
-            });
+      }).catch((error) => {
+         reject(error);
       });
-   }).catch((error) => {
-      return res.status(500).send(error);
+   });
+}
 
+
+function hashPassword(userAttributes) {
+   return new Promise((resolve, reject) => {
+      bcrypt.hash(userAttributes.user_password, 10).then(function (hash) {
+         resolve(hash);
+      });
    });
 }
 
@@ -104,7 +95,7 @@ export async function getCurrentUser(req, res) {
       const token = result.generateAuthToken();
       return res.header('x-auth-token', token).send(_.pick(result, ['id_user', 'name', 'email', 'is_admin']));
 
-   }).catch((error)=>{
+   }).catch((error) => {
       return res.status(500).send(error);
 
    });
@@ -157,7 +148,7 @@ export async function updateUser(req, res) {
    const userAttributes = getValidParams(req, res, validateBodyUserUpdate);
 
    // Hash del password
-   if(userAttributes.password) {
+   if (userAttributes.password) {
       bcrypt.hash(userAttributes.password, 10).then(function (hash) {
          userAttributes.password = hash;
       });
@@ -168,12 +159,12 @@ export async function updateUser(req, res) {
       if (!result) return res.status(404).send("User not found");
 
       result.update(userAttributes).then((updateResult) => {
-            return res.status(200).send(_.pick(updateResult, ['id_user', 'name', 'email', 'is_admin']));
-            
-         }).catch((updateError) => { 
-            return res.status(409).send(updateError);
+         return res.status(200).send(_.pick(updateResult, ['id_user', 'name', 'email', 'is_admin']));
 
-         });
+      }).catch((updateError) => {
+         return res.status(409).send(updateError);
+
+      });
    }).catch((error) => {
       return res.status(500).send(error);
    });

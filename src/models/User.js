@@ -8,27 +8,34 @@ const User = sequelize.define('users', {
    id_user: {
       type: Sequelize.INTEGER,
       autoIncrement: true,
-      primaryKey: true
-   },
-   name: {
-      type: Sequelize.STRING,
+      primaryKey: true,
       allowNull: false
    },
-   password: {
-      type: Sequelize.STRING,
+   fk_id_role: {
+      type: Sequelize.INTEGER,
       allowNull: false
    },
-   email: {
+   fk_user_state: {
+      type: Sequelize.INTEGER,
+      allowNull: false
+   },
+   user_email: {
       type: Sequelize.STRING,
       allowNull: false,
       unique: true
    },
-   is_admin: {
-      type: Sequelize.BOOLEAN,
+   user_password: {
+      type: Sequelize.STRING,
+      allowNull: false
+   },
+   user_last_login: {
+      type: Sequelize.DATE,
       allowNull: false
    }
 }, {
-   timestamps: false
+   timestamps: true,
+   updatedAt: 'updated_at',
+   createdAt: 'created_at' 
 });
 
 
@@ -39,9 +46,9 @@ const User = sequelize.define('users', {
  * 
  * @return {string} token
  */
-User.prototype.generateAuthToken = function () {
-   return jwt.sign({ id_user: this.id_user, is_admin: this.is_admin }, config.get('jwtPrivateKey'), { algorithm: 'HS384' });
-}
+// User.prototype.generateAuthToken = function () {
+//    return jwt.sign({ id_user: this.id_user, is_admin: this.is_admin }, config.get('jwtPrivateKey'), { algorithm: 'HS384' });
+// }
 
 
 module.exports = User;

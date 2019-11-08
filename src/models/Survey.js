@@ -13,12 +13,14 @@ const Survey = sequelize.define('surveys', {
       type: Sequelize.DATE,
       allowNull: false
    },
-   user_id: {
+   user_id_creator: {
       type: Sequelize.INTEGER,
       allowNull: false
    }
 }, {
-   timestamps: true
+   timestamps: true,
+   updatedAt: 'updated_at',
+   createdAt: 'created_at'
 });
 
 
