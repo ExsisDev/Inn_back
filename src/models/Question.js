@@ -1,5 +1,7 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../utils/database');
+const SurveyQuestion = require('./Survey_Question');
+
 
 const Question = sequelize.define('question', {
    id_question: {
@@ -20,5 +22,9 @@ const Question = sequelize.define('question', {
    updatedAt: 'updated_at',
    createdAt: 'created_at'
 });
+
+
+Question.hasMany(SurveyQuestion, { foreignKey: 'fk_id_question', sourceKey: 'id_question' });
+
 
 module.exports = Question;

@@ -1,5 +1,7 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../utils/database');
+const Survey = require('./Survey');
+const Company = require('./Company');
 
 const Challenge = sequelize.define('challenge', {
    id_challenge: {
@@ -28,6 +30,10 @@ const Challenge = sequelize.define('challenge', {
    updatedAt: 'updated_at',
    createdAt: 'created_at'
 });
+
+
+Challenge.belongsTo(Survey, { foreignKey: 'fk_id_survey', targetKey: 'id_survey' });
+Challenge.belongsTo(Company, { foreignKey: 'fk_id_company', targetKey: 'id_company' });
 
 
 module.exports = Challenge;
