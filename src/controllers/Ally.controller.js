@@ -34,12 +34,28 @@ export async function createAlly(req, res) {
    const allyAttributes = _.pick(bodyAttributes, ['ally_name', 'ally_nit', 'ally_web_page', 'ally_phone', 'ally_month_ideation_hours', 'ally_month_experimentation_hours']);
    const userAttributes = _.pick(bodyAttributes, ['fk_id_role', 'fk_user_state', 'user_email', 'user_password', 'user_last_login']);
 
-   UserController.createUser(userAttributes).then((result) => {
-      console.log("Resultado de creación de usuario: ", result);
-      // const token = created.generateAuthToken();
-      // return res.header('x-auth-token', token).status(200).send(_.pick(created, ['id_user', 'name', 'email', 'is_admin']));
+   UserController.createUser(userAttributes).then((userCreated) => {
+      if (userCreated === "User already registered") {
+         return res.status(400).send(userCreated);
+
+      }
+      const token = userCreated.generateAuthToken();
+      allyAttributes['fk_id_user'] = userCreated.id_user;
+      Ally.create(
+         allyAttributes
+      ).then((allyCreated) => {
+         if (allyCreated) {
+            return res.header('x-auth-token', token).status(200).send(_.assign(_.omit(userCreated.dataValues, ['user_password']), _.omit(allyCreated.dataValues, ['fk_id_user'])));
+
+         } else {
+            return res.status(500).send("No se pudo crear el elemento");
+
+         }
+      });
    }).catch((error) => {
       console.log(error);
+      return res.status(500).send(error);
+
    })
 }
 

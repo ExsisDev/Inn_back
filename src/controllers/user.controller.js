@@ -6,17 +6,24 @@ const User = require('../models/User');
 /**
  * Crear un usuario: 
  * 1. verificando la existencia del usuario,
- * 2. creando el usuario 
+ * 2. creando el hash de la contraseña
+ * 3. guardando el usuario 
  * 
- * @param {Object} Atributos
+ * @param {Object} Attributes
  */
 export async function createUser(userAttributes) {
-   console.log("Inicio");
-   const userExists = await verifyUser(userAttributes);
-   // if (userExists) return userExists;
-   const passwordHashed = await hashPassword(userAttributes);
-   userAttributes.user_password = passwordHashed;
-   const userSaved = await saveUser(userAttributes);
+   try {
+      const userExists = await verifyUser(userAttributes);
+      if (userExists) return userExists;
+      const passwordHashed = await hashPassword(userAttributes.user_password);
+      userAttributes.user_password = passwordHashed;
+      const userSaved = await saveUser(userAttributes);
+      return userSaved;
+
+   } catch (error) {
+      throw error;
+
+   }
 }
 
 
@@ -25,7 +32,6 @@ function verifyUser(userAttributes) {
       User.findOne({
          where: { user_email: userAttributes.user_email }
       }).then((result) => {
-         console.log("Medio")
          if (result) resolve("User already registered");
          resolve();
 
@@ -36,10 +42,14 @@ function verifyUser(userAttributes) {
 }
 
 
-function hashPassword(userAttributes) {
+function hashPassword(password) {
    return new Promise((resolve, reject) => {
-      bcrypt.hash(userAttributes.user_password, 10).then(function (hash) {
+      bcrypt.hash(password, 10).then(function (hash) {
          resolve(hash);
+
+      }).catch((error) => {
+         reject(error);
+
       });
    });
 }
@@ -49,16 +59,10 @@ function saveUser(userAttributes) {
    return new Promise((resolve, reject) => {
       User.create(
          userAttributes,
-         {
-            fields: ['fk_id_role', "fk_user_state", "user_email", "user_password", "user_last_login", "created_at", "updated_at"]
-         }
       ).then((created) => {
-         if (created) {
-            console.log("created");
-            resolve(created);
-         }
+         if (created) resolve(created);
+         
       }).catch((creationError) => {
-         console.log(creationError);
          reject(creationError);
 
       });

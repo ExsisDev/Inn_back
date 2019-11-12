@@ -35,7 +35,7 @@ const User = sequelize.define('users', {
 }, {
    timestamps: true,
    updatedAt: 'updated_at',
-   createdAt: 'created_at' 
+   createdAt: 'created_at'
 });
 
 
@@ -46,9 +46,9 @@ const User = sequelize.define('users', {
  * 
  * @return {string} token
  */
-// User.prototype.generateAuthToken = function () {
-//    return jwt.sign({ id_user: this.id_user, is_admin: this.is_admin }, config.get('jwtPrivateKey'), { algorithm: 'HS384' });
-// }
+User.prototype.generateAuthToken = function () {
+   return jwt.sign({ id_user: this.id_user, fk_id_role: this.fk_id_role }, config.get('jwtPrivateKey'), { algorithm: 'HS384' });
+}
 
 
 module.exports = User;
