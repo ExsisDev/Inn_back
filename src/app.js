@@ -5,6 +5,7 @@ const debug = require('debug')('app:startup'); //export DEBUG=app:startup
 
 
 const allyRoutes = require('./routes/Ally.routes');
+const userRoutes = require('./routes/User.routes');
 
 
 console.log('Application Name: ' + config.get('name'));
@@ -36,6 +37,7 @@ if (app.get('env') === 'development') {
  * Rutas
  */
 app.use('/api/allies', allyRoutes);
+app.use('/api/login', userRoutes);
 
 
 module.exports = app;

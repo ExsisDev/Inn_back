@@ -57,3 +57,9 @@ async function showFunctions(){
 
 showFunctions();
 
+
+------------------------TO DO--------------------------
+
+1. Realizar las transacciones en el contexto de sequelize (para la creación de un aliado)
+
+

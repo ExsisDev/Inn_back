@@ -1,6 +1,5 @@
 const { validateBodyAllyCreation, validateBodyAllyUpdate, validateAllyAuth } = require('../schemas/Ally.validations');
 const _ = require('lodash');
-const bcrypt = require('bcrypt');
 const Ally = require('../models/Ally');
 const UserController = require('./User.controller');
 
@@ -45,48 +44,21 @@ export async function createAlly(req, res) {
          allyAttributes
       ).then((allyCreated) => {
          if (allyCreated) {
-            return res.header('x-auth-token', token).status(200).send(_.assign(_.omit(userCreated.dataValues, ['user_password']), _.omit(allyCreated.dataValues, ['fk_id_user'])));
+            return res.header('x-auth-token', token).status(200)
+               .send(_.assign(_.omit(userCreated.dataValues, ['user_password']), _.omit(allyCreated.dataValues, ['fk_id_user'])));
 
          } else {
             return res.status(500).send("No se pudo crear el elemento");
 
          }
+      }).catch((error) => {
+         console.log(error)
+         return res.status(500).send(error);
+
       });
    }).catch((error) => {
-      console.log(error);
+      console.log(error)
       return res.status(500).send(error);
 
    })
-}
-
-
-/**
- * Validar email y constraseña de un aliado:
- * 1. Validando el body
- * 2. Verificando el correo y la contraseña
- * 
- * @param {Request} req 
- * @param {Response} res 
- * @return {promise} promise
- */
-export async function authenticateAlly(req, res) {
-   const userAttributes = getValidParams(req, res, validateAllyAuth);
-
-   Ally.findOne({
-      where: { ally_email: userAttributes.ally_email }
-   }).then((result) => {
-      if (!result) return res.status(400).send("Invalid email or password");
-
-      bcrypt.compare(userAttributes.ally_password, result.ally_password, function (compareError, compareResponse) {
-         if (compareError) return res.status(500).send("Error verifying password: ", compareError);
-         if (!compareResponse) return res.status(400).send("Invalid email or password");
-
-         const token = result.generateAuthToken();
-         return res.header('x-auth-token', token).send("User authenticated");
-
-      });
-   }).catch((error) => {
-      return res.status(500).send(error);
-
-   });
 }

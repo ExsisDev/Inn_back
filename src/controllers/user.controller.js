@@ -1,6 +1,19 @@
+const { validateUserAuth } = require('../schemas/User.validations');
 const _ = require('lodash');
 const bcrypt = require('bcrypt');
 const User = require('../models/User');
+
+/**
+ * Verificar la validéz de los parametros del body
+ * 
+ * @param {Request} req 
+ * @param {Response} res 
+ * @param {CallableFunction} callBackValidation 
+ */
+function getValidParams(req, res, callBackValidation) {
+   const { error } = callBackValidation(req.body);
+   return (error) ? res.status(400).send(error.details[0].message) : req.body;
+}
 
 
 /**
@@ -61,7 +74,7 @@ function saveUser(userAttributes) {
          userAttributes,
       ).then((created) => {
          if (created) resolve(created);
-         
+
       }).catch((creationError) => {
          reject(creationError);
 
@@ -71,7 +84,7 @@ function saveUser(userAttributes) {
 
 
 /**
- * Validación de email y constraseña de un administrador:
+ * Validar email y constraseña de un usuario:
  * 1. Validando del body
  * 2. Verificando el correo y la contraseña
  * 
@@ -80,20 +93,16 @@ function saveUser(userAttributes) {
  * @return {promise} promise
  */
 export async function authenticateUser(req, res) {
-   // Validacion del body
    const userAttributes = getValidParams(req, res, validateUserAuth);
 
-   // Verificacion del usuario registrado
    User.findOne({
-      where: { email: userAttributes.email }
+      where: { user_email: userAttributes.user_email }
    }).then((result) => {
       if (!result) return res.status(400).send("Invalid email or password");
 
-      if (userAttributes.is_admin && !result.is_admin) return res.status(403).send("Access denied. Only admin access");
-      if (!userAttributes.is_admin && result.is_admin) return res.status(403).send("Access denied. Only user access");
-
-      bcrypt.compare(userAttributes.password, result.password, function (compareError, compareResponse) {
+      bcrypt.compare(userAttributes.user_password, result.user_password, function (compareError, compareResponse) {
          if (compareError) return res.status(500).send("Error verifying password: ", compareError);
+         
          if (!compareResponse) return res.status(400).send("Invalid email or password");
 
          const token = result.generateAuthToken();

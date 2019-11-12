@@ -5,7 +5,7 @@ export function validateBodyAllyCreation(ally) {
       fk_id_role: Joi.number().required(),
       fk_user_state: Joi.number().required(),
       user_email: Joi.string().email().max(50).required(),
-      user_password: Joi.string().max(200).required(),
+      user_password: Joi.string().max(8).required(),
       user_last_login: Joi.string().required(),
 
       // fk_id_user: Joi.number().required(),
@@ -24,7 +24,7 @@ export function validateBodyAllyUpdate(ally) {
       fk_id_role: Joi.number().required(),
       fk_user_state: Joi.number().required(),
       user_email: Joi.string().email().max(50).required(),
-      user_password: Joi.string().max(200).required(),
+      user_password: Joi.string().max(8).required(),
       user_last_login: Joi.string().required(),
 
       fk_id_user: Joi.number(),
@@ -36,12 +36,4 @@ export function validateBodyAllyUpdate(ally) {
       ally_month_experimentation_hours: Joi.number()
    });
    return updateAllySchema.validate(ally);
-}
-
-export function validateAllyAuth(ally) {
-   const authAllySchema = Joi.object({
-      user_password: Joi.string().max(8).required(),
-      user_email: Joi.string().email().max(50).required()
-   });
-   return authAllySchema.validate(ally);
 }

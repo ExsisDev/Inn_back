@@ -2,6 +2,7 @@ const Sequelize = require('sequelize');
 const sequelize = require('../utils/database');
 const jwt = require('jsonwebtoken');
 const config = require('config');
+const Ally = require('./Ally');
 
 
 const User = sequelize.define('users', {
@@ -42,13 +43,16 @@ const User = sequelize.define('users', {
 /**
  * Método de instancia de User que genera un token con:
  * 1. El id del usuario instancia.
- * 2. Un bool identificando si es administrador o no
+ * 2. El rol de usuario
  * 
  * @return {string} token
  */
 User.prototype.generateAuthToken = function () {
    return jwt.sign({ id_user: this.id_user, fk_id_role: this.fk_id_role }, config.get('jwtPrivateKey'), { algorithm: 'HS384' });
 }
+
+
+User.hasOne(Ally, {foreignKey: 'fk_id_user', sourceKey: 'id_user'});
 
 
 module.exports = User;

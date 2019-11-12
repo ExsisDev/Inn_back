@@ -36,7 +36,9 @@ const Artist = sequelize.define('artists', {
    timestamps: false
 });
 
+
 Artist.hasMany(Artist_Category, { foreignKey: 'fk_id_artist', sourceKey: 'id_artist' });
-Artist_Category.belongsTo(Artist, { foreignKey: 'fk_id_artist', sourceKey: 'id_artist' })
+Artist_Category.belongsTo(Artist, { foreignKey: 'fk_id_artist', targetKey: 'id_artist' })
+
 
 module.exports = Artist;

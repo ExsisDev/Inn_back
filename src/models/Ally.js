@@ -47,16 +47,4 @@ const Ally = sequelize.define('allies', {
 });
 
 
-/**
- * Método de instancia de Ally.
- * Generar un token con:
- * 1. id del aliado instancia.
- * 
- * @return {string} token
- */
-Ally.prototype.generateAuthToken = function () {
-   return jwt.sign({ id_ally: this.id_ally }, config.get('jwtPrivateKey'), { algorithm: 'HS384' });
-}
-
-
 module.exports = Ally;
