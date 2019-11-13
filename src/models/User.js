@@ -52,7 +52,7 @@ User.prototype.generateAuthToken = function () {
 }
 
 
-User.hasOne(Ally, {foreignKey: 'fk_id_user', sourceKey: 'id_user'});
+User.hasOne(Ally, { foreignKey: 'fk_id_user', sourceKey: 'id_user' });
 
 
 module.exports = User;

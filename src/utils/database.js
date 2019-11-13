@@ -30,13 +30,13 @@ const sequelize = new Sequelize('Innovalab-dev', 'AdminDB@innovalab-dev-db', 'DA
  * Test database connection
  */
 sequelize
-  .authenticate()
-  .then(function(err) {
-    console.log('Connection has been established successfully.');
-  })
-  .catch(function (err) {
-    console.log('Unable to connect to the database:', err);
-  });
+   .authenticate()
+   .then(function (err) {
+      console.log('Connection has been established successfully.');
+   })
+   .catch(function (err) {
+      console.log('Unable to connect to the database:', err);
+   });
 
 
 /**
@@ -50,6 +50,6 @@ if (process.env.NODE_ENV === 'production') {
       console.log(error);
    });
 }
- 
+
 
 module.exports = sequelize;

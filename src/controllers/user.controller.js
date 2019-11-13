@@ -102,7 +102,7 @@ export async function authenticateUser(req, res) {
 
       bcrypt.compare(userAttributes.user_password, result.user_password, function (compareError, compareResponse) {
          if (compareError) return res.status(500).send("Error verifying password: ", compareError);
-         
+
          if (!compareResponse) return res.status(400).send("Invalid email or password");
 
          const token = result.generateAuthToken();
