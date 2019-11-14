@@ -1,9 +1,16 @@
 {
-   "mail": {
-      "password": "app_password"
-   },
    "db": {
-      "host": "db_host",
       "password": "db_password"
-   }
+   },
+   "db_dev": {
+      "host": "db_host_dev",
+      "user": "db_user_dev",
+      "name": "db_name_dev"
+   },
+   "db_prod": {
+      "host": "db_host_prod",
+      "user": "db_user_prod",
+      "name": "db_name_prod"
+   },
+   "jwtPrivateKey": "jwtPrivateKey"
 }

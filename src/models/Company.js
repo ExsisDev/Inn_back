@@ -23,7 +23,7 @@ const Company = sequelize.define('company', {
 });
 
 
-Company.hasMany(Challenge, { foreignKey: 'fk_id_company', sourceKey: 'id_company' });
+// Company.hasMany(Challenge, { foreignKey: 'fk_id_company', sourceKey: 'id_company' });
 
 
 module.exports = Company;

@@ -1,7 +1,7 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../utils/database');
 
-const Artist_Category = sequelize.define('artists_categories', {
+const ArtistCategory = sequelize.define('artists_categories', {
    id_artists_categories: {
       type: Sequelize.INTEGER,
       autoIncrement: true,
@@ -22,4 +22,4 @@ const Artist_Category = sequelize.define('artists_categories', {
    timestamps: false
 });
 
-module.exports = Artist_Category;
+module.exports = ArtistCategory;

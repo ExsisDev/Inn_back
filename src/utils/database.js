@@ -6,10 +6,8 @@ const config = require('config');
  * @constructor
  */
 
-// const sequelize = new Sequelize('postgres://user:AdminDB@innovalab-prod-db:5432/Innovalab-dev', 'DATAbase@1',{})
-
-const sequelize = new Sequelize('Innovalab-dev', 'AdminDB@innovalab-dev-db', 'DATAbase@1', {
-   host: 'innovalab-prod-db.postgres.database.azure.com',
+const sequelize = new Sequelize(config.get('db_dev.name'), config.get('db_dev.user'), config.get('db.password'), {
+   host: config.get('db_dev.host'),
    port: 5432,
    dialect: 'postgres',
    pool: {

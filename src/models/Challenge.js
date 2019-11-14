@@ -24,6 +24,10 @@ const Challenge = sequelize.define('challenge', {
    challenge_description: {
       type: Sequelize.TEXT,
       allowNull: false
+   },
+   fk_id_challenge_state: {
+      type: Sequelize.INTEGER,
+      allowNull: false
    }
 }, {
    timestamps: true,

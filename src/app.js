@@ -6,6 +6,7 @@ const debug = require('debug')('app:startup'); //export DEBUG=app:startup
 
 const allyRoutes = require('./routes/Ally.routes');
 const userRoutes = require('./routes/User.routes');
+const challengeRoutes = require('./routes/Challenge.routes');
 
 
 console.log('Application Name: ' + config.get('name'));
@@ -17,8 +18,7 @@ console.log('Application Name: ' + config.get('name'));
 const app = express();
 debug(`NODE_ENV: ${process.env.NODE_ENV}`); //export NODE_ENV=production
 debug(`app environment: ${app.get('env')}`);
-debug(`mailer password: ${config.get('mail.password')}`);
-debug(`db host: ${config.get('db.host')}`);
+debug(`db host: ${config.get('db_dev.host')}`);
 
 
 /**
@@ -38,6 +38,7 @@ if (app.get('env') === 'development') {
  */
 app.use('/api/allies', allyRoutes);
 app.use('/api/login', userRoutes);
+app.use('/api/challenge', challengeRoutes);
 
 
 module.exports = app;
