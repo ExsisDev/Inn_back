@@ -10,17 +10,11 @@ var config = require('config');
 var debug = require('debug')('app:startup'); //export DEBUG=app:startup
 
 
-var _require = require('./middleware/logger'),
-    logging = _require.logging,
-    authenticating = _require.authenticating;
+var allyRoutes = require('./routes/Ally.routes');
 
-var artistRoutes = require('./routes/artist.route');
+var userRoutes = require('./routes/User.routes');
 
-var categoryRoutes = require('./routes/category.route');
-
-var userRoutes = require('./routes/user.route');
-
-var surveyRoutes = require('./routes/survey.route');
+var challengeRoutes = require('./routes/Challenge.routes');
 
 console.log('Application Name: ' + config.get('name'));
 /**
@@ -31,14 +25,11 @@ var app = express();
 debug("NODE_ENV: ".concat(process.env.NODE_ENV)); //export NODE_ENV=production
 
 debug("app environment: ".concat(app.get('env')));
-debug("mailer password: ".concat(config.get('mail.password')));
-debug("db host: ".concat(config.get('db.host')));
+debug("db host: ".concat(config.get('db_dev.host')));
 /**
  * Middlewares
  */
 
-app.use(logging);
-app.use(authenticating);
 app.use(express.json());
 app.use(express.urlencoded({
   extended: true
@@ -55,8 +46,7 @@ if (app.get('env') === 'development') {
  */
 
 
-app.use('/api/artists', artistRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/surveys', surveyRoutes);
+app.use('/api/allies', allyRoutes);
+app.use('/api/login', userRoutes);
+app.use('/api/challenge', challengeRoutes);
 module.exports = app;

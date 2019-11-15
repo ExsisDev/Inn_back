@@ -13,16 +13,22 @@ function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
-var _require = require('../schemas/user.validation'),
-    validateBodyUserCreation = _require.validateBodyUserCreation,
-    validateUserAuth = _require.validateUserAuth,
-    validateBodyUserUpdate = _require.validateBodyUserUpdate;
+var _require = require('../schemas/User.validations'),
+    validateUserAuth = _require.validateUserAuth;
 
 var _ = require('lodash');
 
 var bcrypt = require('bcrypt');
 
 var User = require('../models/User');
+/**
+ * Verificar la validéz de los parametros del body
+ * 
+ * @param {Request} req 
+ * @param {Response} res 
+ * @param {CallableFunction} callBackValidation 
+ */
+
 
 function getValidParams(req, res, callBackValidation) {
   var _callBackValidation = callBackValidation(req.body),
@@ -31,22 +37,107 @@ function getValidParams(req, res, callBackValidation) {
   return error ? res.status(400).send(error.details[0].message) : req.body;
 }
 /**
- * Creación de un usuario: 
- * 1. verificando el body, 
- * 2. verificando la existencia del usuario,
- * 3. creando el usuario 
+ * Crear un usuario: 
+ * 1. verificando la existencia del usuario,
+ * 2. creando el hash de la contraseña
+ * 3. guardando el usuario 
  * 
- * @param {Request} req 
- * @param {Response} res 
- * @return {promise} promise
+ * @param {Object} Attributes
  */
 
 
-function createUser(_x, _x2) {
+function createUser(_x) {
   return _createUser.apply(this, arguments);
 }
+
+function _createUser() {
+  _createUser = _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee(userAttributes) {
+    var userExists, passwordHashed, userSaved;
+    return regeneratorRuntime.wrap(function _callee$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            _context.prev = 0;
+            _context.next = 3;
+            return verifyUser(userAttributes);
+
+          case 3:
+            userExists = _context.sent;
+
+            if (!userExists) {
+              _context.next = 6;
+              break;
+            }
+
+            return _context.abrupt("return", userExists);
+
+          case 6:
+            _context.next = 8;
+            return hashPassword(userAttributes.user_password);
+
+          case 8:
+            passwordHashed = _context.sent;
+            userAttributes.user_password = passwordHashed;
+            _context.next = 12;
+            return saveUser(userAttributes);
+
+          case 12:
+            userSaved = _context.sent;
+            return _context.abrupt("return", userSaved);
+
+          case 16:
+            _context.prev = 16;
+            _context.t0 = _context["catch"](0);
+            throw _context.t0;
+
+          case 19:
+          case "end":
+            return _context.stop();
+        }
+      }
+    }, _callee, null, [[0, 16]]);
+  }));
+  return _createUser.apply(this, arguments);
+}
+
+function verifyUser(userAttributes) {
+  return new Promise(function (resolve, reject) {
+    User.findOne({
+      where: {
+        user_email: userAttributes.user_email
+      }
+    }).then(function (result) {
+      if (result) resolve("User already registered");
+      resolve();
+    })["catch"](function (error) {
+      reject(error);
+    });
+  });
+}
+
+function hashPassword(password) {
+  return new Promise(function (resolve, reject) {
+    bcrypt.hash(password, 10).then(function (hash) {
+      resolve(hash);
+    })["catch"](function (error) {
+      reject(error);
+    });
+  });
+}
+
+function saveUser(userAttributes) {
+  return new Promise(function (resolve, reject) {
+    User.create(userAttributes).then(function (created) {
+      if (created) resolve(created);
+    })["catch"](function (creationError) {
+      reject(creationError);
+    });
+  });
+}
 /**
- * Validación de email y constraseña de un administrador:
+ * Validar email y constraseña de un usuario:
  * 1. Validando del body
  * 2. Verificando el correo y la contraseña
  * 
@@ -56,50 +147,7 @@ function createUser(_x, _x2) {
  */
 
 
-function _createUser() {
-  _createUser = _asyncToGenerator(
-  /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee(req, res) {
-    var userAttributes;
-    return regeneratorRuntime.wrap(function _callee$(_context) {
-      while (1) {
-        switch (_context.prev = _context.next) {
-          case 0:
-            // Validacion del body
-            userAttributes = getValidParams(req, res, validateBodyUserCreation); // Cración del usuario
-
-            User.findOne({
-              where: {
-                email: userAttributes.email
-              }
-            }).then(function (result) {
-              if (result) return res.status(400).send("User already registered");
-              bcrypt.hash(userAttributes.password, 10).then(function (hash) {
-                userAttributes.password = hash;
-                User.create(userAttributes, {
-                  fields: ['name', 'password', 'email', 'is_admin']
-                }).then(function (created) {
-                  var token = created.generateAuthToken();
-                  return res.header('x-auth-token', token).status(200).send(_.pick(created, ['id_user', 'name', 'email', 'is_admin']));
-                })["catch"](function (creationError) {
-                  return res.status(409).send(creationError);
-                });
-              });
-            })["catch"](function (error) {
-              return res.status(500).send(error);
-            });
-
-          case 2:
-          case "end":
-            return _context.stop();
-        }
-      }
-    }, _callee);
-  }));
-  return _createUser.apply(this, arguments);
-}
-
-function authenticateUser(_x3, _x4) {
+function authenticateUser(_x2, _x3) {
   return _authenticateUser.apply(this, arguments);
 }
 /**
@@ -120,18 +168,14 @@ function _authenticateUser() {
       while (1) {
         switch (_context2.prev = _context2.next) {
           case 0:
-            // Validacion del body
-            userAttributes = getValidParams(req, res, validateUserAuth); // Verificacion del usuario registrado
-
+            userAttributes = getValidParams(req, res, validateUserAuth);
             User.findOne({
               where: {
-                email: userAttributes.email
+                user_email: userAttributes.user_email
               }
             }).then(function (result) {
               if (!result) return res.status(400).send("Invalid email or password");
-              if (userAttributes.is_admin && !result.is_admin) return res.status(403).send("Access denied. Only admin access");
-              if (!userAttributes.is_admin && result.is_admin) return res.status(403).send("Access denied. Only user access");
-              bcrypt.compare(userAttributes.password, result.password, function (compareError, compareResponse) {
+              bcrypt.compare(userAttributes.user_password, result.user_password, function (compareError, compareResponse) {
                 if (compareError) return res.status(500).send("Error verifying password: ", compareError);
                 if (!compareResponse) return res.status(400).send("Invalid email or password");
                 var token = result.generateAuthToken();
@@ -151,7 +195,7 @@ function _authenticateUser() {
   return _authenticateUser.apply(this, arguments);
 }
 
-function getCurrentUser(_x5, _x6) {
+function getCurrentUser(_x4, _x5) {
   return _getCurrentUser.apply(this, arguments);
 }
 /**
@@ -191,7 +235,7 @@ function _getCurrentUser() {
   return _getCurrentUser.apply(this, arguments);
 }
 
-function deleteUser(_x7, _x8) {
+function deleteUser(_x6, _x7) {
   return _deleteUser.apply(this, arguments);
 }
 /**
@@ -240,7 +284,7 @@ function _deleteUser() {
   return _deleteUser.apply(this, arguments);
 }
 
-function updateUser(_x9, _x10) {
+function updateUser(_x8, _x9) {
   return _updateUser.apply(this, arguments);
 }
 

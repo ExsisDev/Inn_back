@@ -1,6 +1,7 @@
 const { validateBodyChallengeCreation, validateBodyChallengeUpdate } = require('../schemas/Challenge.validations');
 const _ = require('lodash');
 const Challenge = require('../models/Challenge');
+const Company = require('../models/Company');
 
 
 /**
@@ -36,7 +37,7 @@ export async function createChallenge(req, res) {
 
    }).catch((error) => {
       return res.status(500).send(error);
-      
+
    });
 }
 
@@ -48,7 +49,7 @@ export async function createChallenge(req, res) {
  * @param {Response} res 
  * @return {Promise} promise
  */
-export async function getAllChallenges(req, res){
+export async function getAllChallenges(req, res) {
 
    Challenge.findAll().then((result) => {
       return result ? res.send(result) : res.status(404).send("No hay elementos disponibles");

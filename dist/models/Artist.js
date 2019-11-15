@@ -45,6 +45,6 @@ Artist.hasMany(Artist_Category, {
 });
 Artist_Category.belongsTo(Artist, {
   foreignKey: 'fk_id_artist',
-  sourceKey: 'id_artist'
+  targetKey: 'id_artist'
 });
 module.exports = Artist;

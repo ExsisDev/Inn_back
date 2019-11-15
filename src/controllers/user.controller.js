@@ -3,6 +3,7 @@ const _ = require('lodash');
 const bcrypt = require('bcrypt');
 const User = require('../models/User');
 
+
 /**
  * Verificar la validéz de los parametros del body
  * 

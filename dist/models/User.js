@@ -8,36 +8,45 @@ var jwt = require('jsonwebtoken');
 
 var config = require('config');
 
+var Ally = require('./Ally');
+
 var User = sequelize.define('users', {
   id_user: {
     type: Sequelize.INTEGER,
     autoIncrement: true,
-    primaryKey: true
-  },
-  name: {
-    type: Sequelize.STRING,
+    primaryKey: true,
     allowNull: false
   },
-  password: {
-    type: Sequelize.STRING,
+  fk_id_role: {
+    type: Sequelize.INTEGER,
     allowNull: false
   },
-  email: {
+  fk_user_state: {
+    type: Sequelize.INTEGER,
+    allowNull: false
+  },
+  user_email: {
     type: Sequelize.STRING,
     allowNull: false,
     unique: true
   },
-  is_admin: {
-    type: Sequelize.BOOLEAN,
+  user_password: {
+    type: Sequelize.STRING,
+    allowNull: false
+  },
+  user_last_login: {
+    type: Sequelize.DATE,
     allowNull: false
   }
 }, {
-  timestamps: false
+  timestamps: true,
+  updatedAt: 'updated_at',
+  createdAt: 'created_at'
 });
 /**
  * Método de instancia de User que genera un token con:
  * 1. El id del usuario instancia.
- * 2. Un bool identificando si es administrador o no
+ * 2. El rol de usuario
  * 
  * @return {string} token
  */
@@ -45,10 +54,14 @@ var User = sequelize.define('users', {
 User.prototype.generateAuthToken = function () {
   return jwt.sign({
     id_user: this.id_user,
-    is_admin: this.is_admin
+    fk_id_role: this.fk_id_role
   }, config.get('jwtPrivateKey'), {
     algorithm: 'HS384'
   });
 };
 
+User.hasOne(Ally, {
+  foreignKey: 'fk_id_user',
+  sourceKey: 'id_user'
+});
 module.exports = User;

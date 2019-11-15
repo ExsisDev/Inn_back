@@ -1,19 +1,16 @@
 "use strict";
 
-var Sequalize = require('sequelize');
+var Sequelize = require('sequelize');
 
-var fs = require('file-system');
-
-var path = require('path');
+var config = require('config');
 /**
  * Constructor de sequelize con la configuración de la base de datos
  * @constructor
  */
-// const sequelize = new Sequelize('postgres://user:AdminDB@innovalab-prod-db:5432/Innovalab-dev', 'DATAbase@1',{})
 
 
-var sequelize = new Sequalize('Innovalab-dev', 'AdminDB@innovalab-dev-db', 'DATAbase@1', {
-  host: 'innovalab-prod-db.postgres.database.azure.com',
+var sequelize = new Sequelize(config.get('db_dev.name'), config.get('db_dev.user'), config.get('db.password'), {
+  host: config.get('db_dev.host'),
   port: 5432,
   dialect: 'postgres',
   pool: {
@@ -28,10 +25,26 @@ var sequelize = new Sequalize('Innovalab-dev', 'AdminDB@innovalab-dev-db', 'DATA
   logging: true,
   freezeTableName: true
 });
-sequelize.sync().then(function (result) {
-  console.log('DB connection sucessful.');
-})["catch"](function (error) {
-  // catch error here
-  console.log(error);
+/**
+ * Test database connection
+ */
+
+sequelize.authenticate().then(function (err) {
+  console.log('Connection has been established successfully.');
+})["catch"](function (err) {
+  console.log('Unable to connect to the database:', err);
 });
+/**
+ * Run migrations
+ */
+
+if (process.env.NODE_ENV === 'production') {
+  sequelize.sync().then(function (result) {
+    console.log('DB connection sucessful.');
+  })["catch"](function (error) {
+    // catch error here
+    console.log(error);
+  });
+}
+
 module.exports = sequelize;

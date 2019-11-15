@@ -5,7 +5,8 @@ const { isAdmin } = require('../middleware/admin');
 
 
 const {
-   createAlly
+   createAlly,
+   createAllyOptional
 } = require('../controllers/Ally.controller');
 
 
@@ -18,5 +19,9 @@ const {
  * retornando el token del aliado creado en el header 
  */
 router.post('/', [auth, isAdmin], createAlly);
+
+
+router.post('/test', [auth, isAdmin], createAllyOptional);
+
 
 module.exports = router;
