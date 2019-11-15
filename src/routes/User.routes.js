@@ -3,7 +3,8 @@ const router = express.Router();
 
 
 const {
-   authenticateUser
+   authenticateUser,
+   authenticateAttempts
 } = require('../controllers/User.controller');
 
 
@@ -14,6 +15,8 @@ const {
  * {user_email, user_password}
  * retornando el token en el header 
  */
-router.post('/', authenticateUser);
+// router.post('/', authenticateUser);
+
+router.post('/', authenticateAttempts);
 
 module.exports = router;

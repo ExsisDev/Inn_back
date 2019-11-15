@@ -18,73 +18,6 @@ function getValidParams(req, res, callBackValidation) {
 
 
 /**
- * Crear un usuario: 
- * 1. verificando la existencia del usuario,
- * 2. creando el hash de la contraseña
- * 3. guardando el usuario 
- * 
- * @param {Object} Attributes
- */
-export async function createUser(userAttributes) {
-   try {
-      const userExists = await verifyUser(userAttributes);
-      if (userExists) return userExists;
-      const passwordHashed = await hashPassword(userAttributes.user_password);
-      userAttributes.user_password = passwordHashed;
-      const userSaved = await saveUser(userAttributes);
-      return userSaved;
-
-   } catch (error) {
-      throw error;
-
-   }
-}
-
-
-function verifyUser(userAttributes) {
-   return new Promise((resolve, reject) => {
-      User.findOne({
-         where: { user_email: userAttributes.user_email }
-      }).then((result) => {
-         if (result) resolve("User already registered");
-         resolve();
-
-      }).catch((error) => {
-         reject(error);
-      });
-   });
-}
-
-
-function hashPassword(password) {
-   return new Promise((resolve, reject) => {
-      bcrypt.hash(password, 10).then(function (hash) {
-         resolve(hash);
-
-      }).catch((error) => {
-         reject(error);
-
-      });
-   });
-}
-
-
-function saveUser(userAttributes) {
-   return new Promise((resolve, reject) => {
-      User.create(
-         userAttributes,
-      ).then((created) => {
-         if (created) resolve(created);
-
-      }).catch((creationError) => {
-         reject(creationError);
-
-      });
-   });
-}
-
-
-/**
  * Validar email y constraseña de un usuario:
  * 1. Validando del body
  * 2. Verificando el correo y la contraseña
@@ -93,26 +26,69 @@ function saveUser(userAttributes) {
  * @param {Response} res 
  * @return {promise} promise
  */
-export async function authenticateUser(req, res) {
+export async function authenticateAttempts(req, res) {
    const userAttributes = getValidParams(req, res, validateUserAuth);
+   
+   let userAuthenticated = {};
+   let passwordComparison = {};
+   let access_hour = '';
+   
+   try {
+      access_hour = await catchAccessHour(userAttributes);
+      if (access_hour) {
+         console.log(new Date() - access_hour);
+      }
+      userAuthenticated = await authenticateUser(userAttributes);
+      if (!userAuthenticated) return res.status(400).send("Invalid email or password");
+      passwordComparison = await comparePassword(userAttributes, userAuthenticated);
+      if (!passwordComparison) return res.status(400).send("Invalid email or password");
+      console.log(passwordComparison)
+   } catch (error) {
+      console.log(error);
+      return res.status(500).send(error);
+   } finally {
+      
+   }
+}
 
-   User.findOne({
+
+function catchAccessHour(userAttributes){
+   return User.findOne({
       where: { user_email: userAttributes.user_email }
    }).then((result) => {
-      if (!result) return res.status(400).send("Invalid email or password");
-
-      bcrypt.compare(userAttributes.user_password, result.user_password, function (compareError, compareResponse) {
-         if (compareError) return res.status(500).send("Error verifying password: ", compareError);
-
-         if (!compareResponse) return res.status(400).send("Invalid email or password");
-
-         const token = result.generateAuthToken();
-         return res.header('x-auth-token', token).send("User authenticated");
-
-      });
+      return result.access_hour;
+      
    }).catch((error) => {
-      return res.status(500).send(error);
+      throw error;
 
+   });
+}
+
+
+function authenticateUser(userAttributes) {
+   return User.findOne({
+      where: { user_email: userAttributes.user_email }
+   }).then((result) => {
+      return result;
+      
+   }).catch((error) => {
+      // return res.status(500).send(error);
+      throw error;
+
+   });
+}
+
+
+function comparePassword(requestUser, databaseUser){
+   return new Promise((resolve, reject) => {
+      bcrypt.compare(requestUser.user_password, databaseUser.user_password, function (compareError, compareResponse) {
+         if (compareError) reject(compareError);
+         resolve(compareResponse);
+         
+         // const token = result.generateAuthToken();
+         // return res.header('x-auth-token', token).send("User authenticated");
+         
+      });   
    });
 }
 

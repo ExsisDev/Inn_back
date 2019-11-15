@@ -4,7 +4,6 @@ const bcrypt = require('bcrypt');
 const sequelize = require('../utils/database');
 const Ally = require('../models/Ally');
 const User = require('../models/User');
-const UserController = require('./User.controller');
 
 
 /**
@@ -34,48 +33,13 @@ export async function createAlly(req, res) {
    const bodyAttributes = getValidParams(req, res, validateBodyAllyCreation);
 
    const allyAttributes = _.pick(bodyAttributes, ['ally_name', 'ally_nit', 'ally_web_page', 'ally_phone', 'ally_month_ideation_hours', 'ally_month_experimentation_hours']);
-   const userAttributes = _.pick(bodyAttributes, ['fk_id_role', 'fk_user_state', 'user_email', 'user_password', 'user_last_login']);
-
-   UserController.createUser(userAttributes).then((userCreated) => {
-      if (userCreated === "User already registered") {
-         return res.status(400).send(userCreated);
-
-      }
-      const token = userCreated.generateAuthToken();
-      allyAttributes['fk_id_user'] = userCreated.id_user;
-      Ally.create(
-         allyAttributes
-      ).then((allyCreated) => {
-         if (allyCreated) {
-            return res.header('x-auth-token', token).status(200)
-               .send(_.assign(_.omit(userCreated.dataValues, ['user_password']), _.omit(allyCreated.dataValues, ['fk_id_user'])));
-
-         } else {
-            return res.status(500).send("No se pudo crear el elemento");
-
-         }
-      }).catch((error) => {
-         return res.status(500).send(error);
-
-      });
-   }).catch((error) => {
-      return res.status(500).send(error);
-
-   })
-}
-
-
-export async function createAllyOptional(req, res) {
-   const bodyAttributes = getValidParams(req, res, validateBodyAllyCreation);
-
-   const allyAttributes = _.pick(bodyAttributes, ['ally_name', 'ally_nit', 'ally_web_page', 'ally_phone', 'ally_month_ideation_hours', 'ally_month_experimentation_hours']);
-   const userAttributes = _.pick(bodyAttributes, ['fk_id_role', 'fk_user_state', 'user_email', 'user_password', 'user_last_login']);
+   const userAttributes = _.pick(bodyAttributes, ['fk_id_role', 'fk_user_state', 'user_email', 'user_password', 'user_last_login', 'login_attempts', 'access_hour']);
 
    let userVerified = {};
    let answer = {};
 
    try {
-      userVerified = await verifyUser(userAttributes);
+      userVerified = await verifyUser(userAttributes.user_email);
       if (userVerified) return res.status(404).send("Email already registered");
       await hashPassword(userAttributes);
       answer = await createUserAndAlly(userAttributes, allyAttributes);
@@ -87,9 +51,14 @@ export async function createAllyOptional(req, res) {
 }
 
 
-function verifyUser(userAttributes) {
+/**
+ * Verificar existencia del usuario por email
+ * 
+ * @param {String} user_email 
+ */
+function verifyUser(user_email) {
    return User.findOne({
-      where: { user_email: userAttributes.user_email }
+      where: { user_email }
    }).then((result) => {
       return result ? result : undefined;
 
@@ -100,6 +69,11 @@ function verifyUser(userAttributes) {
 }
 
 
+/**
+ * Hashear la contraseña y almacenarla en userAttributes
+ * 
+ * @param {Object} userAttributes 
+ */
 function hashPassword(userAttributes) {
    return bcrypt.hash(userAttributes.user_password, 10).then((hash) => {
       userAttributes.user_password = hash;
@@ -110,7 +84,13 @@ function hashPassword(userAttributes) {
    });
 }
 
-
+/**
+ * Crear el usuario y acontinuación el aliado.
+ * Dentro de una transacción de Sequalize
+ * 
+ * @param {Object} userAttributes 
+ * @param {Object} allyAttributes 
+ */
 async function createUserAndAlly(userAttributes, allyAttributes) {
    let userCreated;
    let allyCreated;

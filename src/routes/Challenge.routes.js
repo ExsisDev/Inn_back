@@ -21,7 +21,7 @@ router.post('/', [auth, isAdmin], createChallenge);
 /**
  * Obtener todos los retos
  */
-router.get('/', [auth, isAdmin], getAllChallenges);
+router.get('/', [auth], getAllChallenges);
 
 
 module.exports = router;
