@@ -70,18 +70,18 @@ export async function createAllyOptional(req, res) {
 
    const allyAttributes = _.pick(bodyAttributes, ['ally_name', 'ally_nit', 'ally_web_page', 'ally_phone', 'ally_month_ideation_hours', 'ally_month_experimentation_hours']);
    const userAttributes = _.pick(bodyAttributes, ['fk_id_role', 'fk_user_state', 'user_email', 'user_password', 'user_last_login']);
-   
+
    let userVerified = {};
    let answer = {};
-   
+
    try {
       userVerified = await verifyUser(userAttributes);
+      if (userVerified) return res.status(404).send("Email already registered");
       await hashPassword(userAttributes);
       answer = await createUserAndAlly(userAttributes, allyAttributes);
    } catch (error) {
-      return res.status(500).send(error);
+      return res.status(404).send(error);
    } finally {
-      if (userVerified) return res.status(404).send("El correo ya ha sido registrado");
       return res.send(answer);
    }
 }
@@ -92,10 +92,10 @@ function verifyUser(userAttributes) {
       where: { user_email: userAttributes.user_email }
    }).then((result) => {
       return result ? result : undefined;
-      
+
    }).catch((error) => {
       throw error;
-      
+
    });
 }
 
@@ -103,33 +103,41 @@ function verifyUser(userAttributes) {
 function hashPassword(userAttributes) {
    return bcrypt.hash(userAttributes.user_password, 10).then((hash) => {
       userAttributes.user_password = hash;
-      
+
    }).catch((error) => {
       throw error;
-      
+
    });
 }
 
 
 async function createUserAndAlly(userAttributes, allyAttributes) {
-   let userCreated, allyCreated = {};
-   
+   let userCreated;
+   let allyCreated;
+
    try {
       await sequelize.transaction(async (t) => {
          // step 1
          userCreated = await User.create(userAttributes, { transaction: t }).then((result) => {
             allyAttributes['fk_id_user'] = result.id_user;
-            
+            return result;
+
          });
          // step 2 
-         allyCreated = await Ally.create(allyAttributes, { transaction: t });
+         allyCreated = await Ally.create(allyAttributes, { transaction: t }).then((result) => {
+            return result;
+         });
       });
-      
+
    } catch (error) {
-      throw error ;
+      throw error;
    } finally {
-      const answerObject = _.assign(_.omit(userCreated.dataValues, ['user_password']), _.omit(allyCreated.dataValues, ['fk_id_user']));
-      // console.log(answerObject);
-      return {a: "a", answerObject};
+      if (userCreated && allyCreated) {
+         const obj1 = _.omit(userCreated.dataValues, ['user_password']);
+         const obj2 = _.omit(allyCreated.dataValues, ['fk_id_user']);
+         const answerObject = _.assign(obj1, obj2);
+         return answerObject;
+      }
+      return "Ally could not be created";
    }
 }
