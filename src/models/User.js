@@ -37,7 +37,7 @@ const User = sequelize.define('users', {
       type: Sequelize.INTEGER,
       allowNull: false
    },
-   access_hour: {
+   hour_until_access: {
       type: Sequelize.DATE,
       allowNull: false
    }

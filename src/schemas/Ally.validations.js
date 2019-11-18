@@ -8,7 +8,7 @@ export function validateBodyAllyCreation(ally) {
       user_password: Joi.string().max(8).required(),
       user_last_login: Joi.date().required(),
       login_attempts: Joi.number().required(),
-      access_hour: Joi.date().required(),
+      hour_until_access: Joi.date().required(),
 
       // fk_id_user: Joi.number().required(),
       ally_name: Joi.string().max(100).required(),
@@ -29,7 +29,7 @@ export function validateBodyAllyUpdate(ally) {
       user_password: Joi.string().max(8),
       user_last_login: Joi.string(),
       login_attempts: Joi.number(),
-      access_hour: Joi.date(),
+      hour_until_access: Joi.date(),
       
       fk_id_user: Joi.number(),
       ally_name: Joi.string().max(100),
