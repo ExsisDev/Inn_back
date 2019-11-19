@@ -4,10 +4,10 @@ var express = require('express');
 
 var router = express.Router();
 
-var _require = require('../middleware/auth'),
+var _require = require('../middleware/Auth'),
     auth = _require.auth;
 
-var _require2 = require('../middleware/admin'),
+var _require2 = require('../middleware/Admin'),
     isAdmin = _require2.isAdmin;
 
 var _require3 = require('../controllers/Challenge.controller'),
@@ -26,5 +26,5 @@ router.post('/', [auth, isAdmin], createChallenge);
  * Obtener todos los retos
  */
 
-router.get('/', [auth, isAdmin], getAllChallenges);
+router.get('/', [auth], getAllChallenges);
 module.exports = router;

@@ -30,12 +30,16 @@ var User = sequelize.define('users', {
     allowNull: false,
     unique: true
   },
+  user_last_login: {
+    type: Sequelize.DATE,
+    allowNull: false
+  },
   user_password: {
     type: Sequelize.STRING,
     allowNull: false
   },
-  user_last_login: {
-    type: Sequelize.DATE,
+  login_attempts: {
+    type: Sequelize.INTEGER,
     allowNull: false
   }
 }, {

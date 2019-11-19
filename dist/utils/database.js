@@ -9,8 +9,19 @@ var config = require('config');
  */
 
 
-var sequelize = new Sequelize(config.get('db_dev.name'), config.get('db_dev.user'), config.get('db.password'), {
-  host: config.get('db_dev.host'),
+var loggingEnv;
+var envLoad;
+
+if (process.env.NODE_ENV === 'production') {
+  envLoad = 'prod';
+  loggingEnv = false;
+} else {
+  envLoad = 'dev';
+  loggingEnv = true;
+}
+
+var sequelize = new Sequelize(config.get("db_".concat(envLoad, ".name")), config.get("db_".concat(envLoad, ".user")), config.get('db.password'), {
+  host: config.get("db_".concat(envLoad, ".host")),
   port: 5432,
   dialect: 'postgres',
   pool: {
@@ -22,7 +33,7 @@ var sequelize = new Sequelize(config.get('db_dev.name'), config.get('db_dev.user
   dialectOptions: {
     ssl: true
   },
-  logging: true,
+  logging: loggingEnv,
   freezeTableName: true
 });
 /**

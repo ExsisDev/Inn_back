@@ -6,6 +6,8 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
 var app = require('./app');
 
+require("@babel/polyfill");
+
 var port = process.env.PORT || 3000;
 /**
  * Lanzador del servidor express
