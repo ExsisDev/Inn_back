@@ -18,9 +18,7 @@ function getValidParams(req, res, callBackValidation) {
 
 
 /**
- * Validar email y constraseña de un usuario:
- * 1. Validando del body
- * 2. Verificando el correo y la contraseña
+ * Validar email y constraseña de un usuario de acuerdo a los intentos:
  * 
  * @param {Request} req 
  * @param {Response} res 
@@ -30,33 +28,36 @@ export async function authenticateAttempts(req, res) {
    const userAttributes = getValidParams(req, res, validateUserAuth);
 
    let hour_until_access;
-   let time_difference_in_hours;
+   let time_difference_in_seconds;
 
    try {
-      hour_until_access = await catchAccessHour(userAttributes.user_email);
-      time_difference_in_hours = (new Date(hour_until_access).getTime() - new Date().getTime()) / (1000); // Segundos de diferencia
-      console.log(time_difference_in_hours);
-      if (time_difference_in_hours <= 0) { // ya pasó la hora de bloqueo
-         console.log(await updateHour(userAttributes.user_email, new Date()));
-         return await authenticateUser(res, userAttributes);
-
+      hour_until_access = await getAccessHour(userAttributes.user_email);
+      if (!hour_until_access) return res.status(400).send("Correo o contraseña inválida");
+      time_difference_in_seconds = (new Date(hour_until_access).getTime() - new Date().getTime()) / (1000); // Segundos de diferencia entre hora actual y hora en db
+      if (time_difference_in_seconds <= 0) {
+         return await authenticateUser(res, userAttributes)
+      }else{
+         return res.status(429).send({msj: "Exedió los intentos permitidos", minutes: (new Date(hour_until_access.getTime() - new Date().getTime()).getMinutes())});
       }
-      
-   } catch (error) {
-      console.log(error);
-      return res.status(500).send(error);
 
-   } finally {
+   } catch (error) {
+      return res.status(500).send(error);
 
    }
 }
 
 
-function catchAccessHour(email) {
+/**
+ * Obtener la hora de acceso
+ * 
+ * @param {String} email 
+ * @return {String} hour
+ */
+function getAccessHour(email) {
    return User.findOne({
       where: { user_email: email }
    }).then((result) => {
-      return result.hour_until_access;
+      return result ? result.hour_until_access : null;
 
    }).catch((error) => {
       throw error;
@@ -65,6 +66,12 @@ function catchAccessHour(email) {
 }
 
 
+/**
+ * Actualizar hora de acceso
+ * 
+ * @param {String} email 
+ * @param {Date} hour 
+ */
 function updateHour(email, hour) {
    return User.update(
       { hour_until_access: hour },
@@ -78,6 +85,12 @@ function updateHour(email, hour) {
 }
 
 
+/**
+ * Actualizar contador de intentos
+ * 
+ * @param {String} email 
+ * @param {Number} number 
+ */
 function updateLoginCounter(email, number) {
    return User.update(
       { login_attempts: number },
@@ -91,6 +104,11 @@ function updateLoginCounter(email, number) {
 }
 
 
+/**
+ * Encontrar el usuario dado el email
+ * 
+ * @param {String} email 
+ */
 function findUser(email) {
    return User.findOne({
       where: { user_email: email }
@@ -104,17 +122,27 @@ function findUser(email) {
 }
 
 
+/**
+ * Verificar la validez de las contraseñas
+ * 
+ * @param {String} requestUser 
+ * @param {String} databaseUser 
+ */
 function comparePassword(requestUser, databaseUser) {
    return new Promise((resolve, reject) => {
       bcrypt.compare(requestUser.user_password, databaseUser.user_password, function (compareError, compareResponse) {
-         if (compareError) reject(compareError);
-         resolve(compareResponse);
+         (compareError) ? reject(compareError) : resolve(compareResponse);
 
       });
    });
 }
 
 
+/**
+ * Obtener los intentos
+ * 
+ * @param {String} email 
+ */
 function getLoginAttempts(email) {
    return User.findOne({
       where: { user_email: email }
@@ -128,6 +156,12 @@ function getLoginAttempts(email) {
 }
 
 
+/**
+ * Autenticar el usuario
+ * 
+ * @param {Request} res 
+ * @param {Object} userAttributes 
+ */
 function authenticateUser(res, userAttributes) {
    let userAuthenticated;
    let passwordComparison;
@@ -137,117 +171,24 @@ function authenticateUser(res, userAttributes) {
 
    return new Promise(async () => {
       userAuthenticated = await findUser(userAttributes.user_email);
-      if (!userAuthenticated) return res.status(400).send("Invalid email or password");
+      if (!userAuthenticated) return res.status(400).send("Correo o contraseña inválida");
 
       passwordComparison = await comparePassword(userAttributes, userAuthenticated);
       if (!passwordComparison) {
          attemptsCounter = await getLoginAttempts(userAttributes.user_email);
-         console.log(attemptsCounter);
          await updateLoginCounter(userAttributes.user_email, attemptsCounter + 1);
          if (attemptsCounter + 1 == 5) {
             await updateLoginCounter(userAttributes.user_email, 0);
-            const actualHour = new Date();
-            const futureHour = new Date(actualHour.getTime() + minutesUntilAccess * 60000);
+            const futureHour = new Date(new Date().getTime() + minutesUntilAccess * 60000);
             await updateHour(userAttributes.user_email, futureHour);
          }
-         return res.status(400).send("Invalid email or password");
+         return res.status(400).send("Correo o contraseña inválida");
+
       }
-
+      await updateHour(userAttributes.user_email, new Date());
       token = userAuthenticated.generateAuthToken();
-      return res.header('x-auth-token', token).send("User authenticated");
-
+      return res.header('x-auth-token', token).send("Usuario autenticado");
 
    });
 }
-
-
-/**
- * Retorna el usuario actual de acuerdo al token en el header
- *
- * @param {Request} req
- * @param {Response} res
- * @return {promise} promise
- */
-// export async function getCurrentUser(req, res) {
-//    // Encontrar el usuario con id en req.user.id_user
-//    User.findByPk(req.user.id_user).then((result) => {
-//       if (!result) return res.status(400).send("User does not exist");
-
-//       const token = result.generateAuthToken();
-//       return res.header('x-auth-token', token).send(_.pick(result, ['id_user', 'name', 'email', 'is_admin']));
-
-//    }).catch((error) => {
-//       return res.status(500).send(error);
-
-//    });
-// }
-
-
-/**
- * Eliminación de los usuarios con token de admin en el header
- * y id en la ruta
- *
- * @param {Request} req
- * @param {Response} res
- * @return {Promise} promise
- */
-// export async function deleteUser(req, res) {
-//    const { id } = req.params;
-
-//    // Encontrar el usuario a borrar
-//    User.findByPk(id).then((result) => {
-//       if (!result) return res.status(404).send("User not found");
-
-//       User.destroy({
-//          where: { id_user: id }
-//       }).then((deleteResult) => {
-//          if (deleteResult == 1) return res.status(200).send(_.pick(result, ['id_user', 'name', 'email', 'is_admin']));
-
-//       }).catch((deleteError) => {
-//          return res.status(409).send(deleteError);
-
-//       });
-//    }).catch((error) => {
-//       return res.status(500).send(error);
-
-//    });
-// }
-
-
-/**
- * Actualizar el usuario con token de admin en el header
- * y id en la ruta
- *
- * @param {Request} req
- * @param {Response} res
- * @return {Promise} promise
- */
-// export async function updateUser(req, res) {
-//    const { id } = req.params;
-
-//    // Validacion del body
-//    const userAttributes = getValidParams(req, res, validateBodyUserUpdate);
-
-//    // Hash del password
-//    if (userAttributes.password) {
-//       bcrypt.hash(userAttributes.password, 10).then(function (hash) {
-//          userAttributes.password = hash;
-//       });
-//    }
-
-//    // Actualizacion del usuario
-//    User.findByPk(id).then((result) => {
-//       if (!result) return res.status(404).send("User not found");
-
-//       result.update(userAttributes).then((updateResult) => {
-//          return res.status(200).send(_.pick(updateResult, ['id_user', 'name', 'email', 'is_admin']));
-
-//       }).catch((updateError) => {
-//          return res.status(409).send(updateError);
-
-//       });
-//    }).catch((error) => {
-//       return res.status(500).send(error);
-//    });
-// }
 

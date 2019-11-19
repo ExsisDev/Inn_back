@@ -32,7 +32,7 @@ export async function createChallenge(req, res) {
    Challenge.create(
       bodyAttributes
    ).then((result) => {
-      return result ? res.send(result) : res.status(404).send("No se pudo crear el elemento");
+      return result ? res.send(result) : res.status(500).send("No se pudo crear el elemento");
 
    }).catch((error) => {
       return res.status(500).send(error);
