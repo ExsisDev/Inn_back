@@ -6,8 +6,19 @@ const config = require('config');
  * @constructor
  */
 
-const sequelize = new Sequelize(config.get('db_dev.name'), config.get('db_dev.user'), config.get('db.password'), {
-   host: config.get('db_dev.host'),
+let loggingEnv;
+let envLoad;
+
+if (process.env.NODE_ENV === 'production') {
+   envLoad = 'prod';
+   loggingEnv = false;
+} else {
+   envLoad = 'dev';
+   loggingEnv = true;
+}
+
+const sequelize = new Sequelize(config.get( `db_${envLoad}.name`), config.get(`db_${envLoad}.user`), config.get('db.password'), {
+   host: config.get(`db_${envLoad}.host`),
    port: 5432,
    dialect: 'postgres',
    pool: {
@@ -19,7 +30,7 @@ const sequelize = new Sequelize(config.get('db_dev.name'), config.get('db_dev.us
    dialectOptions: {
       ssl: true
    },
-   logging: true,
+   logging: loggingEnv,
    freezeTableName: true
 });
 
