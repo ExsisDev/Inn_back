@@ -1,5 +1,6 @@
 const { validateUserAuth } = require('../schemas/User.validations');
 const _ = require('lodash');
+const { DateTime } = require('luxon');
 const bcrypt = require('bcrypt');
 const User = require('../models/User');
 
@@ -27,17 +28,23 @@ function getValidParams(req, res, callBackValidation) {
 export async function authenticateAttempts(req, res) {
    const userAttributes = getValidParams(req, res, validateUserAuth);
 
-   let hour_until_access;
-   let time_difference_in_seconds;
+   let userLastLogin;
+   let timeDifferenceInSeconds;
 
    try {
-      hour_until_access = await getAccessHour(userAttributes.user_email);
-      if (!hour_until_access) return res.status(400).send("Correo o contraseña inválida");
-      time_difference_in_seconds = (new Date(hour_until_access).getTime() - new Date().getTime()) / (1000); // Segundos de diferencia entre hora actual y hora en db
-      if (time_difference_in_seconds <= 0) {
+      userLastLogin = await getAccessHour(userAttributes.user_email);
+
+      const dbDateUserLastLogin = DateTime.fromJSDate(userLastLogin).setZone('America/Bogota');
+      const nowDate = DateTime.local().setZone('America/Bogota');
+      const differenceBetweenDates = dbDateUserLastLogin.diff(nowDate, 'milliseconds');
+
+      if (!userLastLogin) return res.status(400).send("Correo o contraseña inválida");
+      timeDifferenceInSeconds = (differenceBetweenDates.toObject().milliseconds) / (1000); // Segundos de diferencia entre hora actual y hora en db
+
+      if (timeDifferenceInSeconds <= 0) {
          return await authenticateUser(res, userAttributes)
-      }else{
-         return res.status(429).send({msj: "Exedió los intentos permitidos", minutes: (new Date(hour_until_access.getTime() - new Date().getTime()).getMinutes())});
+      } else {
+         return res.status(429).send({ msj: "Exedió los intentos permitidos", minutes: (differenceBetweenDates.toObject().milliseconds / (1000 * 60))});
       }
 
    } catch (error) {
@@ -56,8 +63,9 @@ export async function authenticateAttempts(req, res) {
 function getAccessHour(email) {
    return User.findOne({
       where: { user_email: email }
+
    }).then((result) => {
-      return result ? result.hour_until_access : null;
+      return result ? result.user_last_login : null;
 
    }).catch((error) => {
       throw error;
@@ -74,8 +82,9 @@ function getAccessHour(email) {
  */
 function updateHour(email, hour) {
    return User.update(
-      { hour_until_access: hour },
+      { user_last_login: hour },
       { where: { user_email: email } }
+
    ).then((result) => {
       return result;
 
@@ -95,6 +104,7 @@ function updateLoginCounter(email, number) {
    return User.update(
       { login_attempts: number },
       { where: { user_email: email } }
+
    ).then((result) => {
       return result;
 
@@ -112,6 +122,7 @@ function updateLoginCounter(email, number) {
 function findUser(email) {
    return User.findOne({
       where: { user_email: email }
+
    }).then((result) => {
       return result;
 
@@ -146,6 +157,7 @@ function comparePassword(requestUser, databaseUser) {
 function getLoginAttempts(email) {
    return User.findOne({
       where: { user_email: email }
+
    }).then((result) => {
       return result.login_attempts;
 
@@ -163,11 +175,12 @@ function getLoginAttempts(email) {
  * @param {Object} userAttributes 
  */
 function authenticateUser(res, userAttributes) {
+
+   const minutesUntilAccess = 5;
    let userAuthenticated;
    let passwordComparison;
    let token;
    let attemptsCounter;
-   const minutesUntilAccess = 5;
 
    return new Promise(async () => {
       userAuthenticated = await findUser(userAttributes.user_email);
@@ -177,15 +190,17 @@ function authenticateUser(res, userAttributes) {
       if (!passwordComparison) {
          attemptsCounter = await getLoginAttempts(userAttributes.user_email);
          await updateLoginCounter(userAttributes.user_email, attemptsCounter + 1);
+
          if (attemptsCounter + 1 == 5) {
             await updateLoginCounter(userAttributes.user_email, 0);
-            const futureHour = new Date(new Date().getTime() + minutesUntilAccess * 60000);
+            const futureHour = DateTime.local().setZone('America/Bogota').plus({ minutes: minutesUntilAccess });
             await updateHour(userAttributes.user_email, futureHour);
          }
          return res.status(400).send("Correo o contraseña inválida");
 
       }
-      await updateHour(userAttributes.user_email, new Date());
+      await updateHour(userAttributes.user_email, DateTime.local().setZone('America/Bogota'));
+      await updateLoginCounter(userAttributes.user_email, 0);
       token = userAuthenticated.generateAuthToken();
       return res.header('x-auth-token', token).send("Usuario autenticado");
 

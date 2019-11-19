@@ -36,10 +36,6 @@ const User = sequelize.define('users', {
    login_attempts: {
       type: Sequelize.INTEGER,
       allowNull: false
-   },
-   hour_until_access: {
-      type: Sequelize.DATE,
-      allowNull: false
    }
 
 }, {
