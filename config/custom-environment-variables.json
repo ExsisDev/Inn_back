@@ -1,6 +1,6 @@
 {
    "db": {
-      "password": "db_password"
+      "password": "db_password" 
    },
    "db_dev": {
       "host": "db_host_dev",
