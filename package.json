@@ -12,6 +12,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@babel/cli": "^7.7.0",
+    "@babel/core": "^7.7.2",
+    "@babel/node": "^7.7.0",
+    "@babel/polyfill": "^7.7.0",
+    "@babel/preset-env": "^7.7.1",
     "@hapi/joi": "^16.1.5",
     "bcrypt": "^3.0.6",
     "config": "^3.2.3",
@@ -23,16 +28,10 @@
     "lodash": "^4.17.15",
     "luxon": "^1.21.2",
     "morgan": "^1.9.1",
+    "nodemon": "^1.19.4",
     "pg": "^7.12.1",
     "pg-hstore": "^2.3.3",
     "sequelize": "^5.19.4"
   },
-  "devDependencies": {
-    "@babel/cli": "^7.6.2",
-    "@babel/core": "^7.6.2",
-    "@babel/node": "^7.6.2",
-    "@babel/polyfill": "^7.6.0",
-    "@babel/preset-env": "^7.6.2",
-    "nodemon": "^1.19.3"
-  }
+  "devDependencies": {}
 }
