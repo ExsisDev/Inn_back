@@ -38,7 +38,7 @@ if (app.get('env') === 'development') {
  */
 app.use('/api/allies', allyRoutes);
 app.use('/api/login', userRoutes);
-app.use('/api/challenge', challengeRoutes);
+app.use('/api/challenges', challengeRoutes);
 
 
 module.exports = app;
