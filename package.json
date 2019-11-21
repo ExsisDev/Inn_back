@@ -32,6 +32,6 @@
     "pg": "^7.12.1",
     "pg-hstore": "^2.3.3",
     "sequelize": "^5.19.4"
-  },
+  }, 
   "devDependencies": {}
 }
