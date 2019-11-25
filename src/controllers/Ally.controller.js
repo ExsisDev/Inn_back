@@ -1,5 +1,6 @@
 const { validateBodyAllyCreation, validateBodyAllyUpdate, validateAllyAuth } = require('../schemas/Ally.validations');
 const _ = require('lodash');
+const {DateTime} = require('luxon');
 const bcrypt = require('bcrypt');
 const sequelize = require('../utils/database');
 const Ally = require('../models/Ally');
@@ -33,7 +34,9 @@ export async function createAlly(req, res) {
    const bodyAttributes = getValidParams(req, res, validateBodyAllyCreation);
 
    const allyAttributes = _.pick(bodyAttributes, ['ally_name', 'ally_nit', 'ally_web_page', 'ally_phone', 'ally_month_ideation_hours', 'ally_month_experimentation_hours']);
-   const userAttributes = _.pick(bodyAttributes, ['fk_id_role', 'fk_user_state', 'user_email', 'user_password', 'user_last_login', 'login_attempts', 'access_hour']);
+   const userAttributes = _.pick(bodyAttributes, ['fk_id_role', 'fk_user_state', 'user_email', 'user_password']);
+   userAttributes['user_last_login'] = DateTime.local().setZone('America/Bogota').toString();
+   userAttributes['login_attempts'] = 0;
 
    let userVerified;
    let answer;
@@ -43,10 +46,13 @@ export async function createAlly(req, res) {
       if (userVerified) return res.status(400).send("El correo ya ha sido registrado");
       await hashPassword(userAttributes);
       answer = await createUserAndAlly(userAttributes, allyAttributes);
+
    } catch (error) {
       return res.status(400).send(error);
+
    } finally {
       return res.send(answer);
+
    }
 }
 
@@ -59,6 +65,7 @@ export async function createAlly(req, res) {
 function verifyUser(user_email) {
    return User.findOne({
       where: { user_email }
+      
    }).then((result) => {
       return result ? result : null;
 
@@ -110,7 +117,6 @@ async function createUserAndAlly(userAttributes, allyAttributes) {
       });
 
    } catch (error) {
-      res.status(400).send(error);
       throw error;
 
    } finally {
