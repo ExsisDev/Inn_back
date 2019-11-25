@@ -2,6 +2,7 @@ const express = require('express');
 const morgan = require('morgan'); //Imprimir las peticiones
 const config = require('config');
 const debug = require('debug')('app:startup'); //export DEBUG=app:startup
+const cors = require('cors');
 
 
 const allyRoutes = require('./routes/Ally.routes');
@@ -23,6 +24,7 @@ debug(`app environment: ${app.get('env')}`);
 /**
  * Middlewares
  */
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); //POST http://localhost:3000/api/courses (key=value&key=value)
 app.use(express.static('public')); //Archivos públicos
