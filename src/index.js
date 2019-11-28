@@ -1,4 +1,6 @@
 const app = require('./app');
+require("@babel/polyfill");
+
 
 const port = process.env.PORT || 3000;
 

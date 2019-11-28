@@ -17,8 +17,6 @@ var _require = require('../schemas/Challenge.validations'),
 var _ = require('lodash');
 
 var Challenge = require('../models/Challenge');
-
-var Company = require('../models/Company');
 /**
  * Verificar la validéz de los parametros del body
  * 
@@ -69,7 +67,7 @@ function _createChallenge() {
           case 0:
             bodyAttributes = getValidParams(req, res, validateBodyChallengeCreation);
             Challenge.create(bodyAttributes).then(function (result) {
-              return result ? res.send(result) : res.status(404).send("No se pudo crear el elemento");
+              return result ? res.send(result) : res.status(500).send("No se pudo crear el elemento");
             })["catch"](function (error) {
               return res.status(500).send(error);
             });

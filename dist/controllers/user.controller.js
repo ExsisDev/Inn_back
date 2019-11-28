@@ -3,11 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.createUser = createUser;
-exports.authenticateUser = authenticateUser;
-exports.getCurrentUser = getCurrentUser;
-exports.deleteUser = deleteUser;
-exports.updateUser = updateUser;
+exports.authenticateAttempts = authenticateAttempts;
 
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
 
@@ -17,6 +13,9 @@ var _require = require('../schemas/User.validations'),
     validateUserAuth = _require.validateUserAuth;
 
 var _ = require('lodash');
+
+var _require2 = require('luxon'),
+    DateTime = _require2.DateTime;
 
 var bcrypt = require('bcrypt');
 
@@ -37,109 +36,7 @@ function getValidParams(req, res, callBackValidation) {
   return error ? res.status(400).send(error.details[0].message) : req.body;
 }
 /**
- * Crear un usuario: 
- * 1. verificando la existencia del usuario,
- * 2. creando el hash de la contraseña
- * 3. guardando el usuario 
- * 
- * @param {Object} Attributes
- */
-
-
-function createUser(_x) {
-  return _createUser.apply(this, arguments);
-}
-
-function _createUser() {
-  _createUser = _asyncToGenerator(
-  /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee(userAttributes) {
-    var userExists, passwordHashed, userSaved;
-    return regeneratorRuntime.wrap(function _callee$(_context) {
-      while (1) {
-        switch (_context.prev = _context.next) {
-          case 0:
-            _context.prev = 0;
-            _context.next = 3;
-            return verifyUser(userAttributes);
-
-          case 3:
-            userExists = _context.sent;
-
-            if (!userExists) {
-              _context.next = 6;
-              break;
-            }
-
-            return _context.abrupt("return", userExists);
-
-          case 6:
-            _context.next = 8;
-            return hashPassword(userAttributes.user_password);
-
-          case 8:
-            passwordHashed = _context.sent;
-            userAttributes.user_password = passwordHashed;
-            _context.next = 12;
-            return saveUser(userAttributes);
-
-          case 12:
-            userSaved = _context.sent;
-            return _context.abrupt("return", userSaved);
-
-          case 16:
-            _context.prev = 16;
-            _context.t0 = _context["catch"](0);
-            throw _context.t0;
-
-          case 19:
-          case "end":
-            return _context.stop();
-        }
-      }
-    }, _callee, null, [[0, 16]]);
-  }));
-  return _createUser.apply(this, arguments);
-}
-
-function verifyUser(userAttributes) {
-  return new Promise(function (resolve, reject) {
-    User.findOne({
-      where: {
-        user_email: userAttributes.user_email
-      }
-    }).then(function (result) {
-      if (result) resolve("User already registered");
-      resolve();
-    })["catch"](function (error) {
-      reject(error);
-    });
-  });
-}
-
-function hashPassword(password) {
-  return new Promise(function (resolve, reject) {
-    bcrypt.hash(password, 10).then(function (hash) {
-      resolve(hash);
-    })["catch"](function (error) {
-      reject(error);
-    });
-  });
-}
-
-function saveUser(userAttributes) {
-  return new Promise(function (resolve, reject) {
-    User.create(userAttributes).then(function (created) {
-      if (created) resolve(created);
-    })["catch"](function (creationError) {
-      reject(creationError);
-    });
-  });
-}
-/**
- * Validar email y constraseña de un usuario:
- * 1. Validando del body
- * 2. Verificando el correo y la contraseña
+ * Validar email y constraseña de un usuario de acuerdo a los intentos:
  * 
  * @param {Request} req 
  * @param {Response} res 
@@ -147,184 +44,280 @@ function saveUser(userAttributes) {
  */
 
 
-function authenticateUser(_x2, _x3) {
-  return _authenticateUser.apply(this, arguments);
+function authenticateAttempts(_x, _x2) {
+  return _authenticateAttempts.apply(this, arguments);
 }
 /**
- * Retorna el usuario actual de acuerdo al token en el header
- *  
- * @param {Request} req 
- * @param {Response} res 
- * @return {promise} promise
+ * Obtener la hora de acceso
+ * 
+ * @param {String} email 
+ * @return {String} hour
  */
 
 
-function _authenticateUser() {
-  _authenticateUser = _asyncToGenerator(
+function _authenticateAttempts() {
+  _authenticateAttempts = _asyncToGenerator(
   /*#__PURE__*/
   regeneratorRuntime.mark(function _callee2(req, res) {
-    var userAttributes;
+    var userAttributes, userLastLogin, timeDifferenceInSeconds, dbDateUserLastLogin, nowDate, differenceBetweenDates;
     return regeneratorRuntime.wrap(function _callee2$(_context2) {
       while (1) {
         switch (_context2.prev = _context2.next) {
           case 0:
             userAttributes = getValidParams(req, res, validateUserAuth);
-            User.findOne({
-              where: {
-                user_email: userAttributes.user_email
-              }
-            }).then(function (result) {
-              if (!result) return res.status(400).send("Invalid email or password");
-              bcrypt.compare(userAttributes.user_password, result.user_password, function (compareError, compareResponse) {
-                if (compareError) return res.status(500).send("Error verifying password: ", compareError);
-                if (!compareResponse) return res.status(400).send("Invalid email or password");
-                var token = result.generateAuthToken();
-                return res.header('x-auth-token', token).send("User authenticated");
-              });
-            })["catch"](function (error) {
-              return res.status(500).send(error);
-            });
+            _context2.prev = 1;
+            _context2.next = 4;
+            return getAccessHour(userAttributes.user_email);
 
-          case 2:
+          case 4:
+            userLastLogin = _context2.sent;
+            dbDateUserLastLogin = DateTime.fromJSDate(userLastLogin).setZone('America/Bogota');
+            nowDate = DateTime.local().setZone('America/Bogota');
+            differenceBetweenDates = dbDateUserLastLogin.diff(nowDate, 'milliseconds');
+
+            if (userLastLogin) {
+              _context2.next = 10;
+              break;
+            }
+
+            return _context2.abrupt("return", res.status(400).send("Correo o contraseña inválida"));
+
+          case 10:
+            timeDifferenceInSeconds = differenceBetweenDates.toObject().milliseconds / 1000; // Segundos de diferencia entre hora actual y hora en db
+
+            if (!(timeDifferenceInSeconds <= 0)) {
+              _context2.next = 17;
+              break;
+            }
+
+            _context2.next = 14;
+            return authenticateUser(res, userAttributes);
+
+          case 14:
+            return _context2.abrupt("return", _context2.sent);
+
+          case 17:
+            return _context2.abrupt("return", res.status(429).send({
+              msj: "Exedió los intentos permitidos",
+              minutes: differenceBetweenDates.toObject().milliseconds / (1000 * 60)
+            }));
+
+          case 18:
+            _context2.next = 23;
+            break;
+
+          case 20:
+            _context2.prev = 20;
+            _context2.t0 = _context2["catch"](1);
+            return _context2.abrupt("return", res.status(500).send(_context2.t0));
+
+          case 23:
           case "end":
             return _context2.stop();
         }
       }
-    }, _callee2);
+    }, _callee2, null, [[1, 20]]);
   }));
-  return _authenticateUser.apply(this, arguments);
+  return _authenticateAttempts.apply(this, arguments);
 }
 
-function getCurrentUser(_x4, _x5) {
-  return _getCurrentUser.apply(this, arguments);
+function getAccessHour(email) {
+  return User.findOne({
+    where: {
+      user_email: email
+    }
+  }).then(function (result) {
+    return result ? result.user_last_login : null;
+  })["catch"](function (error) {
+    throw error;
+  });
 }
 /**
- * Eliminación de los usuarios con token de admin en el header 
- * y id en la ruta
+ * Actualizar hora de acceso
  * 
- * @param {Request} req 
- * @param {Response} res 
- * @return {Promise} promise
+ * @param {String} email 
+ * @param {Date} hour 
  */
 
 
-function _getCurrentUser() {
-  _getCurrentUser = _asyncToGenerator(
-  /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee3(req, res) {
-    return regeneratorRuntime.wrap(function _callee3$(_context3) {
-      while (1) {
-        switch (_context3.prev = _context3.next) {
-          case 0:
-            // Encontrar el usuario con id en req.user.id_user
-            User.findByPk(req.user.id_user).then(function (result) {
-              if (!result) return res.status(400).send("User does not exist");
-              var token = result.generateAuthToken();
-              return res.header('x-auth-token', token).send(_.pick(result, ['id_user', 'name', 'email', 'is_admin']));
-            })["catch"](function (error) {
-              return res.status(500).send(error);
-            });
-
-          case 1:
-          case "end":
-            return _context3.stop();
-        }
-      }
-    }, _callee3);
-  }));
-  return _getCurrentUser.apply(this, arguments);
-}
-
-function deleteUser(_x6, _x7) {
-  return _deleteUser.apply(this, arguments);
+function updateHour(email, hour) {
+  return User.update({
+    user_last_login: hour
+  }, {
+    where: {
+      user_email: email
+    }
+  }).then(function (result) {
+    return result;
+  })["catch"](function (error) {
+    throw error;
+  });
 }
 /**
- * Actualizar el usuario con token de admin en el header 
- * y id en la ruta
+ * Actualizar contador de intentos
  * 
- * @param {Request} req 
- * @param {Response} res
- * @return {Promise} promise 
+ * @param {String} email 
+ * @param {Number} number 
  */
 
 
-function _deleteUser() {
-  _deleteUser = _asyncToGenerator(
-  /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee4(req, res) {
-    var id;
-    return regeneratorRuntime.wrap(function _callee4$(_context4) {
-      while (1) {
-        switch (_context4.prev = _context4.next) {
-          case 0:
-            id = req.params.id; // Encontrar el usuario a borrar
+function updateLoginCounter(email, number) {
+  return User.update({
+    login_attempts: number
+  }, {
+    where: {
+      user_email: email
+    }
+  }).then(function (result) {
+    return result;
+  })["catch"](function (error) {
+    throw error;
+  });
+}
+/**
+ * Encontrar el usuario dado el email
+ * 
+ * @param {String} email 
+ */
 
-            User.findByPk(id).then(function (result) {
-              if (!result) return res.status(404).send("User not found");
-              User.destroy({
-                where: {
-                  id_user: id
-                }
-              }).then(function (deleteResult) {
-                if (deleteResult == 1) return res.status(200).send(_.pick(result, ['id_user', 'name', 'email', 'is_admin']));
-              })["catch"](function (deleteError) {
-                return res.status(409).send(deleteError);
-              });
-            })["catch"](function (error) {
-              return res.status(500).send(error);
-            });
+
+function findUser(email) {
+  return User.findOne({
+    where: {
+      user_email: email
+    }
+  }).then(function (result) {
+    return result;
+  })["catch"](function (error) {
+    throw error;
+  });
+}
+/**
+ * Verificar la validez de las contraseñas
+ * 
+ * @param {String} requestUser 
+ * @param {String} databaseUser 
+ */
+
+
+function comparePassword(requestUser, databaseUser) {
+  return new Promise(function (resolve, reject) {
+    bcrypt.compare(requestUser.user_password, databaseUser.user_password, function (compareError, compareResponse) {
+      compareError ? reject(compareError) : resolve(compareResponse);
+    });
+  });
+}
+/**
+ * Obtener los intentos
+ * 
+ * @param {String} email 
+ */
+
+
+function getLoginAttempts(email) {
+  return User.findOne({
+    where: {
+      user_email: email
+    }
+  }).then(function (result) {
+    return result.login_attempts;
+  })["catch"](function (error) {
+    throw error;
+  });
+}
+/**
+ * Autenticar el usuario
+ * 
+ * @param {Request} res 
+ * @param {Object} userAttributes 
+ */
+
+
+function authenticateUser(res, userAttributes) {
+  var minutesUntilAccess = 5;
+  var userAuthenticated;
+  var passwordComparison;
+  var token;
+  var attemptsCounter;
+  return new Promise(
+  /*#__PURE__*/
+  _asyncToGenerator(
+  /*#__PURE__*/
+  regeneratorRuntime.mark(function _callee() {
+    var futureHour;
+    return regeneratorRuntime.wrap(function _callee$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            _context.next = 2;
+            return findUser(userAttributes.user_email);
 
           case 2:
-          case "end":
-            return _context4.stop();
-        }
-      }
-    }, _callee4);
-  }));
-  return _deleteUser.apply(this, arguments);
-}
+            userAuthenticated = _context.sent;
 
-function updateUser(_x8, _x9) {
-  return _updateUser.apply(this, arguments);
-}
+            if (userAuthenticated) {
+              _context.next = 5;
+              break;
+            }
 
-function _updateUser() {
-  _updateUser = _asyncToGenerator(
-  /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee5(req, res) {
-    var id, userAttributes;
-    return regeneratorRuntime.wrap(function _callee5$(_context5) {
-      while (1) {
-        switch (_context5.prev = _context5.next) {
-          case 0:
-            id = req.params.id; // Validacion del body
+            return _context.abrupt("return", res.status(400).send("Correo o contraseña inválida"));
 
-            userAttributes = getValidParams(req, res, validateBodyUserUpdate); // Hash del password
+          case 5:
+            _context.next = 7;
+            return comparePassword(userAttributes, userAuthenticated);
 
-            if (userAttributes.password) {
-              bcrypt.hash(userAttributes.password, 10).then(function (hash) {
-                userAttributes.password = hash;
-              });
-            } // Actualizacion del usuario
+          case 7:
+            passwordComparison = _context.sent;
 
+            if (passwordComparison) {
+              _context.next = 21;
+              break;
+            }
 
-            User.findByPk(id).then(function (result) {
-              if (!result) return res.status(404).send("User not found");
-              result.update(userAttributes).then(function (updateResult) {
-                return res.status(200).send(_.pick(updateResult, ['id_user', 'name', 'email', 'is_admin']));
-              })["catch"](function (updateError) {
-                return res.status(409).send(updateError);
-              });
-            })["catch"](function (error) {
-              return res.status(500).send(error);
+            _context.next = 11;
+            return getLoginAttempts(userAttributes.user_email);
+
+          case 11:
+            attemptsCounter = _context.sent;
+            _context.next = 14;
+            return updateLoginCounter(userAttributes.user_email, attemptsCounter + 1);
+
+          case 14:
+            if (!(attemptsCounter + 1 == 5)) {
+              _context.next = 20;
+              break;
+            }
+
+            _context.next = 17;
+            return updateLoginCounter(userAttributes.user_email, 0);
+
+          case 17:
+            futureHour = DateTime.local().setZone('America/Bogota').plus({
+              minutes: minutesUntilAccess
             });
+            _context.next = 20;
+            return updateHour(userAttributes.user_email, futureHour);
 
-          case 4:
+          case 20:
+            return _context.abrupt("return", res.status(400).send("Correo o contraseña inválida"));
+
+          case 21:
+            _context.next = 23;
+            return updateHour(userAttributes.user_email, DateTime.local().setZone('America/Bogota'));
+
+          case 23:
+            _context.next = 25;
+            return updateLoginCounter(userAttributes.user_email, 0);
+
+          case 25:
+            token = userAuthenticated.generateAuthToken();
+            return _context.abrupt("return", res.header('x-auth-token', token).send("Usuario autenticado"));
+
+          case 27:
           case "end":
-            return _context5.stop();
+            return _context.stop();
         }
       }
-    }, _callee5);
-  }));
-  return _updateUser.apply(this, arguments);
+    }, _callee);
+  })));
 }

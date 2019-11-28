@@ -25,7 +25,6 @@ var app = express();
 debug("NODE_ENV: ".concat(process.env.NODE_ENV)); //export NODE_ENV=production
 
 debug("app environment: ".concat(app.get('env')));
-debug("db host: ".concat(config.get('db_dev.host')));
 /**
  * Middlewares
  */
@@ -38,6 +37,7 @@ app.use(express.urlencoded({
 app.use(express["static"]('public')); //Archivos públicos
 
 if (app.get('env') === 'development') {
+  debug("db host: ".concat(config.get('db_dev.host')));
   app.use(morgan('dev'));
   debug('Morgan is enabled...');
 }

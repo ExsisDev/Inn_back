@@ -1,7 +1,7 @@
 {
    "db": {
-      "password": "db_password"
-   },
+      "password": "db_password" 
+   }, 
    "db_dev": {
       "host": "db_host_dev",
       "user": "db_user_dev",
@@ -13,4 +13,4 @@
       "name": "db_name_prod"
    },
    "jwtPrivateKey": "jwtPrivateKey"
-}
+} 

@@ -19,7 +19,6 @@ console.log('Application Name: ' + config.get('name'));
 const app = express();
 debug(`NODE_ENV: ${process.env.NODE_ENV}`); //export NODE_ENV=production
 debug(`app environment: ${app.get('env')}`);
-debug(`db host: ${config.get('db_dev.host')}`);
 
 
 /**
@@ -30,8 +29,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true })); //POST http://localhost:3000/api/courses (key=value&key=value)
 app.use(express.static('public')); //Archivos públicos
 if (app.get('env') === 'development') {
-    app.use(morgan('dev'));
-    debug('Morgan is enabled...');
+   debug(`db host: ${config.get('db_dev.host')}`);
+   app.use(morgan('dev'));
+   debug('Morgan is enabled...');
 }
 
 
@@ -40,7 +40,7 @@ if (app.get('env') === 'development') {
  */
 app.use('/api/allies', allyRoutes);
 app.use('/api/login', userRoutes);
-app.use('/api/challenge', challengeRoutes);
+app.use('/api/challenges', challengeRoutes);
 
 
 module.exports = app;
