@@ -117,6 +117,7 @@ async function createUserAndAlly(userAttributes, allyAttributes) {
       });
 
    } catch (error) {
+      //falló cualquier transacion
       throw error;
 
    } finally {

@@ -44,7 +44,7 @@ export async function authenticateAttempts(req, res) {
       if (timeDifferenceInSeconds <= 0) {
          return await authenticateUser(res, userAttributes)
       } else {
-         return res.status(429).send({ msj: "Exedió los intentos permitidos", minutes: (differenceBetweenDates.toObject().milliseconds / (1000 * 60))});
+         return res.status(429).send({ msj: "Excedió los intentos permitidos", minutes: (differenceBetweenDates.toObject().milliseconds / (1000 * 60))});
       }
 
    } catch (error) {
