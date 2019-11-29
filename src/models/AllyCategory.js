@@ -1,18 +1,15 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../utils/database');
 
-const Company = sequelize.define('company', {
-   id_company: {
+const CompanyCategory = sequelize.define('al_categories', {
+   id_category: {
       type: Sequelize.INTEGER,
       autoIncrement: true,
-      primaryKey: true
-   },
-   company_name: {
-      type: Sequelize.STRING,
+      primaryKey: true,
       allowNull: false
    },
-   company_description: {
-      type: Sequelize.TEXT,
+   category_name: {
+      type: Sequelize.STRING,
       allowNull: false
    }
 }, {
@@ -21,4 +18,4 @@ const Company = sequelize.define('company', {
    createdAt: 'created_at'
 });
 
-module.exports = Company;
+module.exports = CompanyCategory;
