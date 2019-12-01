@@ -201,7 +201,7 @@ function authenticateUser(res, userAttributes) {
       }
       await updateHour(userAttributes.user_email, DateTime.local().setZone('America/Bogota'));
       await updateLoginCounter(userAttributes.user_email, 0);
-      token = userAuthenticated.generateAuthToken();
+      token = userAuthenticated.generateAuthToken(); 
       return res.set('x-auth-token', token).set('Access-Control-Expose-Headers', 'x-auth-token').send("Usuario autenticado");
 
    });
