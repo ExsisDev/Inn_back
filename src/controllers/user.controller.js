@@ -202,7 +202,7 @@ function authenticateUser(res, userAttributes) {
       await updateHour(userAttributes.user_email, DateTime.local().setZone('America/Bogota'));
       await updateLoginCounter(userAttributes.user_email, 0);
       token = userAuthenticated.generateAuthToken();
-      return res.header('x-auth-token', token).send("Usuario autenticado");
+      return res.set('x-auth-token', token).send("Usuario autenticado");
 
    });
 }
