@@ -190,7 +190,7 @@ function authenticateUser(res, userAttributes) {
       if (!passwordComparison) {
          attemptsCounter = await getLoginAttempts(userAttributes.user_email);
          await updateLoginCounter(userAttributes.user_email, attemptsCounter + 1);
-
+         
          if (attemptsCounter + 1 == 5) {
             await updateLoginCounter(userAttributes.user_email, 0);
             const futureHour = DateTime.local().setZone('America/Bogota').plus({ minutes: minutesUntilAccess });
