@@ -30,38 +30,40 @@ function getValidParams(req, res, callBackValidation) {
   return error ? res.status(400).send(error.details[0].message) : req.body;
 }
 /**
- * Crear aliado
+ * Crear encuesta
+ * 1. Creando encuesta vacia
+ * 2. Obteniendo las preguntas activas
+ * 3. enlazando las preguntas con la encuesta creada
  * 
  * @param {Request} req 
  * @param {Response} res 
  */
 
 
-function createSurvey(req, res) {
-  var bodyAttributes, surveyCreated, allQuestions;
+function createSurvey(bodySurvey) {
+  var emptySurvey, allQuestions;
   return regeneratorRuntime.async(function createSurvey$(_context2) {
     while (1) {
       switch (_context2.prev = _context2.next) {
         case 0:
-          bodyAttributes = getValidParams(req, res, validateBodySurveyCreation);
-          _context2.prev = 1;
-          _context2.next = 4;
-          return regeneratorRuntime.awrap(createEmptySurvey(bodyAttributes));
+          _context2.prev = 0;
+          _context2.next = 3;
+          return regeneratorRuntime.awrap(createEmptySurvey(bodySurvey));
 
-        case 4:
-          surveyCreated = _context2.sent;
-          _context2.next = 7;
+        case 3:
+          emptySurvey = _context2.sent;
+          _context2.next = 6;
           return regeneratorRuntime.awrap(getAllQuestions());
 
-        case 7:
+        case 6:
           allQuestions = _context2.sent;
-          allQuestions.map(function _callee(item) {
+          allQuestions.map(function _callee(question) {
             return regeneratorRuntime.async(function _callee$(_context) {
               while (1) {
                 switch (_context.prev = _context.next) {
                   case 0:
                     _context.next = 2;
-                    return regeneratorRuntime.awrap(linkQuestionWithSurvey(item, surveyCreated));
+                    return regeneratorRuntime.awrap(linkQuestionWithSurvey(question, emptySurvey));
 
                   case 2:
                   case "end":
@@ -69,24 +71,21 @@ function createSurvey(req, res) {
                 }
               }
             });
-          });
-          return _context2.abrupt("return", surveyCreated ? res.status(200).send(surveyCreated) : res.status(500).send("No se pudo crear el elemento"));
+          }); // return surveyCreated ? res.status(200).send(surveyCreated) : res.status(500).send("No se pudo crear el elemento");
 
-        case 12:
-          _context2.prev = 12;
-          _context2.t0 = _context2["catch"](1);
-          return _context2.abrupt("return", res.status(500).send(_context2.t0));
+          return _context2.abrupt("return", emptySurvey);
 
-        case 15:
-          _context2.prev = 15;
-          return _context2.finish(15);
+        case 11:
+          _context2.prev = 11;
+          _context2.t0 = _context2["catch"](0);
+          throw _context2.t0;
 
-        case 17:
+        case 14:
         case "end":
           return _context2.stop();
       }
     }
-  }, null, null, [[1, 12, 15, 17]]);
+  }, null, null, [[0, 11]]);
 }
 /**
  * Crear encuesta vacia
