@@ -42,7 +42,7 @@ export async function authenticateAttempts(req, res) {
       timeDifferenceInSeconds = (differenceBetweenDates.toObject().milliseconds) / (1000); // Segundos de diferencia entre hora actual y hora en db
 
       if (timeDifferenceInSeconds <= 0) {
-         return await authenticateUser(res, userAttributes)
+         return await authenticateUser(res, userAttributes);
       } else {
          return res.status(429).send({ msj: "Excedió los intentos permitidos", minutes: (differenceBetweenDates.toObject().milliseconds / (1000 * 60)) });
       }

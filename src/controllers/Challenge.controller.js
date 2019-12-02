@@ -1,6 +1,7 @@
 const { validateBodyChallengeCreation, validateBodyChallengeUpdate } = require('../schemas/Challenge.validations');
 const _ = require('lodash');
 const Challenge = require('../models/Challenge');
+const SurveyController = require('./Survey.controller');
 
 
 /**
@@ -17,10 +18,10 @@ function getValidParams(req, res, callBackValidation) {
 
 
 /**
- * Crear aliado:
- * 1. verificando el body, 
- * 2. comprobando la no existencia del usuario,
- * 3. creando el aliado 
+ * Crear un nuevo reto
+ * 1. Creando una encuesta
+ * 2. Creando el reto 
+ * 3. Asociando las categorias al reto
  * 
  * @param {Request} req 
  * @param {Response} res 
@@ -29,15 +30,50 @@ function getValidParams(req, res, callBackValidation) {
 export async function createChallenge(req, res) {
    const bodyAttributes = getValidParams(req, res, validateBodyChallengeCreation);
 
-   Challenge.create(
-      bodyAttributes
+   let bodyChallenge = _.pick(bodyAttributes, ['fk_id_challenge_state', 'fk_id_company', 'challenge_name', 'challenge_description', 'close_date']);
+   let bodySurvey = _.pick(bodyAttributes, ['survey_date', 'user_id_creator']);
+   let bodyCategories = _.pick(bodyAttributes, ['categories_selected']);
+  
+   try {
+      const surveyCreated = await SurveyController.createSurvey(bodySurvey);
+      const challengeEmpty = await createEmptyChallenge(bodyChallenge);
+      await linkChallengeWithCategories();
+      
+      return challengeEmpty ? res.status(200).send(challengeEmpty) : res.status(500).send("No se pudo crear el elemento");
+   
+   } catch (error) {
+      return res.status(500).send(error);
+   }
+   
+}
+
+
+/**
+ * Crear el reto vacio
+ * 
+ * @param {Object} bodyChallenge
+ */
+function createEmptyChallenge(bodyChallenge){
+   return Challenge.create(
+      bodyChallenge
    ).then((result) => {
-      return result ? res.send(result) : res.status(500).send("No se pudo crear el elemento");
+      return result ? result : undefined;
+      // return result ? res.send(result) : res.status(500).send("No se pudo crear el elemento");
 
    }).catch((error) => {
-      return res.status(500).send(error);
+      throw error;
+      // return res.status(500).send(error);
 
    });
+}
+
+
+/**
+ * Enlazar el reto con las categorias seleccionadas
+ * @param {*}  
+ */
+function linkChallengeWithCategories(bodyCategories){
+   
 }
 
 

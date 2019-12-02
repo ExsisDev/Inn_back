@@ -18,30 +18,32 @@ function getValidParams(req, res, callBackValidation) {
 
 
 /**
- * Crear aliado
+ * Crear encuesta
+ * 1. Creando encuesta vacia
+ * 2. Obteniendo las preguntas activas
+ * 3. enlazando las preguntas con la encuesta creada
  * 
  * @param {Request} req 
  * @param {Response} res 
  */
-export async function createSurvey(req, res) {
-	const bodyAttributes = getValidParams(req, res, validateBodySurveyCreation);
+export async function createSurvey(bodySurvey) {
+	// const bodyAttributes = getValidParams(req, res, validateBodySurveyCreation);
 
 	try {
-		let surveyCreated = await createEmptySurvey(bodyAttributes);
+		let emptySurvey = await createEmptySurvey(bodySurvey);
 		let allQuestions = await getAllQuestions();
 		allQuestions.map(async (item) => {
-			await linkQuestionWithSurvey(item, surveyCreated);
+			await linkQuestionWithSurvey(item, emptySurvey);
 		});
 
-		return surveyCreated ? res.status(200).send(surveyCreated) : res.status(500).send("No se pudo crear el elemento");
+		// return surveyCreated ? res.status(200).send(surveyCreated) : res.status(500).send("No se pudo crear el elemento");
+		return emptySurvey;
 
 	} catch (error) {
-		return res.status(500).send(error);
+		// return res.status(500).send(error);
+		throw error;
 
-	} finally {
-
-	}
-
+	} 
 }
 
 

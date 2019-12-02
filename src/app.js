@@ -46,7 +46,7 @@ app.use('/api/login', userRoutes);
 app.use('/api/challenges', challengeRoutes);
 app.use('/api/companies', companyRoutes);
 app.use('/api/ally_categories', allyCategoriesRoutes);
-app.use('/api/surveys', surveyRoutes);
+// app.use('/api/surveys', surveyRoutes);
 
 
 module.exports = app;
