@@ -5,7 +5,7 @@ const SurveyController = require('./Survey.controller');
 
 
 /**
- * Verificar la validéz de los parametros del body
+ * Verificar la validez de los parametros del body
  * 
  * @param {Request} req 
  * @param {Response} res 
