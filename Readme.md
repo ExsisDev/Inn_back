@@ -25,4 +25,6 @@ first build the app with ```npm build``` then run the index with ```node index``
 * Create router
 * Link routes with app
 
+# To deploy in azure: should build before
+
 
