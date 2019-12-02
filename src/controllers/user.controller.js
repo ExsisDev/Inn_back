@@ -44,7 +44,7 @@ export async function authenticateAttempts(req, res) {
       if (timeDifferenceInSeconds <= 0) {
          return await authenticateUser(res, userAttributes)
       } else {
-         return res.status(429).send({ msj: "Excedió los intentos permitidos", minutes: (differenceBetweenDates.toObject().milliseconds / (1000 * 60))});
+         return res.status(429).send({ msj: "Excedió los intentos permitidos", minutes: (differenceBetweenDates.toObject().milliseconds / (1000 * 60)) });
       }
 
    } catch (error) {
@@ -190,7 +190,7 @@ function authenticateUser(res, userAttributes) {
       if (!passwordComparison) {
          attemptsCounter = await getLoginAttempts(userAttributes.user_email);
          await updateLoginCounter(userAttributes.user_email, attemptsCounter + 1);
-         
+
          if (attemptsCounter + 1 == 5) {
             await updateLoginCounter(userAttributes.user_email, 0);
             const futureHour = DateTime.local().setZone('America/Bogota').plus({ minutes: minutesUntilAccess });
@@ -203,7 +203,7 @@ function authenticateUser(res, userAttributes) {
       await updateLoginCounter(userAttributes.user_email, 0);
       token = userAuthenticated.generateAuthToken();
       return res.set('x-auth-token', token).set('Access-Control-Expose-Headers', 'x-auth-token').send("Usuario autenticado");
-      
+
    });
 }
 
