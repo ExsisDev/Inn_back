@@ -5,7 +5,7 @@ const router = express.Router();
 const {
    authenticateUser,
    authenticateAttempts
-} = require('../controllers/User2.controller');
+} = require('../controllers/User.controller');
 
 
 /*** Rutas para /api/allies*/
