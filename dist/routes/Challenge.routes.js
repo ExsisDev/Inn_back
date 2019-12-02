@@ -17,7 +17,8 @@ var _require3 = require('../controllers/Challenge.controller'),
 
 /** 
  * Crear un reto con body (Solo para admin)
- * {"id_challenge","fk_id_survey","fk_id_company","challenge_name","challenge_description","fk_id_challenge_state"}
+ * {"fk_id_survey","fk_id_company","challenge_name",
+ * "challenge_description","fk_id_challenge_state"}
  */
 
 

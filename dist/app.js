@@ -10,11 +10,17 @@ var config = require('config');
 var debug = require('debug')('app:startup'); //export DEBUG=app:startup
 
 
+var cors = require('cors');
+
 var allyRoutes = require('./routes/Ally.routes');
 
 var userRoutes = require('./routes/User.routes');
 
 var challengeRoutes = require('./routes/Challenge.routes');
+
+var companyRoutes = require('./routes/Company.routes');
+
+var allyCategoriesRoutes = require('./routes/AllyCategories.routes');
 
 console.log('Application Name: ' + config.get('name'));
 /**
@@ -29,6 +35,7 @@ debug("app environment: ".concat(app.get('env')));
  * Middlewares
  */
 
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({
   extended: true
@@ -48,5 +55,7 @@ if (app.get('env') === 'development') {
 
 app.use('/api/allies', allyRoutes);
 app.use('/api/login', userRoutes);
-app.use('/api/challenge', challengeRoutes);
+app.use('/api/challenges', challengeRoutes);
+app.use('/api/companies', companyRoutes);
+app.use('/api/ally_categories', allyCategoriesRoutes);
 module.exports = app;

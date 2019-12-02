@@ -5,10 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.authenticateAttempts = authenticateAttempts;
 
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
-
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
-
 var _require = require('../schemas/User.validations'),
     validateUserAuth = _require.validateUserAuth;
 
@@ -44,8 +40,65 @@ function getValidParams(req, res, callBackValidation) {
  */
 
 
-function authenticateAttempts(_x, _x2) {
-  return _authenticateAttempts.apply(this, arguments);
+function authenticateAttempts(req, res) {
+  var userAttributes, userLastLogin, timeDifferenceInSeconds, dbDateUserLastLogin, nowDate, differenceBetweenDates;
+  return regeneratorRuntime.async(function authenticateAttempts$(_context) {
+    while (1) {
+      switch (_context.prev = _context.next) {
+        case 0:
+          userAttributes = getValidParams(req, res, validateUserAuth);
+          _context.prev = 1;
+          _context.next = 4;
+          return regeneratorRuntime.awrap(getAccessHour(userAttributes.user_email));
+
+        case 4:
+          userLastLogin = _context.sent;
+          dbDateUserLastLogin = DateTime.fromJSDate(userLastLogin).setZone('America/Bogota');
+          nowDate = DateTime.local().setZone('America/Bogota');
+          differenceBetweenDates = dbDateUserLastLogin.diff(nowDate, 'milliseconds');
+
+          if (userLastLogin) {
+            _context.next = 10;
+            break;
+          }
+
+          return _context.abrupt("return", res.status(400).send("Correo o contraseña inválida"));
+
+        case 10:
+          timeDifferenceInSeconds = differenceBetweenDates.toObject().milliseconds / 1000; // Segundos de diferencia entre hora actual y hora en db
+
+          if (!(timeDifferenceInSeconds <= 0)) {
+            _context.next = 17;
+            break;
+          }
+
+          _context.next = 14;
+          return regeneratorRuntime.awrap(authenticateUser(res, userAttributes));
+
+        case 14:
+          return _context.abrupt("return", _context.sent);
+
+        case 17:
+          return _context.abrupt("return", res.status(429).send({
+            msj: "Excedió los intentos permitidos",
+            minutes: differenceBetweenDates.toObject().milliseconds / (1000 * 60)
+          }));
+
+        case 18:
+          _context.next = 23;
+          break;
+
+        case 20:
+          _context.prev = 20;
+          _context.t0 = _context["catch"](1);
+          return _context.abrupt("return", res.status(500).send(_context.t0));
+
+        case 23:
+        case "end":
+          return _context.stop();
+      }
+    }
+  }, null, null, [[1, 20]]);
 }
 /**
  * Obtener la hora de acceso
@@ -54,72 +107,6 @@ function authenticateAttempts(_x, _x2) {
  * @return {String} hour
  */
 
-
-function _authenticateAttempts() {
-  _authenticateAttempts = _asyncToGenerator(
-  /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee2(req, res) {
-    var userAttributes, userLastLogin, timeDifferenceInSeconds, dbDateUserLastLogin, nowDate, differenceBetweenDates;
-    return regeneratorRuntime.wrap(function _callee2$(_context2) {
-      while (1) {
-        switch (_context2.prev = _context2.next) {
-          case 0:
-            userAttributes = getValidParams(req, res, validateUserAuth);
-            _context2.prev = 1;
-            _context2.next = 4;
-            return getAccessHour(userAttributes.user_email);
-
-          case 4:
-            userLastLogin = _context2.sent;
-            dbDateUserLastLogin = DateTime.fromJSDate(userLastLogin).setZone('America/Bogota');
-            nowDate = DateTime.local().setZone('America/Bogota');
-            differenceBetweenDates = dbDateUserLastLogin.diff(nowDate, 'milliseconds');
-
-            if (userLastLogin) {
-              _context2.next = 10;
-              break;
-            }
-
-            return _context2.abrupt("return", res.status(400).send("Correo o contraseña inválida"));
-
-          case 10:
-            timeDifferenceInSeconds = differenceBetweenDates.toObject().milliseconds / 1000; // Segundos de diferencia entre hora actual y hora en db
-
-            if (!(timeDifferenceInSeconds <= 0)) {
-              _context2.next = 17;
-              break;
-            }
-
-            _context2.next = 14;
-            return authenticateUser(res, userAttributes);
-
-          case 14:
-            return _context2.abrupt("return", _context2.sent);
-
-          case 17:
-            return _context2.abrupt("return", res.status(429).send({
-              msj: "Exedió los intentos permitidos",
-              minutes: differenceBetweenDates.toObject().milliseconds / (1000 * 60)
-            }));
-
-          case 18:
-            _context2.next = 23;
-            break;
-
-          case 20:
-            _context2.prev = 20;
-            _context2.t0 = _context2["catch"](1);
-            return _context2.abrupt("return", res.status(500).send(_context2.t0));
-
-          case 23:
-          case "end":
-            return _context2.stop();
-        }
-      }
-    }, _callee2, null, [[1, 20]]);
-  }));
-  return _authenticateAttempts.apply(this, arguments);
-}
 
 function getAccessHour(email) {
   return User.findOne({
@@ -239,85 +226,81 @@ function authenticateUser(res, userAttributes) {
   var passwordComparison;
   var token;
   var attemptsCounter;
-  return new Promise(
-  /*#__PURE__*/
-  _asyncToGenerator(
-  /*#__PURE__*/
-  regeneratorRuntime.mark(function _callee() {
+  return new Promise(function _callee() {
     var futureHour;
-    return regeneratorRuntime.wrap(function _callee$(_context) {
+    return regeneratorRuntime.async(function _callee$(_context2) {
       while (1) {
-        switch (_context.prev = _context.next) {
+        switch (_context2.prev = _context2.next) {
           case 0:
-            _context.next = 2;
-            return findUser(userAttributes.user_email);
+            _context2.next = 2;
+            return regeneratorRuntime.awrap(findUser(userAttributes.user_email));
 
           case 2:
-            userAuthenticated = _context.sent;
+            userAuthenticated = _context2.sent;
 
             if (userAuthenticated) {
-              _context.next = 5;
+              _context2.next = 5;
               break;
             }
 
-            return _context.abrupt("return", res.status(400).send("Correo o contraseña inválida"));
+            return _context2.abrupt("return", res.status(400).send("Correo o contraseña inválida"));
 
           case 5:
-            _context.next = 7;
-            return comparePassword(userAttributes, userAuthenticated);
+            _context2.next = 7;
+            return regeneratorRuntime.awrap(comparePassword(userAttributes, userAuthenticated));
 
           case 7:
-            passwordComparison = _context.sent;
+            passwordComparison = _context2.sent;
 
             if (passwordComparison) {
-              _context.next = 21;
+              _context2.next = 21;
               break;
             }
 
-            _context.next = 11;
-            return getLoginAttempts(userAttributes.user_email);
+            _context2.next = 11;
+            return regeneratorRuntime.awrap(getLoginAttempts(userAttributes.user_email));
 
           case 11:
-            attemptsCounter = _context.sent;
-            _context.next = 14;
-            return updateLoginCounter(userAttributes.user_email, attemptsCounter + 1);
+            attemptsCounter = _context2.sent;
+            _context2.next = 14;
+            return regeneratorRuntime.awrap(updateLoginCounter(userAttributes.user_email, attemptsCounter + 1));
 
           case 14:
             if (!(attemptsCounter + 1 == 5)) {
-              _context.next = 20;
+              _context2.next = 20;
               break;
             }
 
-            _context.next = 17;
-            return updateLoginCounter(userAttributes.user_email, 0);
+            _context2.next = 17;
+            return regeneratorRuntime.awrap(updateLoginCounter(userAttributes.user_email, 0));
 
           case 17:
             futureHour = DateTime.local().setZone('America/Bogota').plus({
               minutes: minutesUntilAccess
             });
-            _context.next = 20;
-            return updateHour(userAttributes.user_email, futureHour);
+            _context2.next = 20;
+            return regeneratorRuntime.awrap(updateHour(userAttributes.user_email, futureHour));
 
           case 20:
-            return _context.abrupt("return", res.status(400).send("Correo o contraseña inválida"));
+            return _context2.abrupt("return", res.status(400).send("Correo o contraseña inválida"));
 
           case 21:
-            _context.next = 23;
-            return updateHour(userAttributes.user_email, DateTime.local().setZone('America/Bogota'));
+            _context2.next = 23;
+            return regeneratorRuntime.awrap(updateHour(userAttributes.user_email, DateTime.local().setZone('America/Bogota')));
 
           case 23:
-            _context.next = 25;
-            return updateLoginCounter(userAttributes.user_email, 0);
+            _context2.next = 25;
+            return regeneratorRuntime.awrap(updateLoginCounter(userAttributes.user_email, 0));
 
           case 25:
             token = userAuthenticated.generateAuthToken();
-            return _context.abrupt("return", res.header('x-auth-token', token).send("Usuario autenticado"));
+            return _context2.abrupt("return", res.set('x-auth-token', token).set('Access-Control-Expose-Headers', 'x-auth-token').send("Usuario autenticado"));
 
           case 27:
           case "end":
-            return _context.stop();
+            return _context2.stop();
         }
       }
-    }, _callee);
-  })));
+    });
+  });
 }

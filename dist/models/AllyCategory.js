@@ -4,18 +4,15 @@ var Sequelize = require('sequelize');
 
 var sequelize = require('../utils/database');
 
-var Company = sequelize.define('company', {
-  id_company: {
+var CompanyCategory = sequelize.define('al_categories', {
+  id_category: {
     type: Sequelize.INTEGER,
     autoIncrement: true,
-    primaryKey: true
-  },
-  company_name: {
-    type: Sequelize.STRING,
+    primaryKey: true,
     allowNull: false
   },
-  company_description: {
-    type: Sequelize.TEXT,
+  category_name: {
+    type: Sequelize.STRING,
     allowNull: false
   }
 }, {
@@ -23,4 +20,4 @@ var Company = sequelize.define('company', {
   updatedAt: 'updated_at',
   createdAt: 'created_at'
 });
-module.exports = Company;
+module.exports = CompanyCategory;

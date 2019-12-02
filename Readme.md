@@ -16,3 +16,13 @@ Follow this steps to run the app:
     * jwtPrivateKey
 * Execute ```npm run dev``` to run the app in development mode. To run in production
 first build the app with ```npm build``` then run the index with ```node index```.
+
+### To create an endpoint:
+
+* Create an schema
+* Create model
+* Create controller
+* Create router
+* Link routes with app
+
+

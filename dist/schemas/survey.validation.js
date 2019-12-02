@@ -11,7 +11,7 @@ var Joi = require('@hapi/joi');
 function validateBodySurveyCreation(survey) {
   var createSurveySchema = Joi.object({
     survey_date: Joi.date().required(),
-    user_id: Joi.integer().required()
+    user_id_creator: Joi.number().required()
   });
   return createSurveySchema.validate(survey);
 }
@@ -19,7 +19,7 @@ function validateBodySurveyCreation(survey) {
 function validateBodySurveyUpdate(survey) {
   var updateSurveySchema = Joi.object({
     survey_date: Joi.date(),
-    user_id: Joi.integer()
+    user_id_creator: Joi.number()
   });
   return updateSurveySchema.validate(survey);
 }
