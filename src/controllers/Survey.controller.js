@@ -11,7 +11,7 @@ const Question = require('../models/Question');
  * @param {Response} res 
  * @param {CallableFunction} callBackValidation 
  */
-function getValidParams(req, res, callBackValidation) { 
+function getValidParams(req, res, callBackValidation) {
 	const { error } = callBackValidation(req.body);
 	return (error) ? res.status(400).send(error.details[0].message) : req.body;
 }
@@ -29,7 +29,7 @@ export async function createSurvey(req, res) {
 	try {
 		let surveyCreated = await createEmptySurvey(bodyAttributes);
 		let allQuestions = await getAllQuestions();
-		allQuestions.map(async (item)=>{
+		allQuestions.map(async (item) => {
 			await linkQuestionWithSurvey(item, surveyCreated);
 		});
 
