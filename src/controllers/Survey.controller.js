@@ -33,7 +33,7 @@ export async function createSurvey(req, res) {
 			await linkQuestionWithSurvey(item, surveyCreated);
 		});
 
-		// return surveyCreated ? res.status(200).send(surveyCreated) : res.status(500).send("No se pudo crear el elemento");
+		return surveyCreated ? res.status(200).send(surveyCreated) : res.status(500).send("No se pudo crear el elemento");
 
 	} catch (error) {
 		return res.status(500).send(error);
