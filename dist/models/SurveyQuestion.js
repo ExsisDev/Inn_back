@@ -10,10 +10,12 @@ var Survey = require('./Survey');
 
 var SurveyQuestion = sequelize.define('survey_questions', {
   fk_id_survey: {
+    primaryKey: true,
     type: Sequelize.INTEGER,
     allowNull: false
   },
   fk_id_question: {
+    primaryKey: true,
     type: Sequelize.INTEGER,
     allowNull: false
   },
