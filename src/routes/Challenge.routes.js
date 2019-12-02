@@ -15,7 +15,7 @@ const {
 /** 
  * Crear un reto con body (Solo para admin)
  * {"fk_id_survey","fk_id_company","challenge_name",
- * "challenge_description","fk_id_challenge_state"}
+ * "challenge_description","fk_id_challenge_state", "close_date"}
  */
 router.post('/', [auth, isAdmin], createChallenge);
 

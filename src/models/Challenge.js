@@ -28,6 +28,10 @@ const Challenge = sequelize.define('challenge', {
    fk_id_challenge_state: {
       type: Sequelize.INTEGER,
       allowNull: false
+   },
+   close_date: {
+      type: Sequelize.DATE,
+      allowNull: false
    }
 }, {
    timestamps: true,
