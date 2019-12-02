@@ -32,8 +32,8 @@ export async function createSurvey(bodySurvey) {
 	try {
 		let emptySurvey = await createEmptySurvey(bodySurvey);
 		let allQuestions = await getAllQuestions();
-		allQuestions.map(async (item) => {
-			await linkQuestionWithSurvey(item, emptySurvey);
+		allQuestions.map(async (question) => {
+			await linkQuestionWithSurvey(question, emptySurvey);
 		});
 
 		// return surveyCreated ? res.status(200).send(surveyCreated) : res.status(500).send("No se pudo crear el elemento");

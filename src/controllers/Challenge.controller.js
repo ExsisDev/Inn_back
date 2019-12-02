@@ -1,6 +1,8 @@
 const { validateBodyChallengeCreation, validateBodyChallengeUpdate } = require('../schemas/Challenge.validations');
 const _ = require('lodash');
+const sequelize = require('../utils/database');
 const Challenge = require('../models/Challenge');
+const ChallengeCategory = require('../models/ChallengeCategory');
 const SurveyController = require('./Survey.controller');
 
 
@@ -33,18 +35,30 @@ export async function createChallenge(req, res) {
    let bodyChallenge = _.pick(bodyAttributes, ['fk_id_challenge_state', 'fk_id_company', 'challenge_name', 'challenge_description', 'close_date']);
    let bodySurvey = _.pick(bodyAttributes, ['survey_date', 'user_id_creator']);
    let bodyCategories = _.pick(bodyAttributes, ['categories_selected']);
-  
+
+   let surveyCreated, challengeEmpty;
+
    try {
-      const surveyCreated = await SurveyController.createSurvey(bodySurvey);
-      const challengeEmpty = await createEmptyChallenge(bodyChallenge);
-      await linkChallengeWithCategories();
-      
-      return challengeEmpty ? res.status(200).send(challengeEmpty) : res.status(500).send("No se pudo crear el elemento");
-   
+      await sequelize.transaction(async (t) => {
+         surveyCreated = await SurveyController.createSurvey(bodySurvey);
+         bodyChallenge['fk_id_survey'] = surveyCreated.id_survey;
+         challengeEmpty = await createEmptyChallenge(bodyChallenge);
+         bodyCategories.categories_selected.map(async (id_category) => {
+            await linkChallengeWithCategories(challengeEmpty.id_challenge, id_category);
+         });
+      });
+
    } catch (error) {
+      console.log(error);
+      throw error;
+
+   } finally {
+      if (surveyCreated && challengeEmpty) {
+         return surveyCreated ? res.status(200).send(surveyCreated) : res.status(500).send("No se pudo crear el elemento");
+      }
       return res.status(500).send(error);
    }
-   
+
 }
 
 
@@ -53,7 +67,7 @@ export async function createChallenge(req, res) {
  * 
  * @param {Object} bodyChallenge
  */
-function createEmptyChallenge(bodyChallenge){
+function createEmptyChallenge(bodyChallenge) {
    return Challenge.create(
       bodyChallenge
    ).then((result) => {
@@ -70,10 +84,19 @@ function createEmptyChallenge(bodyChallenge){
 
 /**
  * Enlazar el reto con las categorias seleccionadas
- * @param {*}  
+ * @param {Object}  
  */
-function linkChallengeWithCategories(bodyCategories){
-   
+function linkChallengeWithCategories(id_challenge, id_category) {
+   return ChallengeCategory.create({
+      fk_id_challenge: id_challenge,
+      fk_id_category: id_category
+   }).then((result) => {
+      return result ? result : undefined;
+
+   }).catch((error) => {
+      throw error;
+
+   });
 }
 
 
@@ -91,6 +114,6 @@ export async function getAllChallenges(req, res) {
 
    }).catch((error) => {
       return res.status(500).send(error);
-   
+
    });
 }
