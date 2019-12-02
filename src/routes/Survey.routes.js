@@ -3,7 +3,7 @@ const router = express.Router();
 const { auth } = require('../middleware/auth');
 const { isAdmin } = require('../middleware/admin');
 
-const { createSurvey } = require('../controllers/Survey.controller'); 
+const { createSurvey } = require('../controllers/Survey.controller');
 
 /** Rutas para /api/surveys/
 
