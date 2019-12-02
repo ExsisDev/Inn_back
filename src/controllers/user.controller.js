@@ -162,7 +162,7 @@ function getLoginAttempts(email) {
       return result.login_attempts;
 
    }).catch((error) => {
-      throw error;
+      throw error; 
 
    });
 }
