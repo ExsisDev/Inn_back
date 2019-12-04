@@ -14,8 +14,8 @@ export function validateBodyAllyCreation(ally) {
       ally_nit: Joi.number().required(),
       ally_web_page: Joi.string().max(200).required(),
       ally_phone: Joi.string().max(20).required(),
-      ally_month_ideation_hours: Joi.number().required(),
-      ally_month_experimentation_hours: Joi.number().required()
+      ally_month_ideation_hours: Joi.number().integer().positive().required(),
+      ally_month_experimentation_hours: Joi.number().integer().positive().required()
    });
    return createAllySchema.validate(ally);
 }
@@ -34,8 +34,8 @@ export function validateBodyAllyUpdate(ally) {
       ally_nit: Joi.number(),
       ally_web_page: Joi.string().max(200),
       ally_phone: Joi.string().max(20),
-      ally_month_ideation_hours: Joi.number(),
-      ally_month_experimentation_hours: Joi.number()
+      ally_month_ideation_hours: Joi.number().integer().positive(),
+      ally_month_experimentation_hours: Joi.number().integer().positive()
    });
    return updateAllySchema.validate(ally);
 }
