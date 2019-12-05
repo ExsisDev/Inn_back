@@ -119,13 +119,13 @@ async function createUserAndAlly(userAttributes, allyAttributes, resourcesAttrib
             return result;
          });
          //step 3
-         resourcesAttributes['ally_resources'].map( async (resource, t) => {
+         for ( let resource of resourcesAttributes['ally_resources'] ){
             resource['fk_id_ally'] = allyCreated.id_ally;
             let createResult = await Resource.create(resource, {transaction: t}).then((result) => {
                return result;
             })
             resourcesCreated.push( _.omit(createResult, ['fk_id_ally'])) ;
-         })
+         }         
       });
 
    } catch (error) {
@@ -139,7 +139,6 @@ async function createUserAndAlly(userAttributes, allyAttributes, resourcesAttrib
          const obj3 = _.omit(res)
          const answerObject = _.assign(obj1, obj2);
          return answerObject;
-         
       }
    }
 }
