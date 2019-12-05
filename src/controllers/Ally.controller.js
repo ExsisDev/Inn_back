@@ -2,7 +2,7 @@ const { validateBodyAllyCreation, validateBodyAllyUpdate, validateAllyAuth } = r
 const { validateResourceCreation, validateResourceUpdate } = require('../schemas/Resource.validations');
 
 const _ = require('lodash');
-const {DateTime} = require('luxon');
+const { DateTime } = require('luxon');
 const bcrypt = require('bcrypt');
 const sequelize = require('../utils/database');
 const Ally = require('../models/Ally');
@@ -34,8 +34,8 @@ function getValidParams(req, res, callBackValidation) {
  * @return {Promise} promise
  */
 export async function createAlly(req, res) {
-   const bodyAttributes = getValidParams(req, res, validateBodyAllyCreation);   
-      
+   const bodyAttributes = getValidParams(req, res, validateBodyAllyCreation);
+
    const allyAttributes = _.pick(bodyAttributes, ['ally_name', 'ally_nit', 'ally_web_page', 'ally_phone', 'ally_month_ideation_hours', 'ally_month_experimentation_hours']);
    const userAttributes = _.pick(bodyAttributes, ['fk_id_role', 'fk_user_state', 'user_email', 'user_password']);
    const resourcesAttributes = _.pick(bodyAttributes, ['ally_resources']);
@@ -51,13 +51,13 @@ export async function createAlly(req, res) {
       if (userVerified) return res.status(400).send("El correo ya ha sido registrado");
       await hashPassword(userAttributes);
       answer = await createUserAndAlly(userAttributes, allyAttributes, resourcesAttributes);
-   } 
+   }
    catch (error) {
-      return res.status(400).send(error);      
-   } 
+      return res.status(400).send(error);
+   }
    finally {
       return res.send(answer);
-   }  
+   }
 }
 
 
@@ -69,7 +69,7 @@ export async function createAlly(req, res) {
 function verifyUser(user_email) {
    return User.findOne({
       where: { user_email }
-      
+
    }).then((result) => {
       return result ? result : null;
 
@@ -119,25 +119,28 @@ async function createUserAndAlly(userAttributes, allyAttributes, resourcesAttrib
             return result;
          });
          //step 3
-         for ( let resource of resourcesAttributes['ally_resources'] ){
+         for (let resource of resourcesAttributes['ally_resources']) {
             resource['fk_id_ally'] = allyCreated.id_ally;
-            let createResult = await Resource.create(resource, {transaction: t}).then((result) => {
+            let createResult = await Resource.create(resource, { transaction: t }).then((result) => {
                return result;
             })
-            resourcesCreated.push( _.omit(createResult, ['fk_id_ally'])) ;
-         }         
+            resourcesCreated.push(_.omit(createResult.dataValues, ['fk_id_ally', 'updated_at', 'created_at']));
+         }
       });
 
    } catch (error) {
-      //falló cualquier transacion
+      //falló cualquier transacción
       throw error;
 
    } finally {
-      if (userCreated && allyCreated && resourceCreated) {
+      if (userCreated && allyCreated) {
          const obj1 = _.omit(userCreated.dataValues, ['user_password']);
          const obj2 = _.omit(allyCreated.dataValues, ['fk_id_user']);
-         const obj3 = _.omit(res)
-         const answerObject = _.assign(obj1, obj2);
+         let obj3 = { ally_resources: [] };
+         if (resourcesCreated) {
+            obj3['ally_resources'] = _.assign(resourcesCreated);
+         }
+         const answerObject = _.assign(obj1, obj2, obj3);
          return answerObject;
       }
    }
