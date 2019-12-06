@@ -26,7 +26,8 @@ function validateBodyAllyCreation(ally) {
     ally_phone: Joi.string().max(20).required(),
     ally_month_ideation_hours: Joi.number().integer().positive().required(),
     ally_month_experimentation_hours: Joi.number().integer().positive().required(),
-    ally_resources: Joi.array().items(createResourceSchema)
+    ally_resources: Joi.array().items(createResourceSchema),
+    ally_categories: Joi.array().items(Joi.number().integer().positive())
   });
   return createAllySchema.validate(ally);
 }

@@ -4,15 +4,15 @@ var Sequelize = require('sequelize');
 
 var db_cnx = require('../utils/database');
 
-var AllyCategory = db_cnx.define('ally_categories', {
-  fk_id_ally: {
+var AlCategory = db_cnx.define('al_categories', {
+  id_category: {
     type: Sequelize.INTEGER,
+    autoIncrement: true,
     primaryKey: true,
     allowNull: false
   },
-  fk_id_category: {
-    type: Sequelize.INTEGER,
-    primaryKey: true,
+  category_name: {
+    type: Sequelize.STRING,
     allowNull: false
   }
 }, {
@@ -20,4 +20,4 @@ var AllyCategory = db_cnx.define('ally_categories', {
   updatedAt: 'updated_at',
   createdAt: 'created_at'
 });
-module.exports = AllyCategory;
+module.exports = AlCategory;

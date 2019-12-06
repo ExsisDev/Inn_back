@@ -8,7 +8,7 @@ exports.userRoleEnum = void 0;
 var Enum = require('enum');
 
 var userRoleEnum = new Enum({
-  'Ally': 1,
-  'Administrator': 2
+  'ALLY': 1,
+  'ADMINISTRATOR': 2
 });
 exports.userRoleEnum = userRoleEnum;

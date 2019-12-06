@@ -12,7 +12,8 @@ var _require2 = require('../middleware/Admin'),
 
 var _require3 = require('../controllers/Challenge.controller'),
     createChallenge = _require3.createChallenge,
-    getAllChallenges = _require3.getAllChallenges;
+    getAllChallenges = _require3.getAllChallenges,
+    getChallengesByPageAndStatus = _require3.getChallengesByPageAndStatus;
 /*** Rutas para /api/challenge*/
 
 /** 
@@ -32,4 +33,9 @@ router.post('/', [auth, isAdmin], createChallenge);
  */
 
 router.get('/', [auth], getAllChallenges);
+/**
+ * Obtener retos por categoría y página
+ */
+
+router.get('/:page/:status', [auth], getChallengesByPageAndStatus);
 module.exports = router;
