@@ -43,9 +43,9 @@ export async function createChallenge(req, res) {
          surveyCreated = await SurveyController.createSurvey(bodySurvey);
          bodyChallenge['fk_id_survey'] = surveyCreated.id_survey;
          challengeEmpty = await createEmptyChallenge(bodyChallenge);
-         bodyCategories.categories_selected.map(async (id_category) => {
+         for(let id_category of bodyCategories.categories_selected){
             await linkChallengeWithCategories(challengeEmpty.id_challenge, id_category);
-         });
+         }
       });
 
    } catch (error) {
@@ -116,4 +116,9 @@ export async function getAllChallenges(req, res) {
       return res.status(500).send(error);
 
    });
+}
+
+
+export async function getChallengesByPageAndStatus(req, res) {
+   console.log(req)
 }
