@@ -4,6 +4,7 @@ const sequelize = require('../utils/database');
 const Challenge = require('../models/Challenge');
 const ChallengeCategory = require('../models/ChallengeCategory');
 const SurveyController = require('./Survey.controller');
+const {challengeStateEnum} = require('../models/Enums/Challenge_state.enum');
 
 
 /**
@@ -54,7 +55,7 @@ export async function createChallenge(req, res) {
 
    } finally {
       if (surveyCreated && challengeEmpty) {
-         return surveyCreated ? res.status(200).send(surveyCreated) : res.status(500).send("No se pudo crear el elemento");
+         return challengeEmpty ? res.status(200).send(challengeEmpty) : res.status(500).send("No se pudo crear el elemento");
       }
       return res.status(500).send(error);
    }
@@ -119,6 +120,31 @@ export async function getAllChallenges(req, res) {
 }
 
 
+/**
+ * Obtener los retos por pàgina y por estado
+ * 
+ * @param {Request} req 
+ * @param {Response} res 
+ * @return {Promise} promise
+ */
 export async function getChallengesByPageAndStatus(req, res) {
-   console.log(req)
+   let itemsByPage = 5;
+   let page = req.params.page;
+   let status = req.params.status.toUpperCase();
+   await Challenge.findAll({
+      offset: (page-1)*itemsByPage,
+      limit: itemsByPage,
+      order: [
+         ['created_at', 'DESC']
+      ],
+      where: {
+         'fk_id_challenge_state': challengeStateEnum.get(`${status}`).value
+      }
+   }).then((result) => {
+      return result ? res.send(result) : res.status(404).send("No hay elementos disponibles");
+      
+   }).catch((error) => {
+      return res.status(500).send(error);
+      
+   });
 }

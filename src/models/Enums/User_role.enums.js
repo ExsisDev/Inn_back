@@ -1,6 +1,6 @@
 const Enum = require('enum');
 
 export const userRoleEnum = new Enum({
-   'Ally': 1,
-   'Administrator': 2
+   'ALLY': 1,
+   'ADMINISTRATOR': 2
 });
