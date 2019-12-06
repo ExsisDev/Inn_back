@@ -60,7 +60,8 @@ User.prototype.generateAuthToken = function () {
     id_user: this.id_user,
     fk_id_role: this.fk_id_role
   }, config.get('jwtPrivateKey'), {
-    algorithm: 'HS384'
+    algorithm: 'HS384',
+    expiresIn: "12h"
   });
 };
 

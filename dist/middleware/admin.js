@@ -18,6 +18,6 @@ var _require = require('../models/Enums/User_role.enums'),
 
 
 function isAdmin(req, res, next) {
-  if (req.user.fk_id_role !== userRoleEnum.Administrator.value) return res.status(403).send("Access denied. Only admin access");
+  if (req.user.fk_id_role !== userRoleEnum.get('ADMINISTRATOR').value) return res.status(403).send("Access denied. Only admin access");
   next();
 }
