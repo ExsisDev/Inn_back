@@ -1,15 +1,15 @@
-const AllyCategory = require('../models/AllyCategory');
+const AlCategory = require('../models/AlCategory');
 
 
 /**
- * Obtener todas las categorias por compañia
+ * Obtener todas las categorias de los aliados o compañias
  * 
  * @param {Request} req 
  * @param {Response} res 
  */
-export async function getAllAllyCategories(req, res) {
+export async function getAllAlCategories(req, res) {
 
-   AllyCategory.findAll().then((result) => {
+   AlCategory.findAll().then((result) => {
       return result ? res.send(result) : res.status(404).send("No hay elementos disponibles");
    
    }).catch((error) => {

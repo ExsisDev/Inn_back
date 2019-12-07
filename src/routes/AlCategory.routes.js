@@ -3,7 +3,7 @@ const router = express.Router();
 const { auth } = require('../middleware/Auth');
 const { isAdmin } = require('../middleware/Admin');
 
-const { getAllCompanyCategories } = require('../controllers/AllyCategory.controller');
+const { getAllAlCategories } = require('../controllers/AlCategory.controller');
 
 
 /*** Rutas para /api/al_categories/
@@ -11,6 +11,6 @@ const { getAllCompanyCategories } = require('../controllers/AllyCategory.control
 /** 
  * Obtener todas las categorias de compañias
  */
-router.get('/', [auth, isAdmin], getAllCompanyCategories);
+router.get('/', [auth, isAdmin], getAllAlCategories);
 
 module.exports = router;
