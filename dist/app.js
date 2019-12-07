@@ -20,7 +20,7 @@ var challengeRoutes = require('./routes/Challenge.routes');
 
 var companyRoutes = require('./routes/Company.routes');
 
-var allyCategoriesRoutes = require('./routes/AllyCategories.routes');
+var alCategoriesRoutes = require('./routes/AlCategory.routes');
 
 var surveyRoutes = require('./routes/Survey.routes');
 
@@ -59,6 +59,6 @@ app.use('/api/allies', allyRoutes);
 app.use('/api/login', userRoutes);
 app.use('/api/challenges', challengeRoutes);
 app.use('/api/companies', companyRoutes);
-app.use('/api/ally_categories', allyCategoriesRoutes); // app.use('/api/surveys', surveyRoutes);
+app.use('/api/al_categories', alCategoriesRoutes); // app.use('/api/surveys', surveyRoutes);
 
 module.exports = app;
