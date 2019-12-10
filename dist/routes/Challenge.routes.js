@@ -29,11 +29,6 @@ var _require3 = require('../controllers/Challenge.controller'),
 
 router.post('/', [auth, isAdmin], createChallenge);
 /**
- * Obtener todos los retos
- */
-
-router.get('/', [auth], getAllChallenges);
-/**
  * Obtener retos por categoría y página
  */
 

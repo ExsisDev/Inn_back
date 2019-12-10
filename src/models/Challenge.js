@@ -1,6 +1,5 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../utils/database');
-const Survey = require('./Survey');
 const Company = require('./Company');
 
 const Challenge = sequelize.define('challenge', {
@@ -40,8 +39,10 @@ const Challenge = sequelize.define('challenge', {
 });
 
 
-Challenge.belongsTo(Survey, { foreignKey: 'fk_id_survey', targetKey: 'id_survey' });
+Company.hasMany(Challenge, {foreignKey: 'fk_id_company', sourceKey: 'id_company'});
 Challenge.belongsTo(Company, { foreignKey: 'fk_id_company', targetKey: 'id_company' });
+
+// Challenge.belongsTo(Survey, { foreignKey: 'fk_id_survey', targetKey: 'id_survey' });
 
 
 module.exports = Challenge;

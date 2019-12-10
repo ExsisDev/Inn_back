@@ -1,7 +1,7 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../utils/database');
 
-const AlCategory = sequelize.define('al_categories', {
+const ChCategory = sequelize.define('ch_categories', {
    id_category: {
       type: Sequelize.INTEGER,
       autoIncrement: true,
@@ -18,4 +18,4 @@ const AlCategory = sequelize.define('al_categories', {
    createdAt: 'created_at'
 });
 
-module.exports = AlCategory;
+module.exports = ChCategory;

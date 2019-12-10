@@ -2,9 +2,11 @@ const { validateBodyChallengeCreation, validateBodyChallengeUpdate } = require('
 const _ = require('lodash');
 const sequelize = require('../utils/database');
 const Challenge = require('../models/Challenge');
+const Company = require('../models/Company');
 const ChallengeCategory = require('../models/ChallengeCategory');
+const ChCategories = require('../models/ChCategory');
 const SurveyController = require('./Survey.controller');
-const {challengeStateEnum} = require('../models/Enums/Challenge_state.enum');
+const { challengeStateEnum } = require('../models/Enums/Challenge_state.enum');
 
 
 /**
@@ -44,7 +46,7 @@ export async function createChallenge(req, res) {
          surveyCreated = await SurveyController.createSurvey(bodySurvey);
          bodyChallenge['fk_id_survey'] = surveyCreated.id_survey;
          challengeEmpty = await createEmptyChallenge(bodyChallenge);
-         for(let id_category of bodyCategories.categories_selected){
+         for (let id_category of bodyCategories.categories_selected) {
             await linkChallengeWithCategories(challengeEmpty.id_challenge, id_category);
          }
       });
@@ -56,10 +58,11 @@ export async function createChallenge(req, res) {
    } finally {
       if (surveyCreated && challengeEmpty) {
          return challengeEmpty ? res.status(200).send(challengeEmpty) : res.status(500).send("No se pudo crear el elemento");
+
       }
       return res.status(500).send(error);
-   }
 
+   }
 }
 
 
@@ -73,11 +76,9 @@ function createEmptyChallenge(bodyChallenge) {
       bodyChallenge
    ).then((result) => {
       return result ? result : undefined;
-      // return result ? res.send(result) : res.status(500).send("No se pudo crear el elemento");
 
    }).catch((error) => {
       throw error;
-      // return res.status(500).send(error);
 
    });
 }
@@ -88,6 +89,7 @@ function createEmptyChallenge(bodyChallenge) {
  * @param {Object}  
  */
 function linkChallengeWithCategories(id_challenge, id_category) {
+
    return ChallengeCategory.create({
       fk_id_challenge: id_challenge,
       fk_id_category: id_category
@@ -102,26 +104,7 @@ function linkChallengeWithCategories(id_challenge, id_category) {
 
 
 /**
- * Obtener todos los retos
- * 
- * @param {Request} req 
- * @param {Response} res 
- * @return {Promise} promise
- */
-export async function getAllChallenges(req, res) {
-
-   return Challenge.findAll().then((result) => {
-      return result ? res.send(result) : res.status(404).send("No hay elementos disponibles");
-
-   }).catch((error) => {
-      return res.status(500).send(error);
-
-   });
-}
-
-
-/**
- * Obtener los retos por pàgina y por estado
+ * Obtener los retos por pàgina y por estado, con total y categorias
  * 
  * @param {Request} req 
  * @param {Response} res 
@@ -130,35 +113,105 @@ export async function getAllChallenges(req, res) {
 export async function getChallengesByPageAndStatus(req, res) {
    let itemsByPage = 5;
    let page = req.params.page;
-   let status = req.params.status.toUpperCase();
-   let totalElementsByState;
+   let state = challengeStateEnum.get(`${req.params.status.toUpperCase()}`).value;
+   let elementsCountByState;
+   let elementsByState = [];
 
-   await Challenge.count({
+   try {
+      elementsCountByState = await countElementsByState(state);
+      elementsByState = await findChallengesByPageAndState(itemsByPage, page, state);
+      for (let challenge of elementsByState) {
+         challenge.dataValues['categories'] = await findCategoriesByChallenge(challenge.id_challenge);
+      }
+
+   } catch (error) {
+      console.log(error);
+      return res.status(500).send(error);
+
+   } finally {
+      return elementsCountByState && elementsByState ? res.send({ result: elementsByState, totalElements: elementsCountByState }) : res.status(404).send("No hay elementos disponibles");
+
+   }
+}
+
+
+/**
+ * Contar los elementos totales del estado
+ * 
+ * @param {String} state 
+ */
+function countElementsByState(state) {
+   return Challenge.count({
       where: {
-         'fk_id_challenge_state': challengeStateEnum.get(`${status}`).value
+         'fk_id_challenge_state': state
       }
    }).then((result) => {
-      totalElementsByState = result;
+      return result ? result : undefined;
 
    }).catch((error) => {
-      return res.status(500).send(error);
-      
-   });
+      throw error;
 
-   await Challenge.findAll({
-      offset: (page-1)*itemsByPage,
+   });
+}
+
+
+/**
+ * Encontrar los elementos por estado, pagina y cantidad
+ * 
+ * @param {Number} itemsByPage 
+ * @param {Number} page 
+ * @param {String} state 
+ */
+function findChallengesByPageAndState(itemsByPage, page, state) {
+   return Challenge.findAll({
+      offset: (page - 1) * itemsByPage,
       limit: itemsByPage,
       order: [
          ['created_at', 'DESC']
       ],
       where: {
-         'fk_id_challenge_state': challengeStateEnum.get(`${status}`).value
-      }
+         'fk_id_challenge_state': state
+      },
+      include: [{
+         model: Company,
+         attributes: ['company_name', 'company_description']
+      }]
+
    }).then((result) => {
-      return result ? res.send({result, totalElements: totalElementsByState}) : res.status(404).send("No hay elementos disponibles");
-      
+      return result ? result : undefined;
+
    }).catch((error) => {
-      return res.status(500).send(error);
-      
+      throw error;
+
+   });
+}
+
+
+/**
+ * Encontrar todas los nombres de categorias por reto 
+ * 
+ * @param {Number} id_challenge 
+ */
+function findCategoriesByChallenge(id_challenge) {
+   return ChallengeCategory.findAll({
+      where: {
+         'fk_id_challenge': id_challenge
+      },
+      include: [{
+         model: ChCategories,
+         attributes: ['category_name']
+      }],
+      attributes: []
+
+   }).then((result) => {
+      let AllCategoriesResult = [];
+      result.map((category) => {
+         AllCategoriesResult.push(category.ch_category.category_name);
+      });
+      return result ? AllCategoriesResult : undefined;
+
+   }).catch((error) => {
+      throw error;
+
    });
 }

@@ -25,11 +25,6 @@ const {
 router.post('/', [auth, isAdmin], createChallenge);
 
 /**
- * Obtener todos los retos
- */
-router.get('/', [auth], getAllChallenges);
-
-/**
  * Obtener retos por categoría y página
  */
 router.get('/:page/:status', [auth], getChallengesByPageAndStatus);

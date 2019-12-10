@@ -4,8 +4,6 @@ var Sequelize = require('sequelize');
 
 var sequelize = require('../utils/database');
 
-var Survey = require('./Survey');
-
 var Company = require('./Company');
 
 var Challenge = sequelize.define('challenge', {
@@ -43,12 +41,13 @@ var Challenge = sequelize.define('challenge', {
   updatedAt: 'updated_at',
   createdAt: 'created_at'
 });
-Challenge.belongsTo(Survey, {
-  foreignKey: 'fk_id_survey',
-  targetKey: 'id_survey'
+Company.hasMany(Challenge, {
+  foreignKey: 'fk_id_company',
+  sourceKey: 'id_company'
 });
 Challenge.belongsTo(Company, {
   foreignKey: 'fk_id_company',
   targetKey: 'id_company'
-});
+}); // Challenge.belongsTo(Survey, { foreignKey: 'fk_id_survey', targetKey: 'id_survey' });
+
 module.exports = Challenge;

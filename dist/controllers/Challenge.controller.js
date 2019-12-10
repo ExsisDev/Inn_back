@@ -4,7 +4,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.createChallenge = createChallenge;
-exports.getAllChallenges = getAllChallenges;
 exports.getChallengesByPageAndStatus = getChallengesByPageAndStatus;
 
 var _require = require('../schemas/Challenge.validations'),
@@ -17,7 +16,11 @@ var sequelize = require('../utils/database');
 
 var Challenge = require('../models/Challenge');
 
+var Company = require('../models/Company');
+
 var ChallengeCategory = require('../models/ChallengeCategory');
+
+var ChCategories = require('../models/ChCategory');
 
 var SurveyController = require('./Survey.controller');
 
@@ -182,9 +185,9 @@ function createChallenge(req, res) {
 
 function createEmptyChallenge(bodyChallenge) {
   return Challenge.create(bodyChallenge).then(function (result) {
-    return result ? result : undefined; // return result ? res.send(result) : res.status(500).send("No se pudo crear el elemento");
+    return result ? result : undefined;
   })["catch"](function (error) {
-    throw error; // return res.status(500).send(error);
+    throw error;
   });
 }
 /**
@@ -204,34 +207,7 @@ function linkChallengeWithCategories(id_challenge, id_category) {
   });
 }
 /**
- * Obtener todos los retos
- * 
- * @param {Request} req 
- * @param {Response} res 
- * @return {Promise} promise
- */
-
-
-function getAllChallenges(req, res) {
-  return regeneratorRuntime.async(function getAllChallenges$(_context3) {
-    while (1) {
-      switch (_context3.prev = _context3.next) {
-        case 0:
-          Challenge.findAll().then(function (result) {
-            return result ? res.send(result) : res.status(404).send("No hay elementos disponibles");
-          })["catch"](function (error) {
-            return res.status(500).send(error);
-          });
-
-        case 1:
-        case "end":
-          return _context3.stop();
-      }
-    }
-  });
-}
-/**
- * Obtener los retos por pàgina y por estado
+ * Obtener los retos por pàgina y por estado, con total y categorias
  * 
  * @param {Request} req 
  * @param {Response} res 
@@ -240,32 +216,178 @@ function getAllChallenges(req, res) {
 
 
 function getChallengesByPageAndStatus(req, res) {
-  var itemsByPage, page, status;
-  return regeneratorRuntime.async(function getChallengesByPageAndStatus$(_context4) {
+  var itemsByPage, page, state, elementsCountByState, elementsByState, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, challenge;
+
+  return regeneratorRuntime.async(function getChallengesByPageAndStatus$(_context3) {
     while (1) {
-      switch (_context4.prev = _context4.next) {
+      switch (_context3.prev = _context3.next) {
         case 0:
           itemsByPage = 5;
           page = req.params.page;
-          status = req.params.status.toUpperCase();
-          _context4.next = 5;
-          return regeneratorRuntime.awrap(Challenge.findAll({
-            offset: (page - 1) * itemsByPage,
-            limit: itemsByPage,
-            order: [['created_at', 'DESC']],
-            where: {
-              'fk_id_challenge_state': challengeStateEnum.get("".concat(status)).value
-            }
-          }).then(function (result) {
-            return result ? res.send(result) : res.status(404).send("No hay elementos disponibles");
-          })["catch"](function (error) {
-            return res.status(500).send(error);
-          }));
+          state = challengeStateEnum.get("".concat(req.params.status.toUpperCase())).value;
+          elementsByState = [];
+          _context3.prev = 4;
+          _context3.next = 7;
+          return regeneratorRuntime.awrap(countElementsByState(state));
 
-        case 5:
+        case 7:
+          elementsCountByState = _context3.sent;
+          _context3.next = 10;
+          return regeneratorRuntime.awrap(findChallengesByPageAndState(itemsByPage, page, state));
+
+        case 10:
+          elementsByState = _context3.sent;
+          _iteratorNormalCompletion2 = true;
+          _didIteratorError2 = false;
+          _iteratorError2 = undefined;
+          _context3.prev = 14;
+          _iterator2 = elementsByState[Symbol.iterator]();
+
+        case 16:
+          if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
+            _context3.next = 24;
+            break;
+          }
+
+          challenge = _step2.value;
+          _context3.next = 20;
+          return regeneratorRuntime.awrap(findCategoriesByChallenge(challenge.id_challenge));
+
+        case 20:
+          challenge.dataValues['categories'] = _context3.sent;
+
+        case 21:
+          _iteratorNormalCompletion2 = true;
+          _context3.next = 16;
+          break;
+
+        case 24:
+          _context3.next = 30;
+          break;
+
+        case 26:
+          _context3.prev = 26;
+          _context3.t0 = _context3["catch"](14);
+          _didIteratorError2 = true;
+          _iteratorError2 = _context3.t0;
+
+        case 30:
+          _context3.prev = 30;
+          _context3.prev = 31;
+
+          if (!_iteratorNormalCompletion2 && _iterator2["return"] != null) {
+            _iterator2["return"]();
+          }
+
+        case 33:
+          _context3.prev = 33;
+
+          if (!_didIteratorError2) {
+            _context3.next = 36;
+            break;
+          }
+
+          throw _iteratorError2;
+
+        case 36:
+          return _context3.finish(33);
+
+        case 37:
+          return _context3.finish(30);
+
+        case 38:
+          _context3.next = 44;
+          break;
+
+        case 40:
+          _context3.prev = 40;
+          _context3.t1 = _context3["catch"](4);
+          console.log(_context3.t1);
+          return _context3.abrupt("return", res.status(500).send(_context3.t1));
+
+        case 44:
+          _context3.prev = 44;
+          return _context3.abrupt("return", elementsCountByState && elementsByState ? res.send({
+            result: elementsByState,
+            totalElements: elementsCountByState
+          }) : res.status(404).send("No hay elementos disponibles"));
+
+        case 47:
         case "end":
-          return _context4.stop();
+          return _context3.stop();
       }
     }
+  }, null, null, [[4, 40, 44, 47], [14, 26, 30, 38], [31,, 33, 37]]);
+}
+/**
+ * Contar los elementos totales del estado
+ * 
+ * @param {String} state 
+ */
+
+
+function countElementsByState(state) {
+  return Challenge.count({
+    where: {
+      'fk_id_challenge_state': state
+    }
+  }).then(function (result) {
+    return result ? result : undefined;
+  })["catch"](function (error) {
+    throw error;
+  });
+}
+/**
+ * Encontrar los elementos por estado, pagina y cantidad
+ * 
+ * @param {Number} itemsByPage 
+ * @param {Number} page 
+ * @param {String} state 
+ */
+
+
+function findChallengesByPageAndState(itemsByPage, page, state) {
+  return Challenge.findAll({
+    offset: (page - 1) * itemsByPage,
+    limit: itemsByPage,
+    order: [['created_at', 'DESC']],
+    where: {
+      'fk_id_challenge_state': state
+    },
+    include: [{
+      model: Company,
+      attributes: ['company_name', 'company_description']
+    }]
+  }).then(function (result) {
+    return result ? result : undefined;
+  })["catch"](function (error) {
+    throw error;
+  });
+}
+/**
+ * Encontrar todas los nombres de categorias por reto 
+ * 
+ * @param {Number} id_challenge 
+ */
+
+
+function findCategoriesByChallenge(id_challenge) {
+  return ChallengeCategory.findAll({
+    where: {
+      'fk_id_challenge': id_challenge
+    },
+    include: [{
+      model: ChCategories,
+      attributes: ['category_name']
+    }],
+    attributes: []
+  }).then(function (result) {
+    var AllCategoriesResult = [];
+    result.map(function (category) {
+      AllCategoriesResult.push(category.ch_category.category_name);
+    });
+    return result ? AllCategoriesResult : undefined;
+  })["catch"](function (error) {
+    throw error;
   });
 }

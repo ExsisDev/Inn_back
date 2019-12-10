@@ -1,5 +1,7 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../utils/database');
+const ChCategory = require('./ChCategory');
+
 
 const ChallengeCategory = sequelize.define('challenge_categories', {
 	fk_id_challenge: {
@@ -17,6 +19,10 @@ const ChallengeCategory = sequelize.define('challenge_categories', {
    updatedAt: 'updated_at',
    createdAt: 'created_at'
 });
+
+
+ChCategory.hasMany(ChallengeCategory, {foreignKey: 'fk_id_category', sourceKey: 'id_category'});
+ChallengeCategory.belongsTo(ChCategory, { foreignKey: 'fk_id_category', targetKey: 'id_category' });
 
 
 module.exports = ChallengeCategory;

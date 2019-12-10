@@ -4,7 +4,7 @@ var Sequelize = require('sequelize');
 
 var sequelize = require('../utils/database');
 
-var AlCategory = sequelize.define('al_categories', {
+var ChCategory = sequelize.define('ch_categories', {
   id_category: {
     type: Sequelize.INTEGER,
     autoIncrement: true,
@@ -20,4 +20,4 @@ var AlCategory = sequelize.define('al_categories', {
   updatedAt: 'updated_at',
   createdAt: 'created_at'
 });
-module.exports = AlCategory;
+module.exports = ChCategory;

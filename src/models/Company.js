@@ -1,6 +1,7 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../utils/database');
 
+
 const Company = sequelize.define('companies', {
    id_company: {
       type: Sequelize.INTEGER,
@@ -20,5 +21,6 @@ const Company = sequelize.define('companies', {
    updatedAt: 'updated_at',
    createdAt: 'created_at'
 });
+
 
 module.exports = Company;
