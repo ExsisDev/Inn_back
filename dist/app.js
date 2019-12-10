@@ -22,8 +22,6 @@ var companyRoutes = require('./routes/Company.routes');
 
 var alCategoriesRoutes = require('./routes/AlCategory.routes');
 
-var surveyRoutes = require('./routes/Survey.routes');
-
 console.log('Application Name: ' + config.get('name'));
 /**
  * Inicialización de express

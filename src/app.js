@@ -10,7 +10,6 @@ const userRoutes = require('./routes/User.routes');
 const challengeRoutes = require('./routes/Challenge.routes');
 const companyRoutes = require('./routes/Company.routes');
 const alCategoriesRoutes = require('./routes/AlCategory.routes');
-const surveyRoutes = require('./routes/Survey.routes');
 
 
 console.log('Application Name: ' + config.get('name'));
@@ -45,7 +44,7 @@ app.use('/api/allies', allyRoutes);
 app.use('/api/login', userRoutes);
 app.use('/api/challenges', challengeRoutes);
 app.use('/api/companies', companyRoutes);
-app.use('/api/al_categories', alCategoriesRoutes);
+app.use('/api/al_categories', alCategoriesRoutes); 
 // app.use('/api/surveys', surveyRoutes);
 
 
