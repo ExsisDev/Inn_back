@@ -28,6 +28,8 @@ var Ally = require('../models/Ally');
 var User = require('../models/User');
 
 var Resource = require('../models/Resource');
+
+var AllyCategory = require('../models/AllyCategory');
 /**
  * Verificar la validéz de los parametros del body
  * 
@@ -56,7 +58,7 @@ function getValidParams(req, res, callBackValidation) {
 
 
 function createAlly(req, res) {
-  var bodyAttributes, allyAttributes, userAttributes, resourcesAttributes, userVerified, answer;
+  var bodyAttributes, allyAttributes, userAttributes, resourcesAttributes, categories, userVerified, answer;
   return regeneratorRuntime.async(function createAlly$(_context) {
     while (1) {
       switch (_context.prev = _context.next) {
@@ -65,50 +67,51 @@ function createAlly(req, res) {
           allyAttributes = _.pick(bodyAttributes, ['ally_name', 'ally_nit', 'ally_web_page', 'ally_phone', 'ally_month_ideation_hours', 'ally_month_experimentation_hours']);
           userAttributes = _.pick(bodyAttributes, ['fk_id_role', 'fk_user_state', 'user_email', 'user_password']);
           resourcesAttributes = _.pick(bodyAttributes, ['ally_resources']);
+          categories = _.pick(bodyAttributes, ['ally_categories']);
           userAttributes['user_last_login'] = DateTime.local().setZone('America/Bogota').toString();
           userAttributes['login_attempts'] = 0;
-          _context.prev = 6;
-          _context.next = 9;
+          _context.prev = 7;
+          _context.next = 10;
           return regeneratorRuntime.awrap(verifyUser(userAttributes.user_email));
 
-        case 9:
+        case 10:
           userVerified = _context.sent;
 
           if (!userVerified) {
-            _context.next = 12;
+            _context.next = 13;
             break;
           }
 
           return _context.abrupt("return", res.status(400).send("El correo ya ha sido registrado"));
 
-        case 12:
-          _context.next = 14;
+        case 13:
+          _context.next = 15;
           return regeneratorRuntime.awrap(hashPassword(userAttributes));
 
-        case 14:
-          _context.next = 16;
-          return regeneratorRuntime.awrap(createUserAndAlly(userAttributes, allyAttributes, resourcesAttributes));
+        case 15:
+          _context.next = 17;
+          return regeneratorRuntime.awrap(createUserAndAlly(userAttributes, allyAttributes, resourcesAttributes, categories));
 
-        case 16:
+        case 17:
           answer = _context.sent;
-          _context.next = 22;
+          _context.next = 23;
           break;
 
-        case 19:
-          _context.prev = 19;
-          _context.t0 = _context["catch"](6);
+        case 20:
+          _context.prev = 20;
+          _context.t0 = _context["catch"](7);
           return _context.abrupt("return", res.status(400).send(_context.t0));
 
-        case 22:
-          _context.prev = 22;
+        case 23:
+          _context.prev = 23;
           return _context.abrupt("return", res.send(answer));
 
-        case 25:
+        case 26:
         case "end":
           return _context.stop();
       }
     }
-  }, null, null, [[6, 19, 22, 25]]);
+  }, null, null, [[7, 20, 23, 26]]);
 }
 /**
  * Verificar existencia del usuario por email
@@ -143,25 +146,29 @@ function hashPassword(userAttributes) {
   });
 }
 /**
- * Crear el usuario, luego el aliado y por ultimo los recursos asociados al aliado.
+ * Crear el usuario, luego el aliado, continua creando los recursos asociados al aliado
+ * y por ultimo crea las  categorias de interés del aliado.
  * Dentro de una transacción de Sequalize
  * 
  * @param {Object} userAttributes 
- * @param {Object} allyAttributes 
+ * @param {Object} allyAttributes
+ * @param {Object} resourcesAttributes es un objeto con un arreglo de Resources
+ * @param {Object} categories es un objeto con un arreglo de enteros positivos
  */
 
 
-function createUserAndAlly(userAttributes, allyAttributes, resourcesAttributes) {
-  var userCreated, allyCreated, resourcesCreated, obj1, obj2, obj3, answerObject;
+function createUserAndAlly(userAttributes, allyAttributes, resourcesAttributes, categories) {
+  var userCreated, allyCreated, resourcesCreated, categoriesCreated, obj1, obj2, obj3, obj4, answerObject;
   return regeneratorRuntime.async(function createUserAndAlly$(_context3) {
     while (1) {
       switch (_context3.prev = _context3.next) {
         case 0:
           resourcesCreated = [];
-          _context3.prev = 1;
-          _context3.next = 4;
+          categoriesCreated = [];
+          _context3.prev = 2;
+          _context3.next = 5;
           return regeneratorRuntime.awrap(sequelize.transaction(function _callee(t) {
-            var _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, resource, createResult;
+            var _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, resource, createResult, allyCategory, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, category, _createResult;
 
             return regeneratorRuntime.async(function _callee$(_context2) {
               while (1) {
@@ -252,27 +259,97 @@ function createUserAndAlly(userAttributes, allyAttributes, resourcesAttributes) 
                     return _context2.finish(27);
 
                   case 35:
+                    //step 4
+                    allyCategory = {};
+                    _iteratorNormalCompletion2 = true;
+                    _didIteratorError2 = false;
+                    _iteratorError2 = undefined;
+                    _context2.prev = 39;
+                    _iterator2 = categories['ally_categories'][Symbol.iterator]();
+
+                  case 41:
+                    if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
+                      _context2.next = 51;
+                      break;
+                    }
+
+                    category = _step2.value;
+                    allyCategory = {
+                      fk_id_ally: allyCreated.id_ally,
+                      fk_id_category: category
+                    };
+                    _context2.next = 46;
+                    return regeneratorRuntime.awrap(AllyCategory.create(allyCategory, {
+                      transaction: t
+                    }).then(function (result) {
+                      return result;
+                    }));
+
+                  case 46:
+                    _createResult = _context2.sent;
+                    categoriesCreated.push(_.omit(_createResult.dataValues, ['fk_id_ally', 'updated_at', 'created_at']));
+
+                  case 48:
+                    _iteratorNormalCompletion2 = true;
+                    _context2.next = 41;
+                    break;
+
+                  case 51:
+                    _context2.next = 57;
+                    break;
+
+                  case 53:
+                    _context2.prev = 53;
+                    _context2.t1 = _context2["catch"](39);
+                    _didIteratorError2 = true;
+                    _iteratorError2 = _context2.t1;
+
+                  case 57:
+                    _context2.prev = 57;
+                    _context2.prev = 58;
+
+                    if (!_iteratorNormalCompletion2 && _iterator2["return"] != null) {
+                      _iterator2["return"]();
+                    }
+
+                  case 60:
+                    _context2.prev = 60;
+
+                    if (!_didIteratorError2) {
+                      _context2.next = 63;
+                      break;
+                    }
+
+                    throw _iteratorError2;
+
+                  case 63:
+                    return _context2.finish(60);
+
+                  case 64:
+                    return _context2.finish(57);
+
+                  case 65:
                   case "end":
                     return _context2.stop();
                 }
               }
-            }, null, null, [[9, 23, 27, 35], [28,, 30, 34]]);
+            }, null, null, [[9, 23, 27, 35], [28,, 30, 34], [39, 53, 57, 65], [58,, 60, 64]]);
           }));
 
-        case 4:
-          _context3.next = 9;
+        case 5:
+          _context3.next = 10;
           break;
 
-        case 6:
-          _context3.prev = 6;
-          _context3.t0 = _context3["catch"](1);
+        case 7:
+          _context3.prev = 7;
+          _context3.t0 = _context3["catch"](2);
           throw _context3.t0;
 
-        case 9:
-          _context3.prev = 9;
+        case 10:
+          _context3.prev = 10;
 
           if (!(userCreated && allyCreated)) {
-            _context3.next = 17;
+            _context3.next = 20;
             break;
           }
 
@@ -281,21 +358,28 @@ function createUserAndAlly(userAttributes, allyAttributes, resourcesAttributes) 
           obj3 = {
             ally_resources: []
           };
+          obj4 = {
+            ally_categories: []
+          };
 
           if (resourcesCreated) {
             obj3['ally_resources'] = _.assign(resourcesCreated);
           }
 
-          answerObject = _.assign(obj1, obj2, obj3);
+          if (categoriesCreated) {
+            obj4['ally_categories'] = _.assign(categoriesCreated);
+          }
+
+          answerObject = _.assign(obj1, obj2, obj3, obj4);
           return _context3.abrupt("return", answerObject);
 
-        case 17:
-          return _context3.finish(9);
+        case 20:
+          return _context3.finish(10);
 
-        case 18:
+        case 21:
         case "end":
           return _context3.stop();
       }
     }
-  }, null, null, [[1, 6, 9, 18]]);
+  }, null, null, [[2, 7, 10, 21]]);
 }

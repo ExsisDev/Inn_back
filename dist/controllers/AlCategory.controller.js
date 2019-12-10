@@ -3,23 +3,23 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getAllAllyCategories = getAllAllyCategories;
+exports.getAllAlCategories = getAllAlCategories;
 
-var AllyCategory = require('../models/AllyCategory');
+var AlCategory = require('../models/AlCategory');
 /**
- * Obtener todas las categorias por compañia
+ * Obtener todas las categorias de los aliados o compañias
  * 
  * @param {Request} req 
  * @param {Response} res 
  */
 
 
-function getAllAllyCategories(req, res) {
-  return regeneratorRuntime.async(function getAllAllyCategories$(_context) {
+function getAllAlCategories(req, res) {
+  return regeneratorRuntime.async(function getAllAlCategories$(_context) {
     while (1) {
       switch (_context.prev = _context.next) {
         case 0:
-          AllyCategory.findAll().then(function (result) {
+          AlCategory.findAll().then(function (result) {
             return result ? res.send(result) : res.status(404).send("No hay elementos disponibles");
           })["catch"](function (error) {
             return res.status(500).send(error);
