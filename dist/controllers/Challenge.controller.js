@@ -217,11 +217,11 @@ function getAllChallenges(req, res) {
     while (1) {
       switch (_context3.prev = _context3.next) {
         case 0:
-          Challenge.findAll().then(function (result) {
+          return _context3.abrupt("return", Challenge.findAll().then(function (result) {
             return result ? res.send(result) : res.status(404).send("No hay elementos disponibles");
           })["catch"](function (error) {
             return res.status(500).send(error);
-          });
+          }));
 
         case 1:
         case "end":
@@ -240,7 +240,7 @@ function getAllChallenges(req, res) {
 
 
 function getChallengesByPageAndStatus(req, res) {
-  var itemsByPage, page, status;
+  var itemsByPage, page, status, totalElementsByState;
   return regeneratorRuntime.async(function getChallengesByPageAndStatus$(_context4) {
     while (1) {
       switch (_context4.prev = _context4.next) {
@@ -249,6 +249,18 @@ function getChallengesByPageAndStatus(req, res) {
           page = req.params.page;
           status = req.params.status.toUpperCase();
           _context4.next = 5;
+          return regeneratorRuntime.awrap(Challenge.count({
+            where: {
+              'fk_id_challenge_state': challengeStateEnum.get("".concat(status)).value
+            }
+          }).then(function (result) {
+            totalElementsByState = result;
+          })["catch"](function (error) {
+            return res.status(500).send(error);
+          }));
+
+        case 5:
+          _context4.next = 7;
           return regeneratorRuntime.awrap(Challenge.findAll({
             offset: (page - 1) * itemsByPage,
             limit: itemsByPage,
@@ -257,12 +269,15 @@ function getChallengesByPageAndStatus(req, res) {
               'fk_id_challenge_state': challengeStateEnum.get("".concat(status)).value
             }
           }).then(function (result) {
-            return result ? res.send(result) : res.status(404).send("No hay elementos disponibles");
+            return result ? res.send({
+              result: result,
+              totalElements: totalElementsByState
+            }) : res.status(404).send("No hay elementos disponibles");
           })["catch"](function (error) {
             return res.status(500).send(error);
           }));
 
-        case 5:
+        case 7:
         case "end":
           return _context4.stop();
       }
