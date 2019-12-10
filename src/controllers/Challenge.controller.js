@@ -110,7 +110,7 @@ function linkChallengeWithCategories(id_challenge, id_category) {
  */
 export async function getAllChallenges(req, res) {
 
-   Challenge.findAll().then((result) => {
+   return Challenge.findAll().then((result) => {
       return result ? res.send(result) : res.status(404).send("No hay elementos disponibles");
 
    }).catch((error) => {
@@ -131,6 +131,20 @@ export async function getChallengesByPageAndStatus(req, res) {
    let itemsByPage = 5;
    let page = req.params.page;
    let status = req.params.status.toUpperCase();
+   let totalElementsByState;
+
+   await Challenge.count({
+      where: {
+         'fk_id_challenge_state': challengeStateEnum.get(`${status}`).value
+      }
+   }).then((result) => {
+      totalElementsByState = result;
+
+   }).catch((error) => {
+      return res.status(500).send(error);
+      
+   });
+
    await Challenge.findAll({
       offset: (page-1)*itemsByPage,
       limit: itemsByPage,
@@ -141,7 +155,7 @@ export async function getChallengesByPageAndStatus(req, res) {
          'fk_id_challenge_state': challengeStateEnum.get(`${status}`).value
       }
    }).then((result) => {
-      return result ? res.send(result) : res.status(404).send("No hay elementos disponibles");
+      return result ? res.send({result, totalElements: totalElementsByState}) : res.status(404).send("No hay elementos disponibles");
       
    }).catch((error) => {
       return res.status(500).send(error);
