@@ -62,6 +62,13 @@ export async function createAlly(req, res) {
 }
 
 
+export function updateAlly(req, res) {
+   const bodyAttributes = getValidParams(req, res, validateBodyAllyUpdate);
+   console.log("############################");   
+   console.log(bodyAttributes);
+   return res.status(400).send("probando...");
+}
+
 /**
  * Verificar existencia del usuario por email
  * 

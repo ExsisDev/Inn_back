@@ -1,5 +1,5 @@
 const Joi = require('@hapi/joi');
-const { createResourceSchema } = require('./Resource.validations');
+const { createResourceSchema, updateResourceSchema } = require('./Resource.validations');
 
 export function validateBodyAllyCreation(ally) {
    const createAllySchema = Joi.object({
@@ -39,7 +39,8 @@ export function validateBodyAllyUpdate(ally) {
       ally_phone: Joi.string().max(20),
       ally_month_ideation_hours: Joi.number().integer().positive(),
       ally_month_experimentation_hours: Joi.number().integer().positive(),
-      ally_resources: Joi.array().items(ResourceSchema)
+      ally_resources: Joi.array().items(updateResourceSchema),
+      ally_categories: Joi.array().items(Joi.number().integer().positive())
    });
    return updateAllySchema.validate(ally);
 }
