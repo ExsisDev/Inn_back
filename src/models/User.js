@@ -53,7 +53,11 @@ const User = sequelize.define('users', {
  * @return {string} token
  */
 User.prototype.generateAuthToken = function () {
-   return jwt.sign({ id_user: this.id_user, fk_id_role: this.fk_id_role }, config.get('jwtPrivateKey'), { algorithm: 'HS384', expiresIn: "12h" }, );
+   return jwt.sign({ id_user: this.id_user, fk_id_role: this.fk_id_role }, config.get('jwtPrivateKey'), { algorithm: 'HS384', expiresIn: "12h" });
+}
+
+User.getTokenElements = function (token) {
+   return jwt.verify(token, config.get('jwtPrivateKey'));
 }
 
 

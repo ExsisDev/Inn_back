@@ -1,4 +1,4 @@
-const { validateUserAuth } = require('../schemas/User.validations');
+const { validateUserAuth, validatePasswordChange } = require('../schemas/User.validations');
 const _ = require('lodash');
 const { DateTime } = require('luxon');
 const bcrypt = require('bcrypt');
@@ -115,6 +115,46 @@ function updateLoginCounter(email, number) {
 
 
 /**
+ * Autenticar el usuario
+ * 
+ * @param {Request} res 
+ * @param {Object} userAttributes 
+ */
+function authenticateUser(res, userAttributes) {
+
+   const minutesUntilAccess = 5;
+   let userAuthenticated;
+   let passwordComparison;
+   let token;
+   let attemptsCounter;
+
+   return new Promise(async () => {
+      userAuthenticated = await findUser(userAttributes.user_email);
+      if (!userAuthenticated) return res.status(400).send("Correo o contraseña inválida");
+
+      passwordComparison = await comparePassword(userAttributes, userAuthenticated);
+      if (!passwordComparison) {
+         attemptsCounter = await getLoginAttempts(userAttributes.user_email);
+         await updateLoginCounter(userAttributes.user_email, attemptsCounter + 1);
+
+         if (attemptsCounter + 1 == 5) {
+            await updateLoginCounter(userAttributes.user_email, 0);
+            const futureHour = DateTime.local().setZone('America/Bogota').plus({ minutes: minutesUntilAccess });
+            await updateHour(userAttributes.user_email, futureHour);
+         }
+         return res.status(400).send("Correo o contraseña inválida");
+
+      }
+      await updateHour(userAttributes.user_email, DateTime.local().setZone('America/Bogota'));
+      await updateLoginCounter(userAttributes.user_email, 0);
+      token = userAuthenticated.generateAuthToken();
+      return res.set('x-auth-token', token).set('Access-Control-Expose-Headers', 'x-auth-token').send("Usuario autenticado");
+
+   });
+}
+
+
+/**
  * Encontrar el usuario dado el email
  * 
  * @param {String} email 
@@ -169,41 +209,19 @@ function getLoginAttempts(email) {
 
 
 /**
- * Autenticar el usuario
- * 
- * @param {Request} res 
- * @param {Object} userAttributes 
+ * Verificar contraseña
  */
-function authenticateUser(res, userAttributes) {
+export async function changePassword(req, res){
+   const userAttributes = getValidParams(req, res, validatePasswordChange);
 
-   const minutesUntilAccess = 5;
-   let userAuthenticated;
-   let passwordComparison;
-   let token;
-   let attemptsCounter;
-
-   return new Promise(async () => {
-      userAuthenticated = await findUser(userAttributes.user_email);
-      if (!userAuthenticated) return res.status(400).send("Correo o contraseña inválida");
-
-      passwordComparison = await comparePassword(userAttributes, userAuthenticated);
-      if (!passwordComparison) {
-         attemptsCounter = await getLoginAttempts(userAttributes.user_email);
-         await updateLoginCounter(userAttributes.user_email, attemptsCounter + 1);
-
-         if (attemptsCounter + 1 == 5) {
-            await updateLoginCounter(userAttributes.user_email, 0);
-            const futureHour = DateTime.local().setZone('America/Bogota').plus({ minutes: minutesUntilAccess });
-            await updateHour(userAttributes.user_email, futureHour);
-         }
-         return res.status(400).send("Correo o contraseña inválida");
-
+   const tokenElements = User.getTokenElements(req.headers['x-auth-token']);
+   await User.findOne({
+      where: {
+         id_user: tokenElements.id_user
       }
-      await updateHour(userAttributes.user_email, DateTime.local().setZone('America/Bogota'));
-      await updateLoginCounter(userAttributes.user_email, 0);
-      token = userAuthenticated.generateAuthToken();
-      return res.set('x-auth-token', token).set('Access-Control-Expose-Headers', 'x-auth-token').send("Usuario autenticado");
-
-   });
+   }).then((result) => {
+      console.log(result);
+   }).catch((error) => {
+      console.log(error);
+   })
 }
-
