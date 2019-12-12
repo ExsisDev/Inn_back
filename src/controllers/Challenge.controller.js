@@ -170,7 +170,8 @@ function findChallengesByPageAndState(itemsByPage, page, state) {
          ['created_at', 'DESC']
       ],
       where: {
-         'fk_id_challenge_state': state
+         'fk_id_challenge_state': state,
+         'is_deleted': false
       },
       include: [{
          model: Company,
