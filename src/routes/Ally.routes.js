@@ -24,7 +24,7 @@ router.post('/', [auth, isAdmin], createAlly);
 /**
  * 
  */
-router.put('/:id', [auth, isAdmin], updateAlly);
+router.put('/:idAlly', [auth, isAdmin], updateAlly);
 
 
 module.exports = router;

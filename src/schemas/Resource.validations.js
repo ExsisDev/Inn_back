@@ -7,6 +7,7 @@ export const createResourceSchema = Joi.object({
 });
 
 export const updateResourceSchema = Joi.object({
+   id_resource: Joi.number().integer().positive(),
    resource_name: Joi.string().max(50),
    resource_profile: Joi.string().max(200),
    resource_experience: Joi.string(),
