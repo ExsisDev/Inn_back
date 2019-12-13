@@ -7,7 +7,8 @@ const { isAdmin } = require('../middleware/Admin');
 const {
    createChallenge,
    getAllChallenges,
-   getChallengesByPageAndStatus
+   getChallengesByPageAndStatus,
+   deleteChallenge
 } = require('../controllers/Challenge.controller');
 
 
@@ -28,6 +29,12 @@ router.post('/', [auth, isAdmin], createChallenge);
  * Obtener retos por categoría y página
  */
 router.get('/:page/:status', [auth], getChallengesByPageAndStatus);
+
+
+/**
+ * Eliminar un reto (Solo usuario administrador)
+ */
+router.delete('/:idChallenge', [auth, isAdmin], deleteChallenge);
 
 
 module.exports = router;

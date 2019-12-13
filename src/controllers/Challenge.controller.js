@@ -45,6 +45,7 @@ export async function createChallenge(req, res) {
       await sequelize.transaction(async (t) => {
          surveyCreated = await SurveyController.createSurvey(bodySurvey);
          bodyChallenge['fk_id_survey'] = surveyCreated.id_survey;
+         bodyChallenge['is_deleted'] = false;
          challengeEmpty = await createEmptyChallenge(bodyChallenge);
          for (let id_category of bodyCategories.categories_selected) {
             await linkChallengeWithCategories(challengeEmpty.id_challenge, id_category);
@@ -64,7 +65,6 @@ export async function createChallenge(req, res) {
 
    }
 }
-
 
 /**
  * Crear el reto vacio
@@ -102,6 +102,30 @@ function linkChallengeWithCategories(id_challenge, id_category) {
    });
 }
 
+/**
+ * Eliminar reto. Se actualiza columna is_deleted para que el
+ * reto ya no sea tenido en cuenta.
+ * @param {*} req 
+ * @param {*} res 
+ */
+export async function deleteChallenge(req, res) {
+   let challengeUpdated;
+   let id_challenge = parseInt(req.params.idChallenge);
+   
+   if( isNaN(id_challenge) ) {
+      return res.status(400).send( "Id no válido, idChallenge debe ser un entero." );
+   }
+   try {
+      challengeUpdated = await Challenge.update( {is_deleted: true}, {where: { id_challenge }});      
+   } catch (error) { 
+      throw error;
+   } finally {
+      if (challengeUpdated) {
+         return res.status(200).send("Reto eliminado");
+      }
+      return res.status(500).send( "No se pudo eliminar el reto" );
+   }
+}
 
 /**
  * Obtener los retos por pàgina y por estado, con total y categorias
@@ -143,7 +167,8 @@ export async function getChallengesByPageAndStatus(req, res) {
 function countElementsByState(state) {
    return Challenge.count({
       where: {
-         'fk_id_challenge_state': state
+         'fk_id_challenge_state': state,
+         'is_deleted': false
       }
    }).then((result) => {
       return result ? result : undefined;
@@ -170,7 +195,8 @@ function findChallengesByPageAndState(itemsByPage, page, state) {
          ['created_at', 'DESC']
       ],
       where: {
-         'fk_id_challenge_state': state
+         'fk_id_challenge_state': state,
+         'is_deleted': false
       },
       include: [{
          model: Company,
