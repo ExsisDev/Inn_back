@@ -20,6 +20,9 @@ function getValidParams(req, res, callBackValidation) {
 
 /**
  * Validar email y constraseña de un usuario de acuerdo a los intentos:
+ * 1. Obtiene la hora de acceso
+ * 2. Calcula la diferencia entre horas
+ * 3. Permite o no el acceso 
  * 
  * @param {Request} req 
  * @param {Response} res 
@@ -86,7 +89,7 @@ function updateHour(email, hour) {
       { where: { user_email: email } }
 
    ).then((result) => {
-      return result;
+      return result ? result : undefined;
 
    }).catch((error) => {
       throw error;
@@ -106,7 +109,7 @@ function updateLoginCounter(email, number) {
       { where: { user_email: email } }
 
    ).then((result) => {
-      return result;
+      return result ? result : undefined;
 
    }).catch((error) => {
       throw error;
@@ -129,10 +132,10 @@ function authenticateUser(res, userAttributes) {
    let attemptsCounter;
 
    return new Promise(async () => {
-      userAuthenticated = await findUser(userAttributes.user_email);
+      userAuthenticated = await findUserByEmail(userAttributes.user_email);
       if (!userAuthenticated) return res.status(400).send("Correo o contraseña inválida");
 
-      passwordComparison = await comparePassword(userAttributes, userAuthenticated);
+      passwordComparison = await comparePassword(userAttributes.user_password, userAuthenticated.user_password);
       if (!passwordComparison) {
          attemptsCounter = await getLoginAttempts(userAttributes.user_email);
          await updateLoginCounter(userAttributes.user_email, attemptsCounter + 1);
@@ -159,12 +162,12 @@ function authenticateUser(res, userAttributes) {
  * 
  * @param {String} email 
  */
-function findUser(email) {
+function findUserByEmail(email) {
    return User.findOne({
       where: { user_email: email }
 
    }).then((result) => {
-      return result;
+      return result ? result : undefined;
 
    }).catch((error) => {
       throw error;
@@ -176,12 +179,12 @@ function findUser(email) {
 /**
  * Verificar la validez de las contraseñas
  * 
- * @param {String} requestUser 
- * @param {String} databaseUser 
+ * @param {String} requestPassword 
+ * @param {String} databasePassword 
  */
-function comparePassword(requestUser, databaseUser) {
+function comparePassword(requestPassword, databasePassword) {
    return new Promise((resolve, reject) => {
-      bcrypt.compare(requestUser.user_password, databaseUser.user_password, function (compareError, compareResponse) {
+      bcrypt.compare(requestPassword, databasePassword, function (compareError, compareResponse) {
          (compareError) ? reject(compareError) : resolve(compareResponse);
 
       });
@@ -199,29 +202,107 @@ function getLoginAttempts(email) {
       where: { user_email: email }
 
    }).then((result) => {
-      return result.login_attempts;
+      return result ? result.login_attempts : undefined;
 
    }).catch((error) => {
-      throw error; 
+      throw error;
 
    });
 }
 
 
 /**
- * Verificar contraseña
+ * Verificar contraseña:
+ * 1. Corroborando que la contraseña actual es correcta
+ * 2. Las contraseñas nuevas son iguales
+ * 3. Actualizando la contraseña
  */
-export async function changePassword(req, res){
+export async function changePassword(req, res) {
    const userAttributes = getValidParams(req, res, validatePasswordChange);
-
    const tokenElements = User.getTokenElements(req.headers['x-auth-token']);
-   await User.findOne({
+
+   let idUser = tokenElements.id_user;
+   let userRequestPassword = userAttributes.actual_password;
+   let userDataBasePassword;
+   let isCorrectPassword;
+
+   try {
+      userDataBasePassword = await findUserById(idUser);
+      await comparePassword(userRequestPassword, userDataBasePassword).then((isCorrect) => {
+         isCorrectPassword = isCorrect;
+      });
+      if (isCorrectPassword) {
+         if (userAttributes.new_password == userAttributes.confirm_new_password) {
+            const hashedPassword = await hashPassword(userAttributes.new_password)
+            const updated = await updateUserPassword(hashedPassword, idUser);
+            return res.status(200).send(updated);
+         }else{
+            return res.status(400).send("Las contraseñas no coinciden");
+         }
+      }
+      return res.status(400).send("La contraseña es incorrecta");
+   } catch (error) {
+      console.log(error)
+      return res.status(500).send(error);
+   }
+
+}
+
+
+/**
+ * Encontrar un usuario por su id
+ * 
+ * @param {Number} id_user 
+ * @returns {String} user_password
+ */
+function findUserById(id_user) {
+   return User.findOne({
       where: {
-         id_user: tokenElements.id_user
+         id_user: id_user
       }
    }).then((result) => {
-      console.log(result);
+      return result ? result.user_password : undefined;
+
    }).catch((error) => {
-      console.log(error);
+      throw error;
+
+   })
+}
+
+
+/**
+ * Hashear contraseña
+ * 
+ * @param {String} unhashedPassword 
+ */
+function hashPassword(unhashedPassword){
+   return bcrypt.hash(unhashedPassword, 10).then((hash) => {
+      return hash ? hash: undefined;
+
+   }).catch((error) => {
+      throw error;
+
+   });
+}
+
+
+
+/**
+ * Actualizar la contraseña en la base de datos 
+ *  
+ * @param {String} newPassword 
+ * @param {Number} id_user 
+ */
+function updateUserPassword(newUnhashedPassword, id_user) {
+   return User.update({
+      user_password: newUnhashedPassword
+   }, {
+      where: {
+         id_user: id_user
+      }
+   }).then((result) => {
+      return result ? result : undefined;
+   }).catch((error) => {
+      throw error;
    })
 }
