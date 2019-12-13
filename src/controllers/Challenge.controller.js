@@ -102,6 +102,7 @@ function linkChallengeWithCategories(id_challenge, id_category) {
    });
 }
 
+
 /**
  * Eliminar reto. Se actualiza columna is_deleted para que el
  * reto ya no sea tenido en cuenta.

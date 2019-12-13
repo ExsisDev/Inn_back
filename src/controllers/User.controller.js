@@ -236,7 +236,7 @@ export async function changePassword(req, res) {
             const hashedPassword = await hashPassword(userAttributes.new_password)
             const updated = await updateUserPassword(hashedPassword, idUser);
             return res.status(200).send(updated);
-         }else{
+         } else {
             return res.status(400).send("Las contraseñas no coinciden");
          }
       }
@@ -275,16 +275,15 @@ function findUserById(id_user) {
  * 
  * @param {String} unhashedPassword 
  */
-function hashPassword(unhashedPassword){
+function hashPassword(unhashedPassword) {
    return bcrypt.hash(unhashedPassword, 10).then((hash) => {
-      return hash ? hash: undefined;
+      return hash ? hash : undefined;
 
    }).catch((error) => {
       throw error;
 
    });
 }
-
 
 
 /**
