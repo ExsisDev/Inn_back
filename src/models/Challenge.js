@@ -34,7 +34,8 @@ const Challenge = sequelize.define('challenge', {
    },
    is_deleted: {
       type: Sequelize.BOOLEAN,
-      allowNull: false
+      allowNull: false,
+      defaultValue: false
    }
 }, {
    timestamps: true,
