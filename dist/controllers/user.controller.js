@@ -4,9 +4,11 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.authenticateAttempts = authenticateAttempts;
+exports.changePassword = changePassword;
 
 var _require = require('../schemas/User.validations'),
-    validateUserAuth = _require.validateUserAuth;
+    validateUserAuth = _require.validateUserAuth,
+    validatePasswordChange = _require.validatePasswordChange;
 
 var _ = require('lodash');
 
@@ -33,6 +35,9 @@ function getValidParams(req, res, callBackValidation) {
 }
 /**
  * Validar email y constraseña de un usuario de acuerdo a los intentos:
+ * 1. Obtiene la hora de acceso
+ * 2. Calcula la diferencia entre horas
+ * 3. Permite o no el acceso 
  * 
  * @param {Request} req 
  * @param {Response} res 
@@ -135,7 +140,7 @@ function updateHour(email, hour) {
       user_email: email
     }
   }).then(function (result) {
-    return result;
+    return result ? result : undefined;
   })["catch"](function (error) {
     throw error;
   });
@@ -156,58 +161,7 @@ function updateLoginCounter(email, number) {
       user_email: email
     }
   }).then(function (result) {
-    return result;
-  })["catch"](function (error) {
-    throw error;
-  });
-}
-/**
- * Encontrar el usuario dado el email
- * 
- * @param {String} email 
- */
-
-
-function findUser(email) {
-  return User.findOne({
-    where: {
-      user_email: email
-    }
-  }).then(function (result) {
-    return result;
-  })["catch"](function (error) {
-    throw error;
-  });
-}
-/**
- * Verificar la validez de las contraseñas
- * 
- * @param {String} requestUser 
- * @param {String} databaseUser 
- */
-
-
-function comparePassword(requestUser, databaseUser) {
-  return new Promise(function (resolve, reject) {
-    bcrypt.compare(requestUser.user_password, databaseUser.user_password, function (compareError, compareResponse) {
-      compareError ? reject(compareError) : resolve(compareResponse);
-    });
-  });
-}
-/**
- * Obtener los intentos
- * 
- * @param {String} email 
- */
-
-
-function getLoginAttempts(email) {
-  return User.findOne({
-    where: {
-      user_email: email
-    }
-  }).then(function (result) {
-    return result.login_attempts;
+    return result ? result : undefined;
   })["catch"](function (error) {
     throw error;
   });
@@ -233,7 +187,7 @@ function authenticateUser(res, userAttributes) {
         switch (_context2.prev = _context2.next) {
           case 0:
             _context2.next = 2;
-            return regeneratorRuntime.awrap(findUser(userAttributes.user_email));
+            return regeneratorRuntime.awrap(findUserByEmail(userAttributes.user_email));
 
           case 2:
             userAuthenticated = _context2.sent;
@@ -247,7 +201,7 @@ function authenticateUser(res, userAttributes) {
 
           case 5:
             _context2.next = 7;
-            return regeneratorRuntime.awrap(comparePassword(userAttributes, userAuthenticated));
+            return regeneratorRuntime.awrap(comparePassword(userAttributes.user_password, userAuthenticated.user_password));
 
           case 7:
             passwordComparison = _context2.sent;
@@ -302,5 +256,181 @@ function authenticateUser(res, userAttributes) {
         }
       }
     });
+  });
+}
+/**
+ * Encontrar el usuario dado el email
+ * 
+ * @param {String} email 
+ */
+
+
+function findUserByEmail(email) {
+  return User.findOne({
+    where: {
+      user_email: email
+    }
+  }).then(function (result) {
+    return result ? result : undefined;
+  })["catch"](function (error) {
+    throw error;
+  });
+}
+/**
+ * Verificar la validez de las contraseñas
+ * 
+ * @param {String} requestPassword 
+ * @param {String} databasePassword 
+ */
+
+
+function comparePassword(requestPassword, databasePassword) {
+  return new Promise(function (resolve, reject) {
+    bcrypt.compare(requestPassword, databasePassword, function (compareError, compareResponse) {
+      compareError ? reject(compareError) : resolve(compareResponse);
+    });
+  });
+}
+/**
+ * Obtener los intentos
+ * 
+ * @param {String} email 
+ */
+
+
+function getLoginAttempts(email) {
+  return User.findOne({
+    where: {
+      user_email: email
+    }
+  }).then(function (result) {
+    return result ? result.login_attempts : undefined;
+  })["catch"](function (error) {
+    throw error;
+  });
+}
+/**
+ * Verificar contraseña:
+ * 1. Corroborando que la contraseña actual es correcta
+ * 2. Las contraseñas nuevas son iguales
+ * 3. Actualizando la contraseña
+ */
+
+
+function changePassword(req, res) {
+  var userAttributes, tokenElements, idUser, userRequestPassword, userDataBasePassword, isCorrectPassword, hashedPassword, updated;
+  return regeneratorRuntime.async(function changePassword$(_context3) {
+    while (1) {
+      switch (_context3.prev = _context3.next) {
+        case 0:
+          userAttributes = getValidParams(req, res, validatePasswordChange);
+          tokenElements = User.getTokenElements(req.headers['x-auth-token']);
+          idUser = tokenElements.id_user;
+          userRequestPassword = userAttributes.actual_password;
+          _context3.prev = 4;
+          _context3.next = 7;
+          return regeneratorRuntime.awrap(findUserById(idUser));
+
+        case 7:
+          userDataBasePassword = _context3.sent;
+          _context3.next = 10;
+          return regeneratorRuntime.awrap(comparePassword(userRequestPassword, userDataBasePassword).then(function (isCorrect) {
+            isCorrectPassword = isCorrect;
+          }));
+
+        case 10:
+          if (!isCorrectPassword) {
+            _context3.next = 22;
+            break;
+          }
+
+          if (!(userAttributes.new_password == userAttributes.confirm_new_password)) {
+            _context3.next = 21;
+            break;
+          }
+
+          _context3.next = 14;
+          return regeneratorRuntime.awrap(hashPassword(userAttributes.new_password));
+
+        case 14:
+          hashedPassword = _context3.sent;
+          _context3.next = 17;
+          return regeneratorRuntime.awrap(updateUserPassword(hashedPassword, idUser));
+
+        case 17:
+          updated = _context3.sent;
+          return _context3.abrupt("return", res.status(200).send(updated));
+
+        case 21:
+          return _context3.abrupt("return", res.status(400).send("Las contraseñas no coinciden"));
+
+        case 22:
+          return _context3.abrupt("return", res.status(400).send("La contraseña es incorrecta"));
+
+        case 25:
+          _context3.prev = 25;
+          _context3.t0 = _context3["catch"](4);
+          console.log(_context3.t0);
+          return _context3.abrupt("return", res.status(500).send(_context3.t0));
+
+        case 29:
+        case "end":
+          return _context3.stop();
+      }
+    }
+  }, null, null, [[4, 25]]);
+}
+/**
+ * Encontrar un usuario por su id
+ * 
+ * @param {Number} id_user 
+ * @returns {String} user_password
+ */
+
+
+function findUserById(id_user) {
+  return User.findOne({
+    where: {
+      id_user: id_user
+    }
+  }).then(function (result) {
+    return result ? result.user_password : undefined;
+  })["catch"](function (error) {
+    throw error;
+  });
+}
+/**
+ * Hashear contraseña
+ * 
+ * @param {String} unhashedPassword 
+ */
+
+
+function hashPassword(unhashedPassword) {
+  return bcrypt.hash(unhashedPassword, 10).then(function (hash) {
+    return hash ? hash : undefined;
+  })["catch"](function (error) {
+    throw error;
+  });
+}
+/**
+ * Actualizar la contraseña en la base de datos 
+ *  
+ * @param {String} newPassword 
+ * @param {Number} id_user 
+ */
+
+
+function updateUserPassword(newUnhashedPassword, id_user) {
+  return User.update({
+    user_password: newUnhashedPassword
+  }, {
+    where: {
+      id_user: id_user
+    }
+  }).then(function (result) {
+    return result ? result : undefined;
+  })["catch"](function (error) {
+    throw error;
   });
 }

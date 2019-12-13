@@ -35,6 +35,11 @@ var Challenge = sequelize.define('challenge', {
   close_date: {
     type: Sequelize.DATE,
     allowNull: false
+  },
+  is_deleted: {
+    type: Sequelize.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
   }
 }, {
   timestamps: true,

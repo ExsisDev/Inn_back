@@ -65,6 +65,10 @@ User.prototype.generateAuthToken = function () {
   });
 };
 
+User.getTokenElements = function (token) {
+  return jwt.verify(token, config.get('jwtPrivateKey'));
+};
+
 User.hasOne(Ally, {
   foreignKey: 'fk_id_user',
   sourceKey: 'id_user'
