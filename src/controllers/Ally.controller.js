@@ -166,14 +166,21 @@ async function createUserAndAlly(userAttributes, allyAttributes, resourcesAttrib
 }
 /**
  * Actualizar horas de ideación, experimentación y
- * categorias de especialidad del aliado
+ * categorias de especialidad del aliado.
+ * 1. Se eliminan registros previos en AllyCategories asociados al aliado
+ * 2. Se crean los nuevos registros en AllyCategories
+ * 3. Se actualizan las horas del aliado
  * @param {*} req 
  * @param {*} res 
  */
 export async function updateAlly(req, res) {
-   let hoursUpdated, categoriesUpdated;
-
+   let isThereHours, isThereCategories;
+   let answer = {
+      status: null,
+      data: null
+   }
    const id_ally = parseInt(req.params.idAlly);
+
    if (!Number.isInteger(id_ally) || id_ally <= 0) {
       return res.status(400).send("Id inválido. el id del aliado debe ser un entero positivo");
    }
@@ -181,61 +188,75 @@ export async function updateAlly(req, res) {
    const bodyAttributes = getValidParams(req, res, validateBodyAllyUpdate);
    const newHours = _.pick(bodyAttributes, ['ally_month_ideation_hours', 'ally_month_experimentation_hours']);
    const newCategories = _.pick(bodyAttributes, ['ally_categories']);
-   try {
-      await sequelize.transaction(async (t) => {
-         if (!_.isEmpty(newCategories)) {
-            let categoriesByAlly = await findAllAllyCategoriesByAlly(id_ally);
-            for (let register of categoriesByAlly) {
-               if (newCategories['ally_categories'].includes(register)) {
-                  _.remove(newCategories['ally_categories'], function (newCategory) {
-                     return newCategory === register;
-                  })
-               } else {
-                  await AllyCategory.destroy( { transaction: t },
-                     {
-                        where: {
-                           fk_id_ally: id_ally,
-                           fk_id_category: register
-                        }
-                     }                     
-                  )
-               }
-            }
-            console.log(newCategories['ally_categories']);
-         }
 
-         if (!_.isEmpty(newHours)) {
-            // hoursUpdated = await Ally.update(newHours, { where: { id_ally } });
-            // console.log("--------------------hoursUpdated------------------");
-            // console.log(newHours);
-         }
-      });
-   } catch (error) {
-      throw error;
+   isThereCategories = !_.isEmpty(newCategories);
+   isThereHours = !_.isEmpty(newHours);
+
+   if (!isThereHours && !isThereCategories) {
+      return res.status(400).send("Debe haber almenos un campo para actualizar.");
    }
 
-   return res.status(400).send("probando...");
+   try {
+      await sequelize.transaction(async (t) => {
+         if (isThereCategories) {
+            // Step 1
+            await AllyCategory.destroy({ where: { fk_id_ally: id_ally } }, { transaction: t });
+            // Step 2
+            for (let newCategory of newCategories['ally_categories']) {
+               let aux = {
+                  fk_id_ally: id_ally,
+                  fk_id_category: newCategory
+               }
+               await AllyCategory.create(aux, { transaction: t });
+            }
+         }
+
+         if (isThereHours) {
+            // Step 3
+            await Ally.update(newHours, { where: { id_ally } });
+         }
+      });
+
+      answer.data = await getAllyInfo(id_ally);
+      answer.status = 200;
+
+   } catch (error) {
+      console.log(error);
+      answer.data = "Algo salió mal. Mira los logs para mayor información";
+      answer.status = 500;
+   }
+   return res.status(answer.status).send(answer.data);
 }
 
-/**
- * Encontrar todos las categorias de un aliado
- * @param {Number} idAlly 
- */
-function findAllAllyCategoriesByAlly(idAlly) {
-   return AllyCategory.findAll({
-      where: { 'fk_id_ally': idAlly },
-      attributes: ['fk_id_category']
-   }).then(result => {
-      let foundCategories = [];
-      result.map(category => {
-         foundCategories.push(category.fk_id_category);
+function getAllyInfo(id_ally) {
+   return Ally.findOne({
+      where: { id_ally },
+      include: [{
+         model: AllyCategory,
+         include: [{
+            model: AlCategory,
+            attributes: ['id_category', 'category_name']
+         }]
+      }],
+      attributes: [
+         'id_ally',
+         'ally_name', 
+         'ally_nit', 
+         'ally_web_page',
+         'ally_phone',
+         'ally_month_ideation_hours',
+         'ally_month_experimentation_hours'         
+      ]
+   }).then( result => {
+      let categories = [];
+      console.log("--------------------Success Ally-----------------");      
+      result.dataValues['ally_categories'].map( category => {
+         categories.push(category.al_category);
       })
-      return foundCategories;
-   }).catch(error => {
-      let customError = {
-         message: "findAllAllyCategoriesByAlly falló",
-         details: error
-      }
-      throw customError;
+      result.dataValues.ally_categories = categories
+      return result.dataValues;
+   }).catch( error => {
+      console.log("---------------------Error Ally------------------");
+      console.log(error);
    })
 }

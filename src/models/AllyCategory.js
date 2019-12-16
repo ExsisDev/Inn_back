@@ -1,6 +1,7 @@
 const Sequelize = require('sequelize');
 const db_cnx = require('../utils/database');
-const AlCategory = require('../../dist/models/AlCategory');
+const AlCategory = require('./AlCategory');
+const Ally = require('./Ally')
 
 const AllyCategory = db_cnx.define('ally_categories', {
     fk_id_ally: {
@@ -21,5 +22,8 @@ const AllyCategory = db_cnx.define('ally_categories', {
 
 AlCategory.hasMany(AllyCategory, { foreignKey: 'fk_id_category', sourceKey: 'id_category' });
 AllyCategory.belongsTo(AlCategory, { foreignKey: 'fk_id_category', targetKey: 'id_category' });
+
+Ally.hasMany(AllyCategory, { foreignKey: 'fk_id_ally', sourceKey: 'id_ally' });
+AllyCategory.belongsTo(Ally, { foreignKey: 'fk_id_ally', targetKey: 'id_ally' });
 
 module.exports = AllyCategory;
