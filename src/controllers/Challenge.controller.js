@@ -1,6 +1,8 @@
 const { validateBodyChallengeCreation, validateBodyChallengeUpdate } = require('../schemas/Challenge.validations');
 const _ = require('lodash');
 const sequelize = require('../utils/database');
+const Sequelize = require('sequelize');
+const Op = Sequelize.Op;
 const Challenge = require('../models/Challenge');
 const Company = require('../models/Company');
 const ChallengeCategory = require('../models/ChallengeCategory');
@@ -66,6 +68,7 @@ export async function createChallenge(req, res) {
    }
 }
 
+
 /**
  * Crear el reto vacio
  * 
@@ -103,6 +106,10 @@ function linkChallengeWithCategories(id_challenge, id_category) {
 }
 
 
+//------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------
+
+
 /**
  * Eliminar reto. Se actualiza columna is_deleted para que el
  * reto ya no sea tenido en cuenta.
@@ -112,41 +119,47 @@ function linkChallengeWithCategories(id_challenge, id_category) {
 export async function deleteChallenge(req, res) {
    let challengeUpdated;
    let id_challenge = parseInt(req.params.idChallenge);
-   
-   if( isNaN(id_challenge) ) {
-      return res.status(400).send( "Id no válido, idChallenge debe ser un entero." );
+
+   if (isNaN(id_challenge)) {
+      return res.status(400).send("Id no válido, idChallenge debe ser un entero.");
    }
    try {
-      challengeUpdated = await Challenge.update( {is_deleted: true}, {where: { id_challenge }});      
-   } catch (error) { 
+      challengeUpdated = await Challenge.update({ is_deleted: true }, { where: { id_challenge } });
+   } catch (error) {
       throw error;
    } finally {
       if (challengeUpdated) {
          return res.status(200).send("Reto eliminado");
       }
-      return res.status(500).send( "No se pudo eliminar el reto" );
+      return res.status(500).send("No se pudo eliminar el reto");
    }
 }
 
+
+//------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------
+
+
 /**
- * Obtener los retos por pàgina y por estado, con total y categorias
+ * Obtener los retos por página y por estado, con total y categorias
  * 
  * @param {Request} req 
  * @param {Response} res 
  * @return {Promise} promise
  */
 export async function getChallengesByPageAndStatus(req, res) {
+
    let itemsByPage = 5;
    let page = req.params.page;
    let state = challengeStateEnum.get(`${req.params.status.toUpperCase()}`).value;
    let elementsCountByState;
-   let elementsByState = [];
+   let elementsByState;
 
    try {
       elementsCountByState = await countElementsByState(state);
-      elementsByState = await findChallengesByPageAndState(itemsByPage, page, state);
+      elementsByState = await getChallengesByPageAndState(itemsByPage, page, state);
       for (let challenge of elementsByState) {
-         challenge.dataValues['categories'] = await findCategoriesByChallenge(challenge.id_challenge);
+         challenge.dataValues['categories'] = await getCategoriesByChallenge(challenge.id_challenge);
       }
 
    } catch (error) {
@@ -168,8 +181,8 @@ export async function getChallengesByPageAndStatus(req, res) {
 function countElementsByState(state) {
    return Challenge.count({
       where: {
-         'fk_id_challenge_state': state,
-         'is_deleted': false
+         fk_id_challenge_state: state,
+         is_deleted: false
       }
    }).then((result) => {
       return result ? result : undefined;
@@ -188,7 +201,7 @@ function countElementsByState(state) {
  * @param {Number} page 
  * @param {String} state 
  */
-function findChallengesByPageAndState(itemsByPage, page, state) {
+function getChallengesByPageAndState(itemsByPage, page, state) {
    return Challenge.findAll({
       offset: (page - 1) * itemsByPage,
       limit: itemsByPage,
@@ -196,8 +209,8 @@ function findChallengesByPageAndState(itemsByPage, page, state) {
          ['created_at', 'DESC']
       ],
       where: {
-         'fk_id_challenge_state': state,
-         'is_deleted': false
+         fk_id_challenge_state: state,
+         is_deleted: false
       },
       include: [{
          model: Company,
@@ -219,10 +232,10 @@ function findChallengesByPageAndState(itemsByPage, page, state) {
  * 
  * @param {Number} id_challenge 
  */
-function findCategoriesByChallenge(id_challenge) {
+function getCategoriesByChallenge(id_challenge) {
    return ChallengeCategory.findAll({
       where: {
-         'fk_id_challenge': id_challenge
+         fk_id_challenge: id_challenge
       },
       include: [{
          model: ChCategories,
@@ -236,6 +249,121 @@ function findCategoriesByChallenge(id_challenge) {
          AllCategoriesResult.push(category.ch_category.category_name);
       });
       return result ? AllCategoriesResult : undefined;
+
+   }).catch((error) => {
+      throw error;
+
+   });
+}
+
+
+//------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------
+
+
+/**
+ * Obtener los retos por categoria, página y estado
+ */
+export async function getChallengesByPageStatusAndPhrase(req, res) {
+   let itemsByPage = 5;
+   let page = req.params.page;
+   let state = challengeStateEnum.get(`${req.params.status.toUpperCase()}`).value;
+   let wordToFind = req.query.value;
+   let elementsCountByState;
+   let elementsByState;
+
+   try {
+      elementsCountByState = await countElementsByStateAndPhrase(state, wordToFind);
+      elementsByState = await getChallengesByPageStateAndPhrase(itemsByPage, page, state, wordToFind);
+      for (let challenge of elementsByState) {
+         challenge.dataValues['categories'] = await getCategoriesByChallenge(challenge.id_challenge);
+      }
+      res.send({ result: elementsByState, totalElements: elementsCountByState })
+
+   }  catch (error) {
+      console.log(error);
+      return res.status(500).send(error);
+
+   } finally {
+      // return elementsCountByState && elementsByState ? res.send({ result: elementsByState, totalElements: elementsCountByState }) : res.status(404).send("No hay elementos disponibles");
+
+   }
+}
+
+
+/**
+ * Conter cuantos elementos hay por estado que además coinciden con las
+ * palabras
+ * 
+ * @param {String} state 
+ * @param {String} word 
+ */
+function countElementsByStateAndPhrase(state, phrase) {
+   return Challenge.count({
+      where: {
+         fk_id_challenge_state: state,
+         is_deleted: false,
+         [Op.or]: [
+            {
+               challenge_name: {
+                  [Op.iLike]: `%${phrase}%`
+               }
+            },
+            {
+               challenge_description: {
+                  [Op.iLike]: `%${phrase}%`
+               }
+            }
+         ]
+      }
+   }).then((result) => {
+      return result ? result : undefined;
+
+   }).catch((error) => {
+      console.log(error)
+      throw error;
+
+   });
+}
+
+
+/**
+ * Encontrar los elementos por estado, pagina, cantidad y valor de busqueda
+ * 
+ * @param {Number} itemsByPage 
+ * @param {Number} page 
+ * @param {String} state 
+ */
+function getChallengesByPageStateAndPhrase(itemsByPage, page, state, phrase) {
+   return Challenge.findAll({
+      offset: (page - 1) * itemsByPage,
+      limit: itemsByPage,
+      order: [
+         ['created_at', 'DESC']
+      ],
+      where: {
+         fk_id_challenge_state: state,
+         is_deleted: false,
+         [Op.or]: [
+            {
+               challenge_name: {
+                  [Op.iLike]: `%${phrase}%`
+               }
+            },
+            {
+               challenge_description: {
+                  [Op.iLike]: `%${phrase}%`
+               }
+            }
+         ]
+      },
+      include: [{
+         model: Company,
+         attributes: ['company_name', 'company_description']
+      }]
+
+   }).then((result) => {
+      return result ? result : undefined;
 
    }).catch((error) => {
       throw error;

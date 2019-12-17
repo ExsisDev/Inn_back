@@ -8,6 +8,7 @@ const {
    createChallenge,
    getAllChallenges,
    getChallengesByPageAndStatus,
+   getChallengesByPageStatusAndPhrase,
    deleteChallenge
 } = require('../controllers/Challenge.controller');
 
@@ -25,10 +26,17 @@ const {
  */
 router.post('/', [auth, isAdmin], createChallenge);
 
+
 /**
  * Obtener retos por categoría y página
  */
 router.get('/:page/:status', [auth], getChallengesByPageAndStatus);
+
+
+/**
+ * Obtener retos por categoría, página y palabra de busqueda
+ */
+router.get('/:page/:status/search', [auth], getChallengesByPageStatusAndPhrase);
 
 
 /**
