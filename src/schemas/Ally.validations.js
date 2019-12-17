@@ -1,5 +1,5 @@
 const Joi = require('@hapi/joi');
-const { createResourceSchema } = require('./Resource.validations');
+const { createResourceSchema, updateResourceSchema } = require('./Resource.validations');
 
 export function validateBodyAllyCreation(ally) {
    const createAllySchema = Joi.object({
@@ -25,21 +25,25 @@ export function validateBodyAllyCreation(ally) {
 
 export function validateBodyAllyUpdate(ally) {
    const updateAllySchema = Joi.object({
-      fk_id_role: Joi.number(),
-      fk_user_state: Joi.number(),
-      user_email: Joi.string().email().max(50),
-      user_password: Joi.string().max(8),
-      user_last_login: Joi.string(),
-      login_attempts: Joi.number(),
+      // Se dejan comentados estos atributos porque no se están utilizando
+      // en este momento pero podrían ser utilizados en un futuro
+
+      // fk_id_role: Joi.number(),
+      // fk_user_state: Joi.number(),
+      // user_email: Joi.string().email().max(50),
+      // user_password: Joi.string().max(8),
+      // user_last_login: Joi.string(),
+      // login_attempts: Joi.number(),
       
-      fk_id_user: Joi.number(),
-      ally_name: Joi.string().max(100),
-      ally_nit: Joi.number(),
-      ally_web_page: Joi.string().max(200),
-      ally_phone: Joi.string().max(20),
+      // fk_id_user: Joi.number(),
+      // ally_name: Joi.string().max(100),
+      // ally_nit: Joi.number(),
+      // ally_web_page: Joi.string().max(200),
+      // ally_phone: Joi.string().max(20),
       ally_month_ideation_hours: Joi.number().integer().positive(),
       ally_month_experimentation_hours: Joi.number().integer().positive(),
-      ally_resources: Joi.array().items(ResourceSchema)
+      ally_resources: Joi.array().items(updateResourceSchema),
+      ally_categories: Joi.array().items(Joi.number().integer().positive())
    });
    return updateAllySchema.validate(ally);
 }
