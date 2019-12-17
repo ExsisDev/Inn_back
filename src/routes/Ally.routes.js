@@ -22,7 +22,16 @@ const {
 router.post('/', [auth, isAdmin], createAlly);
 
 /**
- * 
+ * Actualizar horas y/o categorias del aliado (solo para admin).
+ * { ally_categories, ally_month_experimentation_hours, 
+ * ally_month_experimentation_hours}
+ * retorna  un bojeto con los siguientes atributos: 
+ * {
+ *   id_ally, ally_name, ally_nit, ally_web_page,
+ *   ally_phone, ally_month_ideation_hours,
+ *   ally_month_experimentation_hours, 
+ *   ally_categories [ { id_category, category_name } ]
+ * }
  */
 router.put('/:idAlly', [auth, isAdmin], updateAlly);
 

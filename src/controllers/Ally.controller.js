@@ -1,3 +1,5 @@
+import { Promise } from 'sequelize/types';
+
 const { validateBodyAllyCreation, validateBodyAllyUpdate, validateAllyAuth } = require('../schemas/Ally.validations');
 const { validateResourceCreation, validateResourceUpdate } = require('../schemas/Resource.validations');
 
@@ -164,6 +166,7 @@ async function createUserAndAlly(userAttributes, allyAttributes, resourcesAttrib
       }
    }
 }
+
 /**
  * Actualizar horas de ideación, experimentación y
  * categorias de especialidad del aliado.
@@ -228,6 +231,11 @@ export async function updateAlly(req, res) {
    return res.status(answer.status).send(answer.data);
 }
 
+/**
+ * Obtener la información del aliado con sus respectivas categorías.
+ * @param {Number} id_ally - Un entero que representa el id del aliado
+ * @returns {Promise} - Promesa
+ */
 function getAllyInfo(id_ally) {
    return Ally.findOne({
       where: { id_ally },
@@ -248,15 +256,13 @@ function getAllyInfo(id_ally) {
          'ally_month_experimentation_hours'         
       ]
    }).then( result => {
-      let categories = [];
-      console.log("--------------------Success Ally-----------------");      
+      let categories = [];      
       result.dataValues['ally_categories'].map( category => {
          categories.push(category.al_category);
       })
       result.dataValues.ally_categories = categories
       return result.dataValues;
-   }).catch( error => {
-      console.log("---------------------Error Ally------------------");
+   }).catch( error => {      
       console.log(error);
    })
 }
