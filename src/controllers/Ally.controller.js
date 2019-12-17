@@ -1,5 +1,3 @@
-import { Promise } from 'sequelize/types';
-
 const { validateBodyAllyCreation, validateBodyAllyUpdate, validateAllyAuth } = require('../schemas/Ally.validations');
 const { validateResourceCreation, validateResourceUpdate } = require('../schemas/Resource.validations');
 
