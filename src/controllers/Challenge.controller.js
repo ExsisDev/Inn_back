@@ -262,7 +262,7 @@ function getCategoriesByChallenge(id_challenge) {
 
 
 /**
- * Obtener los retos por categoria, página y estado
+ * Obtener los retos por categoria, página, estado y valor de busquedaa
  */
 export async function getChallengesByPageStatusAndPhrase(req, res) {
    let itemsByPage = 5;
@@ -278,14 +278,13 @@ export async function getChallengesByPageStatusAndPhrase(req, res) {
       for (let challenge of elementsByState) {
          challenge.dataValues['categories'] = await getCategoriesByChallenge(challenge.id_challenge);
       }
-      res.send({ result: elementsByState, totalElements: elementsCountByState })
 
    }  catch (error) {
       console.log(error);
       return res.status(500).send(error);
 
    } finally {
-      // return elementsCountByState && elementsByState ? res.send({ result: elementsByState, totalElements: elementsCountByState }) : res.status(404).send("No hay elementos disponibles");
+      return elementsCountByState && elementsByState ? res.send({ result: elementsByState, totalElements: elementsCountByState }) : res.status(404).send("No hay elementos disponibles");
 
    }
 }
