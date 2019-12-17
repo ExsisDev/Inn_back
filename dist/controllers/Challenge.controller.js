@@ -6,6 +6,9 @@ Object.defineProperty(exports, "__esModule", {
 exports.createChallenge = createChallenge;
 exports.deleteChallenge = deleteChallenge;
 exports.getChallengesByPageAndStatus = getChallengesByPageAndStatus;
+exports.getChallengesByPageStatusAndPhrase = getChallengesByPageStatusAndPhrase;
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 var _require = require('../schemas/Challenge.validations'),
     validateBodyChallengeCreation = _require.validateBodyChallengeCreation,
@@ -14,6 +17,10 @@ var _require = require('../schemas/Challenge.validations'),
 var _ = require('lodash');
 
 var sequelize = require('../utils/database');
+
+var Sequelize = require('sequelize');
+
+var Op = Sequelize.Op;
 
 var Challenge = require('../models/Challenge');
 
@@ -207,7 +214,9 @@ function linkChallengeWithCategories(id_challenge, id_category) {
   })["catch"](function (error) {
     throw error;
   });
-}
+} //------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------
+
 /**
  * Eliminar reto. Se actualiza columna is_deleted para que el
  * reto ya no sea tenido en cuenta.
@@ -271,9 +280,11 @@ function deleteChallenge(req, res) {
       }
     }
   }, null, null, [[3, 9, 12, 17]]);
-}
+} //------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------
+
 /**
- * Obtener los retos por pàgina y por estado, con total y categorias
+ * Obtener los retos por página y por estado, con total y categorias
  * 
  * @param {Request} req 
  * @param {Response} res 
@@ -291,99 +302,98 @@ function getChallengesByPageAndStatus(req, res) {
           itemsByPage = 5;
           page = req.params.page;
           state = challengeStateEnum.get("".concat(req.params.status.toUpperCase())).value;
-          elementsByState = [];
-          _context4.prev = 4;
-          _context4.next = 7;
+          _context4.prev = 3;
+          _context4.next = 6;
           return regeneratorRuntime.awrap(countElementsByState(state));
 
-        case 7:
+        case 6:
           elementsCountByState = _context4.sent;
-          _context4.next = 10;
-          return regeneratorRuntime.awrap(findChallengesByPageAndState(itemsByPage, page, state));
+          _context4.next = 9;
+          return regeneratorRuntime.awrap(getChallengesByPageAndState(itemsByPage, page, state));
 
-        case 10:
+        case 9:
           elementsByState = _context4.sent;
           _iteratorNormalCompletion2 = true;
           _didIteratorError2 = false;
           _iteratorError2 = undefined;
-          _context4.prev = 14;
+          _context4.prev = 13;
           _iterator2 = elementsByState[Symbol.iterator]();
 
-        case 16:
+        case 15:
           if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
-            _context4.next = 24;
+            _context4.next = 23;
             break;
           }
 
           challenge = _step2.value;
-          _context4.next = 20;
-          return regeneratorRuntime.awrap(findCategoriesByChallenge(challenge.id_challenge));
+          _context4.next = 19;
+          return regeneratorRuntime.awrap(getCategoriesByChallenge(challenge.id_challenge));
 
-        case 20:
+        case 19:
           challenge.dataValues['categories'] = _context4.sent;
 
-        case 21:
+        case 20:
           _iteratorNormalCompletion2 = true;
-          _context4.next = 16;
+          _context4.next = 15;
           break;
 
-        case 24:
-          _context4.next = 30;
+        case 23:
+          _context4.next = 29;
           break;
 
-        case 26:
-          _context4.prev = 26;
-          _context4.t0 = _context4["catch"](14);
+        case 25:
+          _context4.prev = 25;
+          _context4.t0 = _context4["catch"](13);
           _didIteratorError2 = true;
           _iteratorError2 = _context4.t0;
 
-        case 30:
+        case 29:
+          _context4.prev = 29;
           _context4.prev = 30;
-          _context4.prev = 31;
 
           if (!_iteratorNormalCompletion2 && _iterator2["return"] != null) {
             _iterator2["return"]();
           }
 
-        case 33:
-          _context4.prev = 33;
+        case 32:
+          _context4.prev = 32;
 
           if (!_didIteratorError2) {
-            _context4.next = 36;
+            _context4.next = 35;
             break;
           }
 
           throw _iteratorError2;
 
+        case 35:
+          return _context4.finish(32);
+
         case 36:
-          return _context4.finish(33);
+          return _context4.finish(29);
 
         case 37:
-          return _context4.finish(30);
-
-        case 38:
-          _context4.next = 44;
+          _context4.next = 43;
           break;
 
-        case 40:
-          _context4.prev = 40;
-          _context4.t1 = _context4["catch"](4);
+        case 39:
+          _context4.prev = 39;
+          _context4.t1 = _context4["catch"](3);
           console.log(_context4.t1);
           return _context4.abrupt("return", res.status(500).send(_context4.t1));
 
-        case 44:
-          _context4.prev = 44;
+        case 43:
+          _context4.prev = 43;
           return _context4.abrupt("return", elementsCountByState && elementsByState ? res.send({
             result: elementsByState,
             totalElements: elementsCountByState
           }) : res.status(404).send("No hay elementos disponibles"));
 
-        case 47:
+        case 46:
         case "end":
           return _context4.stop();
       }
     }
-  }, null, null, [[4, 40, 44, 47], [14, 26, 30, 38], [31,, 33, 37]]);
+  }, null, null, [[3, 39, 43, 46], [13, 25, 29, 37], [30,, 32, 36]]);
 }
 /**
  * Contar los elementos totales del estado
@@ -395,8 +405,8 @@ function getChallengesByPageAndStatus(req, res) {
 function countElementsByState(state) {
   return Challenge.count({
     where: {
-      'fk_id_challenge_state': state,
-      'is_deleted': false
+      fk_id_challenge_state: state,
+      is_deleted: false
     }
   }).then(function (result) {
     return result ? result : undefined;
@@ -413,14 +423,14 @@ function countElementsByState(state) {
  */
 
 
-function findChallengesByPageAndState(itemsByPage, page, state) {
+function getChallengesByPageAndState(itemsByPage, page, state) {
   return Challenge.findAll({
     offset: (page - 1) * itemsByPage,
     limit: itemsByPage,
     order: [['created_at', 'DESC']],
     where: {
-      'fk_id_challenge_state': state,
-      'is_deleted': false
+      fk_id_challenge_state: state,
+      is_deleted: false
     },
     include: [{
       model: Company,
@@ -439,10 +449,10 @@ function findChallengesByPageAndState(itemsByPage, page, state) {
  */
 
 
-function findCategoriesByChallenge(id_challenge) {
+function getCategoriesByChallenge(id_challenge) {
   return ChallengeCategory.findAll({
     where: {
-      'fk_id_challenge': id_challenge
+      fk_id_challenge: id_challenge
     },
     include: [{
       model: ChCategories,
@@ -455,6 +465,176 @@ function findCategoriesByChallenge(id_challenge) {
       AllCategoriesResult.push(category.ch_category.category_name);
     });
     return result ? AllCategoriesResult : undefined;
+  })["catch"](function (error) {
+    throw error;
+  });
+} //------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------
+
+/**
+ * Obtener los retos por categoria, página y estado
+ */
+
+
+function getChallengesByPageStatusAndPhrase(req, res) {
+  var itemsByPage, page, state, wordToFind, elementsCountByState, elementsByState, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, challenge;
+
+  return regeneratorRuntime.async(function getChallengesByPageStatusAndPhrase$(_context5) {
+    while (1) {
+      switch (_context5.prev = _context5.next) {
+        case 0:
+          itemsByPage = 5;
+          page = req.params.page;
+          state = challengeStateEnum.get("".concat(req.params.status.toUpperCase())).value;
+          wordToFind = req.query.value;
+          _context5.prev = 4;
+          _context5.next = 7;
+          return regeneratorRuntime.awrap(countElementsByStateAndPhrase(state, wordToFind));
+
+        case 7:
+          elementsCountByState = _context5.sent;
+          _context5.next = 10;
+          return regeneratorRuntime.awrap(getChallengesByPageStateAndPhrase(itemsByPage, page, state, wordToFind));
+
+        case 10:
+          elementsByState = _context5.sent;
+          _iteratorNormalCompletion3 = true;
+          _didIteratorError3 = false;
+          _iteratorError3 = undefined;
+          _context5.prev = 14;
+          _iterator3 = elementsByState[Symbol.iterator]();
+
+        case 16:
+          if (_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done) {
+            _context5.next = 24;
+            break;
+          }
+
+          challenge = _step3.value;
+          _context5.next = 20;
+          return regeneratorRuntime.awrap(getCategoriesByChallenge(challenge.id_challenge));
+
+        case 20:
+          challenge.dataValues['categories'] = _context5.sent;
+
+        case 21:
+          _iteratorNormalCompletion3 = true;
+          _context5.next = 16;
+          break;
+
+        case 24:
+          _context5.next = 30;
+          break;
+
+        case 26:
+          _context5.prev = 26;
+          _context5.t0 = _context5["catch"](14);
+          _didIteratorError3 = true;
+          _iteratorError3 = _context5.t0;
+
+        case 30:
+          _context5.prev = 30;
+          _context5.prev = 31;
+
+          if (!_iteratorNormalCompletion3 && _iterator3["return"] != null) {
+            _iterator3["return"]();
+          }
+
+        case 33:
+          _context5.prev = 33;
+
+          if (!_didIteratorError3) {
+            _context5.next = 36;
+            break;
+          }
+
+          throw _iteratorError3;
+
+        case 36:
+          return _context5.finish(33);
+
+        case 37:
+          return _context5.finish(30);
+
+        case 38:
+          res.send({
+            result: elementsByState,
+            totalElements: elementsCountByState
+          });
+          _context5.next = 45;
+          break;
+
+        case 41:
+          _context5.prev = 41;
+          _context5.t1 = _context5["catch"](4);
+          console.log(_context5.t1);
+          return _context5.abrupt("return", res.status(500).send(_context5.t1));
+
+        case 45:
+          _context5.prev = 45;
+          return _context5.finish(45);
+
+        case 47:
+        case "end":
+          return _context5.stop();
+      }
+    }
+  }, null, null, [[4, 41, 45, 47], [14, 26, 30, 38], [31,, 33, 37]]);
+}
+/**
+ * Conter cuantos elementos hay por estado que además coinciden con las
+ * palabras
+ * 
+ * @param {String} state 
+ * @param {String} word 
+ */
+
+
+function countElementsByStateAndPhrase(state, phrase) {
+  return Challenge.count({
+    where: _defineProperty({
+      fk_id_challenge_state: state,
+      is_deleted: false
+    }, Op.or, [{
+      challenge_name: _defineProperty({}, Op.iLike, "%".concat(phrase, "%"))
+    }, {
+      challenge_description: _defineProperty({}, Op.iLike, "%".concat(phrase, "%"))
+    }])
+  }).then(function (result) {
+    return result ? result : undefined;
+  })["catch"](function (error) {
+    console.log(error);
+    throw error;
+  });
+}
+/**
+ * Encontrar los elementos por estado, pagina, cantidad y valor de busqueda
+ * 
+ * @param {Number} itemsByPage 
+ * @param {Number} page 
+ * @param {String} state 
+ */
+
+
+function getChallengesByPageStateAndPhrase(itemsByPage, page, state, phrase) {
+  return Challenge.findAll({
+    offset: (page - 1) * itemsByPage,
+    limit: itemsByPage,
+    order: [['created_at', 'DESC']],
+    where: _defineProperty({
+      fk_id_challenge_state: state,
+      is_deleted: false
+    }, Op.or, [{
+      challenge_name: _defineProperty({}, Op.iLike, "%".concat(phrase, "%"))
+    }, {
+      challenge_description: _defineProperty({}, Op.iLike, "%".concat(phrase, "%"))
+    }]),
+    include: [{
+      model: Company,
+      attributes: ['company_name', 'company_description']
+    }]
+  }).then(function (result) {
+    return result ? result : undefined;
   })["catch"](function (error) {
     throw error;
   });

@@ -14,6 +14,7 @@ var _require3 = require('../controllers/Challenge.controller'),
     createChallenge = _require3.createChallenge,
     getAllChallenges = _require3.getAllChallenges,
     getChallengesByPageAndStatus = _require3.getChallengesByPageAndStatus,
+    getChallengesByPageStatusAndPhrase = _require3.getChallengesByPageStatusAndPhrase,
     deleteChallenge = _require3.deleteChallenge;
 /*** Rutas para /api/challenge*/
 
@@ -34,6 +35,11 @@ router.post('/', [auth, isAdmin], createChallenge);
  */
 
 router.get('/:page/:status', [auth], getChallengesByPageAndStatus);
+/**
+ * Obtener retos por categoría, página y palabra de busqueda
+ */
+
+router.get('/:page/:status/search', [auth], getChallengesByPageStatusAndPhrase);
 /**
  * Eliminar un reto (Solo usuario administrador)
  */
