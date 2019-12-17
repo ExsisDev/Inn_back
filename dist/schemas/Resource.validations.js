@@ -3,8 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.validateResourceUpdate = validateResourceUpdate;
-exports.createResourceSchema = void 0;
+exports.updateResourceSchema = exports.createResourceSchema = void 0;
 
 var Joi = require('@hapi/joi');
 
@@ -14,12 +13,10 @@ var createResourceSchema = Joi.object({
   resource_experience: Joi.string().required()
 });
 exports.createResourceSchema = createResourceSchema;
-
-function validateResourceUpdate(resource) {
-  var updateResourceSchema = Joi.object({
-    resource_name: Joi.string().max(50),
-    resource_profile: Joi.string().max(200),
-    resource_experience: Joi.string()
-  });
-  return updateResourceSchema.validate(resource);
-}
+var updateResourceSchema = Joi.object({
+  id_resource: Joi.number().integer().positive(),
+  resource_name: Joi.string().max(50),
+  resource_profile: Joi.string().max(200),
+  resource_experience: Joi.string()
+});
+exports.updateResourceSchema = updateResourceSchema;

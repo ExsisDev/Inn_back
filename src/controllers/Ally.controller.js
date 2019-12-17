@@ -9,6 +9,7 @@ const Ally = require('../models/Ally');
 const User = require('../models/User');
 const Resource = require('../models/Resource');
 const AllyCategory = require('../models/AllyCategory');
+const AlCategory = require('../models/AlCategory');
 
 /**
  * Verificar la validéz de los parametros del body
@@ -60,7 +61,6 @@ export async function createAlly(req, res) {
       return res.send(answer);
    }
 }
-
 
 /**
  * Verificar existencia del usuario por email
@@ -133,12 +133,12 @@ async function createUserAndAlly(userAttributes, allyAttributes, resourcesAttrib
          }
          //step 4
          let allyCategory = {};
-         for ( let category of categories['ally_categories'] ){
+         for (let category of categories['ally_categories']) {
             allyCategory = {
                fk_id_ally: allyCreated.id_ally,
                fk_id_category: category
             };
-            let createResult = await AllyCategory.create(allyCategory, { transaction: t }).then( result => {
+            let createResult = await AllyCategory.create(allyCategory, { transaction: t }).then(result => {
                return result;
             })
             categoriesCreated.push(_.omit(createResult.dataValues, ['fk_id_ally', 'updated_at', 'created_at']));
@@ -156,11 +156,111 @@ async function createUserAndAlly(userAttributes, allyAttributes, resourcesAttrib
          if (resourcesCreated) {
             obj3['ally_resources'] = _.assign(resourcesCreated);
          }
-         if (categoriesCreated) {            
+         if (categoriesCreated) {
             obj4['ally_categories'] = _.assign(categoriesCreated);
          }
          const answerObject = _.assign(obj1, obj2, obj3, obj4);
          return answerObject;
       }
    }
+}
+
+/**
+ * Actualizar horas de ideación, experimentación y
+ * categorias de especialidad del aliado.
+ * 1. Se eliminan registros previos en AllyCategories asociados al aliado
+ * 2. Se crean los nuevos registros en AllyCategories
+ * 3. Se actualizan las horas del aliado
+ * @param {*} req 
+ * @param {*} res 
+ */
+export async function updateAlly(req, res) {
+   let isThereHours, isThereCategories;
+   let answer = {
+      status: null,
+      data: null
+   }
+   const id_ally = parseInt(req.params.idAlly);
+
+   if (!Number.isInteger(id_ally) || id_ally <= 0) {
+      return res.status(400).send("Id inválido. el id del aliado debe ser un entero positivo");
+   }
+
+   const bodyAttributes = getValidParams(req, res, validateBodyAllyUpdate);
+   const newHours = _.pick(bodyAttributes, ['ally_month_ideation_hours', 'ally_month_experimentation_hours']);
+   const newCategories = _.pick(bodyAttributes, ['ally_categories']);
+
+   isThereCategories = !_.isEmpty(newCategories);
+   isThereHours = !_.isEmpty(newHours);
+
+   if (!isThereHours && !isThereCategories) {
+      return res.status(400).send("Debe haber almenos un campo para actualizar.");
+   }
+
+   try {
+      await sequelize.transaction(async (t) => {
+         if (isThereCategories) {
+            // Step 1
+            await AllyCategory.destroy({ where: { fk_id_ally: id_ally } }, { transaction: t });
+            // Step 2
+            for (let newCategory of newCategories['ally_categories']) {
+               let aux = {
+                  fk_id_ally: id_ally,
+                  fk_id_category: newCategory
+               }
+               await AllyCategory.create(aux, { transaction: t });
+            }
+         }
+
+         if (isThereHours) {
+            // Step 3
+            await Ally.update(newHours, { where: { id_ally } });
+         }
+      });
+
+      answer.data = await getAllyInfo(id_ally);
+      answer.status = 200;
+
+   } catch (error) {
+      console.log(error);
+      answer.data = "Algo salió mal. Mira los logs para mayor información";
+      answer.status = 500;
+   }
+   return res.status(answer.status).send(answer.data);
+}
+
+/**
+ * Obtener la información del aliado con sus respectivas categorías.
+ * @param {Number} id_ally - Un entero que representa el id del aliado
+ * @returns {Promise} - Promesa
+ */
+function getAllyInfo(id_ally) {
+   return Ally.findOne({
+      where: { id_ally },
+      include: [{
+         model: AllyCategory,
+         include: [{
+            model: AlCategory,
+            attributes: ['id_category', 'category_name']
+         }]
+      }],
+      attributes: [
+         'id_ally',
+         'ally_name', 
+         'ally_nit', 
+         'ally_web_page',
+         'ally_phone',
+         'ally_month_ideation_hours',
+         'ally_month_experimentation_hours'         
+      ]
+   }).then( result => {
+      let categories = [];      
+      result.dataValues['ally_categories'].map( category => {
+         categories.push(category.al_category);
+      })
+      result.dataValues.ally_categories = categories
+      return result.dataValues;
+   }).catch( error => {      
+      console.log(error);
+   })
 }

@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.createAlly = createAlly;
+exports.updateAlly = updateAlly;
 
 var _require = require('../schemas/Ally.validations'),
     validateBodyAllyCreation = _require.validateBodyAllyCreation,
@@ -30,6 +31,8 @@ var User = require('../models/User');
 var Resource = require('../models/Resource');
 
 var AllyCategory = require('../models/AllyCategory');
+
+var AlCategory = require('../models/AlCategory');
 /**
  * Verificar la validéz de los parametros del body
  * 
@@ -382,4 +385,214 @@ function createUserAndAlly(userAttributes, allyAttributes, resourcesAttributes, 
       }
     }
   }, null, null, [[2, 7, 10, 21]]);
+}
+/**
+ * Actualizar horas de ideación, experimentación y
+ * categorias de especialidad del aliado.
+ * 1. Se eliminan registros previos en AllyCategories asociados al aliado
+ * 2. Se crean los nuevos registros en AllyCategories
+ * 3. Se actualizan las horas del aliado
+ * @param {*} req 
+ * @param {*} res 
+ */
+
+
+function updateAlly(req, res) {
+  var isThereHours, isThereCategories, answer, id_ally, bodyAttributes, newHours, newCategories;
+  return regeneratorRuntime.async(function updateAlly$(_context5) {
+    while (1) {
+      switch (_context5.prev = _context5.next) {
+        case 0:
+          answer = {
+            status: null,
+            data: null
+          };
+          id_ally = parseInt(req.params.idAlly);
+
+          if (!(!Number.isInteger(id_ally) || id_ally <= 0)) {
+            _context5.next = 4;
+            break;
+          }
+
+          return _context5.abrupt("return", res.status(400).send("Id inválido. el id del aliado debe ser un entero positivo"));
+
+        case 4:
+          bodyAttributes = getValidParams(req, res, validateBodyAllyUpdate);
+          newHours = _.pick(bodyAttributes, ['ally_month_ideation_hours', 'ally_month_experimentation_hours']);
+          newCategories = _.pick(bodyAttributes, ['ally_categories']);
+          isThereCategories = !_.isEmpty(newCategories);
+          isThereHours = !_.isEmpty(newHours);
+
+          if (!(!isThereHours && !isThereCategories)) {
+            _context5.next = 11;
+            break;
+          }
+
+          return _context5.abrupt("return", res.status(400).send("Debe haber almenos un campo para actualizar."));
+
+        case 11:
+          _context5.prev = 11;
+          _context5.next = 14;
+          return regeneratorRuntime.awrap(sequelize.transaction(function _callee2(t) {
+            var _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, newCategory, aux;
+
+            return regeneratorRuntime.async(function _callee2$(_context4) {
+              while (1) {
+                switch (_context4.prev = _context4.next) {
+                  case 0:
+                    if (!isThereCategories) {
+                      _context4.next = 30;
+                      break;
+                    }
+
+                    _context4.next = 3;
+                    return regeneratorRuntime.awrap(AllyCategory.destroy({
+                      where: {
+                        fk_id_ally: id_ally
+                      }
+                    }, {
+                      transaction: t
+                    }));
+
+                  case 3:
+                    // Step 2
+                    _iteratorNormalCompletion3 = true;
+                    _didIteratorError3 = false;
+                    _iteratorError3 = undefined;
+                    _context4.prev = 6;
+                    _iterator3 = newCategories['ally_categories'][Symbol.iterator]();
+
+                  case 8:
+                    if (_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done) {
+                      _context4.next = 16;
+                      break;
+                    }
+
+                    newCategory = _step3.value;
+                    aux = {
+                      fk_id_ally: id_ally,
+                      fk_id_category: newCategory
+                    };
+                    _context4.next = 13;
+                    return regeneratorRuntime.awrap(AllyCategory.create(aux, {
+                      transaction: t
+                    }));
+
+                  case 13:
+                    _iteratorNormalCompletion3 = true;
+                    _context4.next = 8;
+                    break;
+
+                  case 16:
+                    _context4.next = 22;
+                    break;
+
+                  case 18:
+                    _context4.prev = 18;
+                    _context4.t0 = _context4["catch"](6);
+                    _didIteratorError3 = true;
+                    _iteratorError3 = _context4.t0;
+
+                  case 22:
+                    _context4.prev = 22;
+                    _context4.prev = 23;
+
+                    if (!_iteratorNormalCompletion3 && _iterator3["return"] != null) {
+                      _iterator3["return"]();
+                    }
+
+                  case 25:
+                    _context4.prev = 25;
+
+                    if (!_didIteratorError3) {
+                      _context4.next = 28;
+                      break;
+                    }
+
+                    throw _iteratorError3;
+
+                  case 28:
+                    return _context4.finish(25);
+
+                  case 29:
+                    return _context4.finish(22);
+
+                  case 30:
+                    if (!isThereHours) {
+                      _context4.next = 33;
+                      break;
+                    }
+
+                    _context4.next = 33;
+                    return regeneratorRuntime.awrap(Ally.update(newHours, {
+                      where: {
+                        id_ally: id_ally
+                      }
+                    }));
+
+                  case 33:
+                  case "end":
+                    return _context4.stop();
+                }
+              }
+            }, null, null, [[6, 18, 22, 30], [23,, 25, 29]]);
+          }));
+
+        case 14:
+          _context5.next = 16;
+          return regeneratorRuntime.awrap(getAllyInfo(id_ally));
+
+        case 16:
+          answer.data = _context5.sent;
+          answer.status = 200;
+          _context5.next = 25;
+          break;
+
+        case 20:
+          _context5.prev = 20;
+          _context5.t0 = _context5["catch"](11);
+          console.log(_context5.t0);
+          answer.data = "Algo salió mal. Mira los logs para mayor información";
+          answer.status = 500;
+
+        case 25:
+          return _context5.abrupt("return", res.status(answer.status).send(answer.data));
+
+        case 26:
+        case "end":
+          return _context5.stop();
+      }
+    }
+  }, null, null, [[11, 20]]);
+}
+/**
+ * Obtener la información del aliado con sus respectivas categorías.
+ * @param {Number} id_ally - Un entero que representa el id del aliado
+ * @returns {Promise} - Promesa
+ */
+
+
+function getAllyInfo(id_ally) {
+  return Ally.findOne({
+    where: {
+      id_ally: id_ally
+    },
+    include: [{
+      model: AllyCategory,
+      include: [{
+        model: AlCategory,
+        attributes: ['id_category', 'category_name']
+      }]
+    }],
+    attributes: ['id_ally', 'ally_name', 'ally_nit', 'ally_web_page', 'ally_phone', 'ally_month_ideation_hours', 'ally_month_experimentation_hours']
+  }).then(function (result) {
+    var categories = [];
+    result.dataValues['ally_categories'].map(function (category) {
+      categories.push(category.al_category);
+    });
+    result.dataValues.ally_categories = categories;
+    return result.dataValues;
+  })["catch"](function (error) {
+    console.log(error);
+  });
 }
