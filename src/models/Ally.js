@@ -1,7 +1,6 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../utils/database');
-const jwt = require('jsonwebtoken');
-const config = require('config');
+const User = require('./User');
 
 const Ally = sequelize.define('allies', {
    id_ally: {
@@ -46,5 +45,7 @@ const Ally = sequelize.define('allies', {
    createdAt: 'created_at'
 });
 
+User.hasOne(Ally, { foreignKey: 'fk_id_user', sourceKey: 'id_user' });
+Ally.belongsTo(User, { foreignKey: 'fk_id_user', targetKey: 'id_user' });
 
 module.exports = Ally;
