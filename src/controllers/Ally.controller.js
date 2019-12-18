@@ -1,5 +1,3 @@
-import { Promise } from 'sequelize/types';
-
 const { validateBodyAllyCreation, validateBodyAllyUpdate, validateAllyAuth } = require('../schemas/Ally.validations');
 const { validateResourceCreation, validateResourceUpdate } = require('../schemas/Resource.validations');
 
@@ -244,25 +242,64 @@ function getAllyInfo(id_ally) {
          include: [{
             model: AlCategory,
             attributes: ['id_category', 'category_name']
-         }]
+         }],
+      },
+      {
+         model: User,
+         attributes: ['user_email']
       }],
       attributes: [
          'id_ally',
-         'ally_name', 
-         'ally_nit', 
+         'ally_name',
+         'ally_nit',
          'ally_web_page',
          'ally_phone',
          'ally_month_ideation_hours',
-         'ally_month_experimentation_hours'         
+         'ally_month_experimentation_hours'
       ]
-   }).then( result => {
-      let categories = [];      
-      result.dataValues['ally_categories'].map( category => {
+   }).then(result => {      
+      let categories = [];
+      let user_email = result.dataValues['user'].user_email;
+      console.log("----------------result------------------");
+      
+      console.log(user_email);
+      
+
+      result.dataValues['ally_categories'].map(category => {
          categories.push(category.al_category);
       })
-      result.dataValues.ally_categories = categories
+      result.dataValues.ally_categories = categories;
+      
+      _.remove(result.dataValues, ['user']);
+      result.dataValues['user_email'] = user_email;
       return result.dataValues;
-   }).catch( error => {      
+   }).catch(error => {
       console.log(error);
    })
+}
+
+/**
+ * 
+ * @param {*} req 
+ * @param {*} res 
+ */
+export async function getAlly(req, res) {
+   const id_ally = parseInt(req.params.idAlly);
+   let answer = {
+      status: null,
+      data: null
+   };
+
+   if (!Number.isInteger(id_ally) || id_ally <= 0) {
+      return res.status(400).send("Id inválido. el id del aliado debe ser un entero positivo");
+   }
+   try {
+      answer.data = await getAllyInfo(id_ally);
+      answer.status = 200;
+   } catch (error) {
+      console.log(error);
+      answer.data = "Algo salió mal. Mira los logs para mayor información";
+      answer.status = 500;
+   }
+   return res.status(answer.status).send(answer.data);
 }
