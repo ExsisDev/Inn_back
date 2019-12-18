@@ -12,7 +12,8 @@ var _require2 = require('../middleware/admin'),
 
 var _require3 = require('../controllers/Ally.controller'),
     createAlly = _require3.createAlly,
-    updateAlly = _require3.updateAlly;
+    updateAlly = _require3.updateAlly,
+    getAllyById = _require3.getAllyById;
 /*** Rutas para /api/allies*/
 
 /** 
@@ -39,4 +40,5 @@ router.post('/', [auth, isAdmin], createAlly);
  */
 
 router.put('/:idAlly', [auth, isAdmin], updateAlly);
+router.get('/:idAlly', [auth, isAdmin], getAllyById);
 module.exports = router;

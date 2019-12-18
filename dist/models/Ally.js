@@ -4,9 +4,7 @@ var Sequelize = require('sequelize');
 
 var sequelize = require('../utils/database');
 
-var jwt = require('jsonwebtoken');
-
-var config = require('config');
+var User = require('./User');
 
 var Ally = sequelize.define('allies', {
   id_ally: {
@@ -49,5 +47,13 @@ var Ally = sequelize.define('allies', {
   timestamps: true,
   updatedAt: 'updated_at',
   createdAt: 'created_at'
+});
+User.hasOne(Ally, {
+  foreignKey: 'fk_id_user',
+  sourceKey: 'id_user'
+});
+Ally.belongsTo(User, {
+  foreignKey: 'fk_id_user',
+  targetKey: 'id_user'
 });
 module.exports = Ally;

@@ -8,8 +8,6 @@ var jwt = require('jsonwebtoken');
 
 var config = require('config');
 
-var Ally = require('./Ally');
-
 var User = sequelize.define('users', {
   id_user: {
     type: Sequelize.INTEGER,
@@ -69,8 +67,4 @@ User.getTokenElements = function (token) {
   return jwt.verify(token, config.get('jwtPrivateKey'));
 };
 
-User.hasOne(Ally, {
-  foreignKey: 'fk_id_user',
-  sourceKey: 'id_user'
-});
 module.exports = User;

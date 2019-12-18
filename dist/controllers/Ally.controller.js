@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.createAlly = createAlly;
 exports.updateAlly = updateAlly;
+exports.getAllyById = getAllyById;
 
 var _require = require('../schemas/Ally.validations'),
     validateBodyAllyCreation = _require.validateBodyAllyCreation,
@@ -583,16 +584,89 @@ function getAllyInfo(id_ally) {
         model: AlCategory,
         attributes: ['id_category', 'category_name']
       }]
+    }, {
+      model: User,
+      attributes: ['user_email']
     }],
     attributes: ['id_ally', 'ally_name', 'ally_nit', 'ally_web_page', 'ally_phone', 'ally_month_ideation_hours', 'ally_month_experimentation_hours']
   }).then(function (result) {
+    if (result === null) {
+      var error = {
+        code: 404,
+        message: "No se encontró un aliado con dicho id"
+      };
+      return error;
+    }
+
     var categories = [];
+    var user_email = result.dataValues['user'].user_email;
+
+    var answer = _.omit(result.dataValues, ['user']);
+
     result.dataValues['ally_categories'].map(function (category) {
       categories.push(category.al_category);
     });
-    result.dataValues.ally_categories = categories;
-    return result.dataValues;
+    answer['user_email'] = user_email;
+    answer['ally_categories'] = categories;
+    return answer;
   })["catch"](function (error) {
     console.log(error);
+    throw error;
   });
+}
+/**
+ * Obtener la información del aliado mediante el id que lo identifica.
+ * @param {*} req 
+ * @param {*} res 
+ */
+
+
+function getAllyById(req, res) {
+  var id_ally, answer;
+  return regeneratorRuntime.async(function getAllyById$(_context6) {
+    while (1) {
+      switch (_context6.prev = _context6.next) {
+        case 0:
+          id_ally = parseInt(req.params.idAlly);
+
+          if (!(!Number.isInteger(id_ally) || id_ally <= 0)) {
+            _context6.next = 3;
+            break;
+          }
+
+          return _context6.abrupt("return", res.status(400).send("Id inválido. el id del aliado debe ser un entero positivo"));
+
+        case 3:
+          _context6.prev = 3;
+          _context6.next = 6;
+          return regeneratorRuntime.awrap(getAllyInfo(id_ally));
+
+        case 6:
+          answer = _context6.sent;
+          _context6.next = 13;
+          break;
+
+        case 9:
+          _context6.prev = 9;
+          _context6.t0 = _context6["catch"](3);
+          console.log(_context6.t0);
+          return _context6.abrupt("return", res.status(500).send("Algo salió mal. Mira los logs para mayor información"));
+
+        case 13:
+          if (!(answer.code && answer.code === 404)) {
+            _context6.next = 15;
+            break;
+          }
+
+          return _context6.abrupt("return", res.status(404).send(answer.message));
+
+        case 15:
+          return _context6.abrupt("return", res.status(200).send(answer));
+
+        case 16:
+        case "end":
+          return _context6.stop();
+      }
+    }
+  }, null, null, [[3, 9]]);
 }

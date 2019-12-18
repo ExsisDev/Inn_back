@@ -472,7 +472,7 @@ function getCategoriesByChallenge(id_challenge) {
 //------------------------------------------------------------------------------------------------------------------------------------
 
 /**
- * Obtener los retos por categoria, página y estado
+ * Obtener los retos por categoria, página, estado y valor de busquedaa
  */
 
 
@@ -557,29 +557,28 @@ function getChallengesByPageStatusAndPhrase(req, res) {
           return _context5.finish(30);
 
         case 38:
-          res.send({
-            result: elementsByState,
-            totalElements: elementsCountByState
-          });
-          _context5.next = 45;
+          _context5.next = 44;
           break;
 
-        case 41:
-          _context5.prev = 41;
+        case 40:
+          _context5.prev = 40;
           _context5.t1 = _context5["catch"](4);
           console.log(_context5.t1);
           return _context5.abrupt("return", res.status(500).send(_context5.t1));
 
-        case 45:
-          _context5.prev = 45;
-          return _context5.finish(45);
+        case 44:
+          _context5.prev = 44;
+          return _context5.abrupt("return", elementsCountByState && elementsByState ? res.send({
+            result: elementsByState,
+            totalElements: elementsCountByState
+          }) : res.status(404).send("No hay elementos disponibles"));
 
         case 47:
         case "end":
           return _context5.stop();
       }
     }
-  }, null, null, [[4, 41, 45, 47], [14, 26, 30, 38], [31,, 33, 37]]);
+  }, null, null, [[4, 40, 44, 47], [14, 26, 30, 38], [31,, 33, 37]]);
 }
 /**
  * Conter cuantos elementos hay por estado que además coinciden con las
