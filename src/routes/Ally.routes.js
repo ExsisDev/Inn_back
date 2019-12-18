@@ -7,7 +7,7 @@ const { isAdmin } = require('../middleware/admin');
 const {
    createAlly,
    updateAlly,
-   getAlly
+   getAllyById
 } = require('../controllers/Ally.controller');
 
 
@@ -36,6 +36,6 @@ router.post('/', [auth, isAdmin], createAlly);
  */
 router.put('/:idAlly', [auth, isAdmin], updateAlly);
 
-router.get('/:idAlly', [auth, isAdmin], getAlly);
+router.get('/:idAlly', [auth, isAdmin], getAllyById);
 
 module.exports = router;

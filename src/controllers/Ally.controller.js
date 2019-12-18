@@ -258,48 +258,52 @@ function getAllyInfo(id_ally) {
          'ally_month_experimentation_hours'
       ]
    }).then(result => {      
+      if( result === null ){
+         const error = { 
+            code: 404, 
+            message: "No se encontró un aliado con dicho id" 
+         };
+         return error;
+      }
+      
       let categories = [];
       let user_email = result.dataValues['user'].user_email;
-      console.log("----------------result------------------");
-      
-      console.log(user_email);
-      
+      let answer = _.omit(result.dataValues, ['user']);
 
       result.dataValues['ally_categories'].map(category => {
          categories.push(category.al_category);
-      })
-      result.dataValues.ally_categories = categories;
+      });
       
-      _.remove(result.dataValues, ['user']);
-      result.dataValues['user_email'] = user_email;
-      return result.dataValues;
+      answer['user_email'] = user_email;
+      answer['ally_categories'] = categories;
+      
+      return answer;
    }).catch(error => {
       console.log(error);
+      throw error;
    })
 }
 
 /**
- * 
+ * Obtener la información del aliado mediante el id que lo identifica.
  * @param {*} req 
  * @param {*} res 
  */
-export async function getAlly(req, res) {
+export async function getAllyById(req, res) {
    const id_ally = parseInt(req.params.idAlly);
-   let answer = {
-      status: null,
-      data: null
-   };
+   let answer ;
 
    if (!Number.isInteger(id_ally) || id_ally <= 0) {
       return res.status(400).send("Id inválido. el id del aliado debe ser un entero positivo");
    }
    try {
-      answer.data = await getAllyInfo(id_ally);
-      answer.status = 200;
+      answer = await getAllyInfo(id_ally);      
    } catch (error) {
       console.log(error);
-      answer.data = "Algo salió mal. Mira los logs para mayor información";
-      answer.status = 500;
+      return res.status(500).send("Algo salió mal. Mira los logs para mayor información");
    }
-   return res.status(answer.status).send(answer.data);
+   if(answer.code && answer.code === 404){
+      return res.status(404).send(answer.message);
+   }
+   return res.status(200).send(answer);
 }
