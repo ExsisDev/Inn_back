@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.createAlly = createAlly;
 exports.updateAlly = updateAlly;
 exports.getAllyById = getAllyById;
+exports.getAllies = getAllies;
 
 var _require = require('../schemas/Ally.validations'),
     validateBodyAllyCreation = _require.validateBodyAllyCreation,
@@ -669,4 +670,72 @@ function getAllyById(req, res) {
       }
     }
   }, null, null, [[3, 9]]);
+}
+/**
+ * Obtener aliados (está páginado)
+ * @param {*} req 
+ * @param {*} res 
+ */
+
+
+function getAllies(req, res) {
+  var page, itemsByPage, answer;
+  return regeneratorRuntime.async(function getAllies$(_context7) {
+    while (1) {
+      switch (_context7.prev = _context7.next) {
+        case 0:
+          page = parseInt(req.params.page);
+          itemsByPage = 6;
+
+          if (!(!Number.isInteger(page) || page <= 0)) {
+            _context7.next = 4;
+            break;
+          }
+
+          return _context7.abrupt("return", res.status(400).send('Página no válida. La página solicitada debe ser un entero positivo'));
+
+        case 4:
+          _context7.prev = 4;
+          _context7.next = 7;
+          return regeneratorRuntime.awrap(getAlliesByPage(itemsByPage, page));
+
+        case 7:
+          answer = _context7.sent;
+          _context7.next = 14;
+          break;
+
+        case 10:
+          _context7.prev = 10;
+          _context7.t0 = _context7["catch"](4);
+          console.log(_context7.t0);
+          return _context7.abrupt("return", res.status(500).send('Algo salió mal. Mira los logs para mayor información'));
+
+        case 14:
+          return _context7.abrupt("return", res.status(200).send(answer));
+
+        case 15:
+        case "end":
+          return _context7.stop();
+      }
+    }
+  }, null, null, [[4, 10]]);
+}
+/**
+ * Encontrar los aliados por pagina
+ * @param {Number} itemsByPage 
+ * @param {Number} page  
+ */
+
+
+function getAlliesByPage(itemsByPage, page) {
+  return Ally.findAll({
+    offset: (page - 1) * itemsByPage,
+    limit: itemsByPage,
+    order: [['created_at', 'DESC']],
+    attributes: ['id_ally', 'ally_name', 'ally_month_ideation_hours', 'ally_month_experimentation_hours']
+  }).then(function (result) {
+    return result;
+  })["catch"](function (error) {
+    throw error;
+  });
 }
