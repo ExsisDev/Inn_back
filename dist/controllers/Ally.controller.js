@@ -672,7 +672,7 @@ function getAllyById(req, res) {
   }, null, null, [[3, 9]]);
 }
 /**
- * Obtener aliados (está páginado)
+ * Obtener el total de aliados registrados y aliados por página
  * @param {*} req 
  * @param {*} res 
  */
@@ -685,40 +685,49 @@ function getAllies(req, res) {
       switch (_context7.prev = _context7.next) {
         case 0:
           page = parseInt(req.params.page);
-          itemsByPage = 6;
+          itemsByPage = 4;
+          answer = {
+            data: null,
+            totalElements: 0
+          };
 
           if (!(!Number.isInteger(page) || page <= 0)) {
-            _context7.next = 4;
+            _context7.next = 5;
             break;
           }
 
           return _context7.abrupt("return", res.status(400).send('Página no válida. La página solicitada debe ser un entero positivo'));
 
-        case 4:
-          _context7.prev = 4;
-          _context7.next = 7;
+        case 5:
+          _context7.prev = 5;
+          _context7.next = 8;
           return regeneratorRuntime.awrap(getAlliesByPage(itemsByPage, page));
 
-        case 7:
-          answer = _context7.sent;
-          _context7.next = 14;
+        case 8:
+          answer.data = _context7.sent;
+          _context7.next = 11;
+          return regeneratorRuntime.awrap(countAllies());
+
+        case 11:
+          answer.totalElements = _context7.sent;
+          _context7.next = 18;
           break;
 
-        case 10:
-          _context7.prev = 10;
-          _context7.t0 = _context7["catch"](4);
+        case 14:
+          _context7.prev = 14;
+          _context7.t0 = _context7["catch"](5);
           console.log(_context7.t0);
           return _context7.abrupt("return", res.status(500).send('Algo salió mal. Mira los logs para mayor información'));
 
-        case 14:
+        case 18:
           return _context7.abrupt("return", res.status(200).send(answer));
 
-        case 15:
+        case 19:
         case "end":
           return _context7.stop();
       }
     }
-  }, null, null, [[4, 10]]);
+  }, null, null, [[5, 14]]);
 }
 /**
  * Encontrar los aliados por pagina
@@ -735,6 +744,18 @@ function getAlliesByPage(itemsByPage, page) {
     attributes: ['id_ally', 'ally_name', 'ally_month_ideation_hours', 'ally_month_experimentation_hours']
   }).then(function (result) {
     return result;
+  })["catch"](function (error) {
+    throw error;
+  });
+}
+/**
+ * Contar los aliados totales registrados en db
+ */
+
+
+function countAllies() {
+  return Ally.count().then(function (result) {
+    return result ? result : 0;
   })["catch"](function (error) {
     throw error;
   });
