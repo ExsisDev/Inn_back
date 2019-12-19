@@ -37,7 +37,16 @@ function getValidParams(req, res, callBackValidation) {
 export async function createAlly(req, res) {
    const bodyAttributes = getValidParams(req, res, validateBodyAllyCreation);
 
-   const allyAttributes = _.pick(bodyAttributes, ['ally_name', 'ally_nit', 'ally_web_page', 'ally_phone', 'ally_month_ideation_hours', 'ally_month_experimentation_hours']);
+   const allyAttributes = _.pick(bodyAttributes, [
+                                    'ally_name', 
+                                    'ally_nit', 
+                                    'ally_web_page', 
+                                    'ally_phone', 
+                                    'ally_month_ideation_hours', 
+                                    'ally_month_experimentation_hours',
+                                    'ally_challenge_ideation_hours', 
+                                    'ally_challenge_experimentation_hours'
+                                 ]);
    const userAttributes = _.pick(bodyAttributes, ['fk_id_role', 'fk_user_state', 'user_email', 'user_password']);
    const resourcesAttributes = _.pick(bodyAttributes, ['ally_resources']);
    const categories = _.pick(bodyAttributes, ['ally_categories']);
@@ -187,7 +196,12 @@ export async function updateAlly(req, res) {
    }
 
    const bodyAttributes = getValidParams(req, res, validateBodyAllyUpdate);
-   const newHours = _.pick(bodyAttributes, ['ally_month_ideation_hours', 'ally_month_experimentation_hours']);
+   const newHours = _.pick(bodyAttributes, [
+                              'ally_month_ideation_hours', 
+                              'ally_month_experimentation_hours',
+                              'ally_challenge_ideation_hours', 
+                              'ally_challenge_experimentation_hours'
+                           ]);
    const newCategories = _.pick(bodyAttributes, ['ally_categories']);
 
    isThereCategories = !_.isEmpty(newCategories);
@@ -255,7 +269,9 @@ function getAllyInfo(id_ally) {
          'ally_web_page',
          'ally_phone',
          'ally_month_ideation_hours',
-         'ally_month_experimentation_hours'
+         'ally_month_experimentation_hours',
+         'ally_challenge_ideation_hours',
+         'ally_challenge_experimentation_hours'
       ]
    }).then(result => {
       if (result === null) {
@@ -350,7 +366,9 @@ function getAlliesByPage(itemsByPage, page) {
          'id_ally', 
          'ally_name',
          'ally_month_ideation_hours',
-         'ally_month_experimentation_hours'
+         'ally_month_experimentation_hours',
+         'ally_challenge_ideation_hours',
+         'ally_challenge_experimentation_hours'
       ]
    }).then((result) => {
       return result;
