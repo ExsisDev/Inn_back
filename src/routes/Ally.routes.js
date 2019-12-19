@@ -7,7 +7,8 @@ const { isAdmin } = require('../middleware/admin');
 const {
    createAlly,
    updateAlly,
-   getAllyById
+   getAllyById,
+   getAllies
 } = require('../controllers/Ally.controller');
 
 
@@ -37,5 +38,10 @@ router.post('/', [auth, isAdmin], createAlly);
 router.put('/:idAlly', [auth, isAdmin], updateAlly);
 
 router.get('/:idAlly', [auth, isAdmin], getAllyById);
+
+/**
+ * Obtener retos por página
+ */
+router.get('/page/:page', [auth], getAllies);
 
 module.exports = router;

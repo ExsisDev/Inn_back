@@ -257,15 +257,15 @@ function getAllyInfo(id_ally) {
          'ally_month_ideation_hours',
          'ally_month_experimentation_hours'
       ]
-   }).then(result => {      
-      if( result === null ){
-         const error = { 
-            code: 404, 
-            message: "No se encontró un aliado con dicho id" 
+   }).then(result => {
+      if (result === null) {
+         const error = {
+            code: 404,
+            message: "No se encontró un aliado con dicho id"
          };
          return error;
       }
-      
+
       let categories = [];
       let user_email = result.dataValues['user'].user_email;
       let answer = _.omit(result.dataValues, ['user']);
@@ -273,10 +273,10 @@ function getAllyInfo(id_ally) {
       result.dataValues['ally_categories'].map(category => {
          categories.push(category.al_category);
       });
-      
+
       answer['user_email'] = user_email;
       answer['ally_categories'] = categories;
-      
+
       return answer;
    }).catch(error => {
       console.log(error);
@@ -291,19 +291,65 @@ function getAllyInfo(id_ally) {
  */
 export async function getAllyById(req, res) {
    const id_ally = parseInt(req.params.idAlly);
-   let answer ;
+   let answer;
 
    if (!Number.isInteger(id_ally) || id_ally <= 0) {
       return res.status(400).send("Id inválido. el id del aliado debe ser un entero positivo");
    }
    try {
-      answer = await getAllyInfo(id_ally);      
+      answer = await getAllyInfo(id_ally);
    } catch (error) {
       console.log(error);
       return res.status(500).send("Algo salió mal. Mira los logs para mayor información");
    }
-   if(answer.code && answer.code === 404){
+   if (answer.code && answer.code === 404) {
       return res.status(404).send(answer.message);
    }
    return res.status(200).send(answer);
+}
+
+/**
+ * 
+ * @param {*} req 
+ * @param {*} res 
+ */
+export async function getAllies(req, res) {
+   const page = parseInt(req.params.page);
+   let answer;
+
+   if (!Number.isInteger(page) || page <= 0) {
+      return res.status(400).send('Página no válida. La página solicitada debe ser un entero positivo');
+   }
+   try {
+      answer = await getAlliesByPage(10, page);
+   } catch (error) {
+      console.log(error);
+      return res.status(500).send('Algo salió mal. Mira los logs para mayor información');
+   }
+   return res.status(200).send(answer);
+}
+
+/**
+ * Encontrar los aliados por pagina
+ * @param {Number} itemsByPage 
+ * @param {Number} page  
+ */
+function getAlliesByPage(itemsByPage, page) {
+   return Ally.findAll({
+      offset: (page - 1) * itemsByPage,
+      limit: itemsByPage,
+      order: [
+         ['created_at', 'DESC']
+      ],
+      attributes: [
+         'id_ally', 
+         'ally_name',
+         'ally_month_ideation_hours',
+         'ally_month_experimentation_hours'
+      ]
+   }).then((result) => {
+      return result;
+   }).catch((error) => {
+      throw error;
+   });
 }
