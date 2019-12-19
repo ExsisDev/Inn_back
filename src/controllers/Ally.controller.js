@@ -309,20 +309,24 @@ export async function getAllyById(req, res) {
 }
 
 /**
- * Obtener aliados (está páginado)
+ * Obtener el total de aliados registrados y aliados por página
  * @param {*} req 
  * @param {*} res 
  */
 export async function getAllies(req, res) {
    const page = parseInt(req.params.page);
-   const itemsByPage = 6;
-   let answer;
+   const itemsByPage = 4;
+   let answer = {
+      data: null,
+      totalElements: 0
+   };
 
    if (!Number.isInteger(page) || page <= 0) {
       return res.status(400).send('Página no válida. La página solicitada debe ser un entero positivo');
    }
    try {
-      answer = await getAlliesByPage(itemsByPage, page);
+      answer.data = await getAlliesByPage(itemsByPage, page);
+      answer.totalElements = await countAllies();
    } catch (error) {
       console.log(error);
       return res.status(500).send('Algo salió mal. Mira los logs para mayor información');
@@ -352,5 +356,18 @@ function getAlliesByPage(itemsByPage, page) {
       return result;
    }).catch((error) => {
       throw error;
+   });
+}
+
+/**
+ * Contar los aliados totales registrados en db
+ */
+function countAllies() {
+   return Ally.count()
+   .then((result) => {
+      return result ? result : 0;
+   }).catch((error) => {
+      throw error;
+
    });
 }
