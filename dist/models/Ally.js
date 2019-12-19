@@ -42,6 +42,14 @@ var Ally = sequelize.define('allies', {
   ally_month_experimentation_hours: {
     type: Sequelize.INTEGER,
     allowNull: false
+  },
+  ally_challenge_ideation_hours: {
+    type: Sequelize.INTEGER,
+    allowNull: false
+  },
+  ally_challenge_experimentation_hours: {
+    type: Sequelize.INTEGER,
+    allowNull: false
   }
 }, {
   timestamps: true,

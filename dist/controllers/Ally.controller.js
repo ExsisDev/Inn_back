@@ -69,7 +69,7 @@ function createAlly(req, res) {
       switch (_context.prev = _context.next) {
         case 0:
           bodyAttributes = getValidParams(req, res, validateBodyAllyCreation);
-          allyAttributes = _.pick(bodyAttributes, ['ally_name', 'ally_nit', 'ally_web_page', 'ally_phone', 'ally_month_ideation_hours', 'ally_month_experimentation_hours']);
+          allyAttributes = _.pick(bodyAttributes, ['ally_name', 'ally_nit', 'ally_web_page', 'ally_phone', 'ally_month_ideation_hours', 'ally_month_experimentation_hours', 'ally_challenge_ideation_hours', 'ally_challenge_experimentation_hours']);
           userAttributes = _.pick(bodyAttributes, ['fk_id_role', 'fk_user_state', 'user_email', 'user_password']);
           resourcesAttributes = _.pick(bodyAttributes, ['ally_resources']);
           categories = _.pick(bodyAttributes, ['ally_categories']);
@@ -420,7 +420,7 @@ function updateAlly(req, res) {
 
         case 4:
           bodyAttributes = getValidParams(req, res, validateBodyAllyUpdate);
-          newHours = _.pick(bodyAttributes, ['ally_month_ideation_hours', 'ally_month_experimentation_hours']);
+          newHours = _.pick(bodyAttributes, ['ally_month_ideation_hours', 'ally_month_experimentation_hours', 'ally_challenge_ideation_hours', 'ally_challenge_experimentation_hours']);
           newCategories = _.pick(bodyAttributes, ['ally_categories']);
           isThereCategories = !_.isEmpty(newCategories);
           isThereHours = !_.isEmpty(newHours);
@@ -589,7 +589,7 @@ function getAllyInfo(id_ally) {
       model: User,
       attributes: ['user_email']
     }],
-    attributes: ['id_ally', 'ally_name', 'ally_nit', 'ally_web_page', 'ally_phone', 'ally_month_ideation_hours', 'ally_month_experimentation_hours']
+    attributes: ['id_ally', 'ally_name', 'ally_nit', 'ally_web_page', 'ally_phone', 'ally_month_ideation_hours', 'ally_month_experimentation_hours', 'ally_challenge_ideation_hours', 'ally_challenge_experimentation_hours']
   }).then(function (result) {
     if (result === null) {
       var error = {
@@ -741,7 +741,7 @@ function getAlliesByPage(itemsByPage, page) {
     offset: (page - 1) * itemsByPage,
     limit: itemsByPage,
     order: [['created_at', 'DESC']],
-    attributes: ['id_ally', 'ally_name', 'ally_month_ideation_hours', 'ally_month_experimentation_hours']
+    attributes: ['id_ally', 'ally_name', 'ally_month_ideation_hours', 'ally_month_experimentation_hours', 'ally_challenge_ideation_hours', 'ally_challenge_experimentation_hours']
   }).then(function (result) {
     return result;
   })["catch"](function (error) {
