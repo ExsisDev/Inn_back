@@ -309,19 +309,20 @@ export async function getAllyById(req, res) {
 }
 
 /**
- * 
+ * Obtener aliados (está páginado)
  * @param {*} req 
  * @param {*} res 
  */
 export async function getAllies(req, res) {
    const page = parseInt(req.params.page);
+   const itemsByPage = 6;
    let answer;
 
    if (!Number.isInteger(page) || page <= 0) {
       return res.status(400).send('Página no válida. La página solicitada debe ser un entero positivo');
    }
    try {
-      answer = await getAlliesByPage(10, page);
+      answer = await getAlliesByPage(itemsByPage, page);
    } catch (error) {
       console.log(error);
       return res.status(500).send('Algo salió mal. Mira los logs para mayor información');
