@@ -259,7 +259,7 @@ function deleteChallenge(req, res) {
         case 9:
           _context3.prev = 9;
           _context3.t0 = _context3["catch"](3);
-          throw _context3.t0;
+          return _context3.abrupt("return", res.status(500).send("Algo salió mal. Para mayo información revisa los logs."));
 
         case 12:
           _context3.prev = 12;
