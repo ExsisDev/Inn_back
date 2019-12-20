@@ -126,7 +126,7 @@ export async function deleteChallenge(req, res) {
    try {
       challengeUpdated = await Challenge.update({ is_deleted: true }, { where: { id_challenge } });
    } catch (error) {
-      throw error;
+      return res.status(500).send("Algo salió mal. Para mayo información revisa los logs.");      
    } finally {
       if (challengeUpdated) {
          return res.status(200).send("Reto eliminado");
