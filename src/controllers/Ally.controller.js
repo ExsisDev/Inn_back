@@ -38,15 +38,15 @@ export async function createAlly(req, res) {
    const bodyAttributes = getValidParams(req, res, validateBodyAllyCreation);
 
    const allyAttributes = _.pick(bodyAttributes, [
-                                    'ally_name', 
-                                    'ally_nit', 
-                                    'ally_web_page', 
-                                    'ally_phone', 
-                                    'ally_month_ideation_hours', 
-                                    'ally_month_experimentation_hours',
-                                    'ally_challenge_ideation_hours', 
-                                    'ally_challenge_experimentation_hours'
-                                 ]);
+      'ally_name',
+      'ally_nit',
+      'ally_web_page',
+      'ally_phone',
+      'ally_month_ideation_hours',
+      'ally_month_experimentation_hours',
+      'ally_challenge_ideation_hours',
+      'ally_challenge_experimentation_hours'
+   ]);
    const userAttributes = _.pick(bodyAttributes, ['fk_id_role', 'fk_user_state', 'user_email', 'user_password']);
    const resourcesAttributes = _.pick(bodyAttributes, ['ally_resources']);
    const categories = _.pick(bodyAttributes, ['ally_categories']);
@@ -70,6 +70,7 @@ export async function createAlly(req, res) {
       return res.send(answer);
    }
 }
+
 
 /**
  * Verificar existencia del usuario por email
@@ -104,6 +105,7 @@ function hashPassword(userAttributes) {
 
    });
 }
+
 
 /**
  * Crear el usuario, luego el aliado, continua creando los recursos asociados al aliado
@@ -174,6 +176,7 @@ async function createUserAndAlly(userAttributes, allyAttributes, resourcesAttrib
    }
 }
 
+
 /**
  * Actualizar horas de ideación, experimentación y
  * categorias de especialidad del aliado.
@@ -197,11 +200,11 @@ export async function updateAlly(req, res) {
 
    const bodyAttributes = getValidParams(req, res, validateBodyAllyUpdate);
    const newHours = _.pick(bodyAttributes, [
-                              'ally_month_ideation_hours', 
-                              'ally_month_experimentation_hours',
-                              'ally_challenge_ideation_hours', 
-                              'ally_challenge_experimentation_hours'
-                           ]);
+      'ally_month_ideation_hours',
+      'ally_month_experimentation_hours',
+      'ally_challenge_ideation_hours',
+      'ally_challenge_experimentation_hours'
+   ]);
    const newCategories = _.pick(bodyAttributes, ['ally_categories']);
 
    isThereCategories = !_.isEmpty(newCategories);
@@ -242,6 +245,7 @@ export async function updateAlly(req, res) {
    }
    return res.status(answer.status).send(answer.data);
 }
+
 
 /**
  * Obtener la información del aliado con sus respectivas categorías.
@@ -300,6 +304,7 @@ function getAllyInfo(id_ally) {
    })
 }
 
+
 /**
  * Obtener la información del aliado mediante el id que lo identifica.
  * @param {*} req 
@@ -323,6 +328,7 @@ export async function getAllyById(req, res) {
    }
    return res.status(200).send(answer);
 }
+
 
 /**
  * Obtener el total de aliados registrados y aliados por página
@@ -350,6 +356,7 @@ export async function getAllies(req, res) {
    return res.status(200).send(answer);
 }
 
+
 /**
  * Encontrar los aliados por pagina
  * @param {Number} itemsByPage 
@@ -363,7 +370,7 @@ function getAlliesByPage(itemsByPage, page) {
          ['created_at', 'DESC']
       ],
       attributes: [
-         'id_ally', 
+         'id_ally',
          'ally_name',
          'ally_month_ideation_hours',
          'ally_month_experimentation_hours',
@@ -377,15 +384,16 @@ function getAlliesByPage(itemsByPage, page) {
    });
 }
 
+
 /**
  * Contar los aliados totales registrados en db
  */
 function countAllies() {
    return Ally.count()
-   .then((result) => {
-      return result ? result : 0;
-   }).catch((error) => {
-      throw error;
+      .then((result) => {
+         return result ? result : 0;
+      }).catch((error) => {
+         throw error;
 
-   });
+      });
 }
