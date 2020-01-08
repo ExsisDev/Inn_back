@@ -18,69 +18,9 @@ function validateUserAuth(user) {
 
 function validatePasswordChange(passwordObject) {
   var passwordSchema = Joi.object({
-    actual_password: Joi.string().max(10).min(8).required().error(function (errors) {
-      errors.forEach(function (err) {
-        switch (err.type) {
-          case "any.empty":
-            err.message = "Debes introducir una contraseña";
-            break;
-
-          case "string.min":
-            err.message = "La contrase\xF1a no puede contener menos de ".concat(err.context.limit);
-            break;
-
-          case "string.max":
-            err.message = "La contrase\xF1a no puede contener m\xE1s de ".concat(err.context.limit);
-            break;
-
-          default:
-            break;
-        }
-      });
-      return errors;
-    }),
-    new_password: Joi.string().max(10).min(8).required().error(function (errors) {
-      errors.forEach(function (err) {
-        switch (err.type) {
-          case "any.empty":
-            err.message = "Debes introducir una contraseña";
-            break;
-
-          case "string.min":
-            err.message = "La contrase\xF1a no puede contener menos de ".concat(err.context.limit);
-            break;
-
-          case "string.max":
-            err.message = "La contrase\xF1a no puede contener m\xE1s de ".concat(err.context.limit);
-            break;
-
-          default:
-            break;
-        }
-      });
-      return errors;
-    }),
-    confirm_new_password: Joi.string().max(10).min(8).required().error(function (errors) {
-      errors.forEach(function (err) {
-        switch (err.type) {
-          case "any.empty":
-            err.message = "Debes introducir una contraseña";
-            break;
-
-          case "string.min":
-            err.message = "La contrase\xF1a no puede contener menos de ".concat(err.context.limit);
-            break;
-
-          case "string.max":
-            err.message = "La contrase\xF1a no puede contener m\xE1s de ".concat(err.context.limit);
-            break;
-
-          default:
-            break;
-        }
-      });
-      return errors;
-    })
+    actual_password: Joi.string().max(10).min(8).required(),
+    new_password: Joi.string().max(10).min(8).required(),
+    confirm_new_password: Joi.string().max(10).min(8).required()
   });
   return passwordSchema.validate(passwordObject);
 }

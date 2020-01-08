@@ -342,19 +342,21 @@ function createUserAndAlly(userAttributes, allyAttributes, resourcesAttributes, 
           }));
 
         case 5:
-          _context3.next = 10;
+          _context3.next = 11;
           break;
 
         case 7:
           _context3.prev = 7;
           _context3.t0 = _context3["catch"](2);
+          //falló cualquier transacción
+          console.log(_context3.t0);
           throw _context3.t0;
 
-        case 10:
-          _context3.prev = 10;
+        case 11:
+          _context3.prev = 11;
 
           if (!(userCreated && allyCreated)) {
-            _context3.next = 20;
+            _context3.next = 21;
             break;
           }
 
@@ -378,15 +380,15 @@ function createUserAndAlly(userAttributes, allyAttributes, resourcesAttributes, 
           answerObject = _.assign(obj1, obj2, obj3, obj4);
           return _context3.abrupt("return", answerObject);
 
-        case 20:
-          return _context3.finish(10);
-
         case 21:
+          return _context3.finish(11);
+
+        case 22:
         case "end":
           return _context3.stop();
       }
     }
-  }, null, null, [[2, 7, 10, 21]]);
+  }, null, null, [[2, 7, 11, 22]]);
 }
 /**
  * Actualizar horas de ideación, experimentación y
