@@ -10,9 +10,9 @@ export function validateUserAuth(user) {
 
 export function validatePasswordChange(passwordObject) {
    const passwordSchema = Joi.object({
-      actual_password: Joi.string().max(8).required(),
-      new_password: Joi.string().max(8).required(),
-      confirm_new_password: Joi.string().max(8).required()
+      actual_password: Joi.string().max(10).min(8).required(),
+      new_password: Joi.string().max(10).min(8).required(),
+      confirm_new_password: Joi.string().max(10).min(8).required()
    });
    return passwordSchema.validate(passwordObject);
 }
