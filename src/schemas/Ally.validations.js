@@ -19,8 +19,8 @@ export function validateBodyAllyCreation(ally) {
       ally_month_experimentation_hours: Joi.number().integer().positive().required(),
       ally_challenge_ideation_hours: Joi.number().integer().positive().required(),
       ally_challenge_experimentation_hours: Joi.number().integer().positive().required(),
-      ally_resources: Joi.array().items(createResourceSchema),
-      ally_categories: Joi.array().items(Joi.number().integer().positive())
+      ally_resources: Joi.array().items(createResourceSchema).required(),
+      ally_categories: Joi.array().items(Joi.number().integer().positive()).required()
    });
    return createAllySchema.validate(ally);
 }

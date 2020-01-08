@@ -157,6 +157,7 @@ async function createUserAndAlly(userAttributes, allyAttributes, resourcesAttrib
       });
    } catch (error) {
       //falló cualquier transacción
+      console.log(error)
       throw error;
    } finally {
       if (userCreated && allyCreated) {
