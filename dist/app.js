@@ -21,11 +21,10 @@ var challengeRoutes = require('./routes/Challenge.routes');
 var companyRoutes = require('./routes/Company.routes');
 
 var alCategoriesRoutes = require('./routes/AlCategory.routes');
-
-console.log('Application Name: ' + config.get('name'));
 /**
  * Inicialización de express
  */
+
 
 var app = express();
 debug("NODE_ENV: ".concat(process.env.NODE_ENV)); //export NODE_ENV=production

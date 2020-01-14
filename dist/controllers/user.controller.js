@@ -18,6 +18,8 @@ var _require2 = require('luxon'),
 var bcrypt = require('bcrypt');
 
 var User = require('../models/User');
+
+var config = require('config');
 /**
  * Verificar la validéz de los parametros del body
  * 
@@ -67,7 +69,7 @@ function authenticateAttempts(req, res) {
             break;
           }
 
-          return _context.abrupt("return", res.status(400).send("Correo o contraseña inválida"));
+          return _context.abrupt("return", res.status(400).send(config.get('user.invalidEmailOrPassword')));
 
         case 10:
           timeDifferenceInSeconds = differenceBetweenDates.toObject().milliseconds / 1000; // Segundos de diferencia entre hora actual y hora en db
@@ -85,7 +87,7 @@ function authenticateAttempts(req, res) {
 
         case 17:
           return _context.abrupt("return", res.status(429).send({
-            msj: "Excedió los intentos permitidos",
+            msj: config.get('user.exceededTryAccess'),
             minutes: differenceBetweenDates.toObject().milliseconds / (1000 * 60)
           }));
 
@@ -197,7 +199,7 @@ function authenticateUser(res, userAttributes) {
               break;
             }
 
-            return _context2.abrupt("return", res.status(400).send("Correo o contraseña inválida"));
+            return _context2.abrupt("return", res.status(400).send(config.get('user.invalidEmailOrPassword')));
 
           case 5:
             _context2.next = 7;
@@ -236,7 +238,7 @@ function authenticateUser(res, userAttributes) {
             return regeneratorRuntime.awrap(updateHour(userAttributes.user_email, futureHour));
 
           case 20:
-            return _context2.abrupt("return", res.status(400).send("Correo o contraseña inválida"));
+            return _context2.abrupt("return", res.status(400).send(config.get('user.invalidEmailOrPassword')));
 
           case 21:
             _context2.next = 23;
@@ -248,7 +250,7 @@ function authenticateUser(res, userAttributes) {
 
           case 25:
             token = userAuthenticated.generateAuthToken();
-            return _context2.abrupt("return", res.set('x-auth-token', token).set('Access-Control-Expose-Headers', 'x-auth-token').send("Usuario autenticado"));
+            return _context2.abrupt("return", res.set('x-auth-token', token).set('Access-Control-Expose-Headers', 'x-auth-token').send(config.get('authenticated')));
 
           case 27:
           case "end":
@@ -362,10 +364,10 @@ function changePassword(req, res) {
           return _context3.abrupt("return", res.status(200).send(updated));
 
         case 21:
-          return _context3.abrupt("return", res.status(400).send("Las contraseñas no coinciden"));
+          return _context3.abrupt("return", res.status(400).send(config.get('user.passwordsDoesntMatch')));
 
         case 22:
-          return _context3.abrupt("return", res.status(400).send("La contraseña es incorrecta"));
+          return _context3.abrupt("return", res.status(400).send(config.get('invalidPassword')));
 
         case 25:
           _context3.prev = 25;

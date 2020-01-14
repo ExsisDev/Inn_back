@@ -16,6 +16,8 @@ var _require = require('../schemas/Challenge.validations'),
 
 var _ = require('lodash');
 
+var config = require('config');
+
 var sequelize = require('../utils/database');
 
 var Sequelize = require('sequelize');
@@ -173,7 +175,7 @@ function createChallenge(req, res) {
             break;
           }
 
-          return _context2.abrupt("return", challengeEmpty ? res.status(200).send(challengeEmpty) : res.status(500).send("No se pudo crear el elemento"));
+          return _context2.abrupt("return", challengeEmpty ? res.status(200).send(challengeEmpty) : res.status(500).send(config.get('unableToCreate')));
 
         case 16:
           return _context2.abrupt("return", res.status(500).send(error));
@@ -238,7 +240,7 @@ function deleteChallenge(req, res) {
             break;
           }
 
-          return _context3.abrupt("return", res.status(400).send("Id no válido, idChallenge debe ser un entero."));
+          return _context3.abrupt("return", res.status(400).send(config.get('challenge.invalidIdInteger')));
 
         case 3:
           _context3.prev = 3;
@@ -259,7 +261,7 @@ function deleteChallenge(req, res) {
         case 9:
           _context3.prev = 9;
           _context3.t0 = _context3["catch"](3);
-          return _context3.abrupt("return", res.status(500).send("Algo salió mal. Para mayo información revisa los logs."));
+          return _context3.abrupt("return", res.status(500).send(config.get('seeLogs')));
 
         case 12:
           _context3.prev = 12;
@@ -269,10 +271,10 @@ function deleteChallenge(req, res) {
             break;
           }
 
-          return _context3.abrupt("return", res.status(200).send("Reto eliminado"));
+          return _context3.abrupt("return", res.status(200).send(config.get('challenge.challengeDeleted')));
 
         case 15:
-          return _context3.abrupt("return", res.status(500).send("No se pudo eliminar el reto"));
+          return _context3.abrupt("return", res.status(500).send(config.get('challenge.unableToDelete')));
 
         case 17:
         case "end":
@@ -386,7 +388,7 @@ function getChallengesByPageAndStatus(req, res) {
           return _context4.abrupt("return", elementsCountByState && elementsByState ? res.send({
             result: elementsByState,
             totalElements: elementsCountByState
-          }) : res.status(404).send("No hay elementos disponibles"));
+          }) : res.status(404).send(config.get('emptyResponse')));
 
         case 46:
         case "end":
@@ -571,7 +573,7 @@ function getChallengesByPageStatusAndPhrase(req, res) {
           return _context5.abrupt("return", elementsCountByState && elementsByState ? res.send({
             result: elementsByState,
             totalElements: elementsCountByState
-          }) : res.status(404).send("No hay elementos disponibles"));
+          }) : res.status(404).send(config.get('emptyResponse')));
 
         case 47:
         case "end":
