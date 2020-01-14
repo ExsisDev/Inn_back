@@ -4,10 +4,29 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.getResourcesByAllyId = getResourcesByAllyId;
+exports.deleteAllyResources = deleteAllyResources;
 
 var _ = require('lodash');
 
 var Resource = require('../models/Resource');
+
+var _require = require('../schemas/Resource.validations'),
+    validateResource = _require.validateResource;
+/**
+ * Verificar la validéz de los parametros del body
+ * 
+ * @param {Request} req 
+ * @param {Response} res 
+ * @param {CallableFunction} callBackValidation 
+ */
+
+
+function getValidParams(req, res, callBackValidation) {
+  var _callBackValidation = callBackValidation(req.body),
+      error = _callBackValidation.error;
+
+  return error ? res.status(400).send(error.details[0].message) : req.body;
+}
 
 function getResourcesByAllyId(req, res) {
   var id_ally, answer;
@@ -85,4 +104,56 @@ function getAllyResources(id_ally) {
     console.log(error);
     throw error;
   });
+}
+
+function deleteAllyResources(req, res) {
+  var id_ally, resourceToDelete, answer;
+  return regeneratorRuntime.async(function deleteAllyResources$(_context2) {
+    while (1) {
+      switch (_context2.prev = _context2.next) {
+        case 0:
+          id_ally = parseInt(req.params.allyId);
+
+          if (!(!Number.isInteger(id_ally) || id_ally <= 0)) {
+            _context2.next = 3;
+            break;
+          }
+
+          return _context2.abrupt("return", res.status(400).send("Id inválido. el id del aliado debe ser un entero positivo"));
+
+        case 3:
+          resourceToDelete = getValidParams(req, res, validateResource);
+          _context2.prev = 4;
+          _context2.next = 7;
+          return regeneratorRuntime.awrap(Resource.destroy({
+            where: {
+              fk_id_ally: id_ally,
+              id_resource: resourceToDelete.id_resource
+            }
+          }));
+
+        case 7:
+          answer = _context2.sent;
+
+          if (!answer) {
+            _context2.next = 10;
+            break;
+          }
+
+          return _context2.abrupt("return", res.status(200).send("Recurso identificado con el id ".concat(resourceToDelete.id_resource, " fue eliminado")));
+
+        case 10:
+          return _context2.abrupt("return", res.status(404).send("Recurso no encontrado"));
+
+        case 13:
+          _context2.prev = 13;
+          _context2.t0 = _context2["catch"](4);
+          return _context2.abrupt("return", res.status(500).send('Algo salió mal, comuniquese con los programadores responsables'));
+
+        case 16:
+        case "end":
+          return _context2.stop();
+      }
+    }
+  }, null, null, [[4, 13]]);
 }
