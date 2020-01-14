@@ -6,6 +6,8 @@ Object.defineProperty(exports, "__esModule", {
 exports.getAllAlCategories = getAllAlCategories;
 
 var AlCategory = require('../models/AlCategory');
+
+var config = require('config');
 /**
  * Obtener todas las categorias de los aliados o compañias
  * 
@@ -20,7 +22,7 @@ function getAllAlCategories(req, res) {
       switch (_context.prev = _context.next) {
         case 0:
           AlCategory.findAll().then(function (result) {
-            return result ? res.send(result) : res.status(404).send("No hay elementos disponibles");
+            return result ? res.send(result) : res.status(404).send(config.get('emptyResponse'));
           })["catch"](function (error) {
             return res.status(500).send(error);
           });

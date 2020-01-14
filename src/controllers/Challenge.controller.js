@@ -1,5 +1,6 @@
 const { validateBodyChallengeCreation, validateBodyChallengeUpdate } = require('../schemas/Challenge.validations');
 const _ = require('lodash');
+const config = require('config');
 const sequelize = require('../utils/database');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
@@ -60,7 +61,7 @@ export async function createChallenge(req, res) {
 
    } finally {
       if (surveyCreated && challengeEmpty) {
-         return challengeEmpty ? res.status(200).send(challengeEmpty) : res.status(500).send("No se pudo crear el elemento");
+         return challengeEmpty ? res.status(200).send(challengeEmpty) : res.status(500).send(config.get('unableToCreate'));
 
       }
       return res.status(500).send(error);
@@ -121,17 +122,17 @@ export async function deleteChallenge(req, res) {
    let id_challenge = parseInt(req.params.idChallenge);
 
    if (isNaN(id_challenge)) {
-      return res.status(400).send("Id no válido, idChallenge debe ser un entero.");
+      return res.status(400).send(config.get('challenge.invalidIdInteger'));
    }
    try {
       challengeUpdated = await Challenge.update({ is_deleted: true }, { where: { id_challenge } });
    } catch (error) {
-      return res.status(500).send("Algo salió mal. Para mayo información revisa los logs.");      
+      return res.status(500).send(config.get('seeLogs'));      
    } finally {
       if (challengeUpdated) {
-         return res.status(200).send("Reto eliminado");
+         return res.status(200).send(config.get('challenge.challengeDeleted'));
       }
-      return res.status(500).send("No se pudo eliminar el reto");
+      return res.status(500).send(config.get('challenge.unableToDelete'));
    }
 }
 
@@ -167,7 +168,7 @@ export async function getChallengesByPageAndStatus(req, res) {
       return res.status(500).send(error);
 
    } finally {
-      return elementsCountByState && elementsByState ? res.send({ result: elementsByState, totalElements: elementsCountByState }) : res.status(404).send("No hay elementos disponibles");
+      return elementsCountByState && elementsByState ? res.send({ result: elementsByState, totalElements: elementsCountByState }) : res.status(404).send(config.get('emptyResponse'));
 
    }
 }
@@ -284,7 +285,7 @@ export async function getChallengesByPageStatusAndPhrase(req, res) {
       return res.status(500).send(error);
 
    } finally {
-      return elementsCountByState && elementsByState ? res.send({ result: elementsByState, totalElements: elementsCountByState }) : res.status(404).send("No hay elementos disponibles");
+      return elementsCountByState && elementsByState ? res.send({ result: elementsByState, totalElements: elementsCountByState }) : res.status(404).send(config.get('emptyResponse'));
 
    }
 }

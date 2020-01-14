@@ -1,6 +1,7 @@
 const { validateBodyAllyCreation, validateBodyAllyUpdate, validateAllyAuth } = require('../schemas/Ally.validations');
 const { validateResourceCreation, validateResourceUpdate } = require('../schemas/Resource.validations');
 
+const config = require('config');
 const _ = require('lodash');
 const { DateTime } = require('luxon');
 const bcrypt = require('bcrypt');
@@ -14,7 +15,7 @@ const AlCategory = require('../models/AlCategory');
 /**
  * Verificar la validéz de los parametros del body
  * 
- * @param {Request} req 
+ * @param {Request} req   
  * @param {Response} res 
  * @param {CallableFunction} callBackValidation 
  */
@@ -59,7 +60,7 @@ export async function createAlly(req, res) {
 
    try {
       userVerified = await verifyUser(userAttributes.user_email);
-      if (userVerified) return res.status(400).send("El correo ya ha sido registrado");
+      if (userVerified) return res.status(400).send(config.get('ally.mailAlreadyRegistered'));
       await hashPassword(userAttributes);
       answer = await createUserAndAlly(userAttributes, allyAttributes, resourcesAttributes, categories);
    }
@@ -196,7 +197,7 @@ export async function updateAlly(req, res) {
    const id_ally = parseInt(req.params.idAlly);
 
    if (!Number.isInteger(id_ally) || id_ally <= 0) {
-      return res.status(400).send("Id inválido. el id del aliado debe ser un entero positivo");
+      return res.status(400).send(config.get('ally.invalidIdAlly'));
    }
 
    const bodyAttributes = getValidParams(req, res, validateBodyAllyUpdate);
@@ -212,7 +213,7 @@ export async function updateAlly(req, res) {
    isThereHours = !_.isEmpty(newHours);
 
    if (!isThereHours && !isThereCategories) {
-      return res.status(400).send("Debe haber almenos un campo para actualizar.");
+      return res.status(400).send(config.get('ally.emptyUpdate'));
    }
 
    try {
@@ -241,7 +242,7 @@ export async function updateAlly(req, res) {
 
    } catch (error) {
       console.log(error);
-      answer.data = "Algo salió mal. Mira los logs para mayor información";
+      answer.data = config.get('seeLogs');
       answer.status = 500;
    }
    return res.status(answer.status).send(answer.data);
@@ -282,7 +283,7 @@ function getAllyInfo(id_ally) {
       if (result === null) {
          const error = {
             code: 404,
-            message: "No se encontró un aliado con dicho id"
+            message: config.get('ally.idNotFound')
          };
          return error;
       }
@@ -316,13 +317,13 @@ export async function getAllyById(req, res) {
    let answer;
 
    if (!Number.isInteger(id_ally) || id_ally <= 0) {
-      return res.status(400).send("Id inválido. el id del aliado debe ser un entero positivo");
+      return res.status(400).send(config.get('ally.invalidIdNegative'));
    }
    try {
       answer = await getAllyInfo(id_ally);
    } catch (error) {
       console.log(error);
-      return res.status(500).send("Algo salió mal. Mira los logs para mayor información");
+      return res.status(500).send(config.get('seeLogs'));
    }
    if (answer.code && answer.code === 404) {
       return res.status(404).send(answer.message);
@@ -345,14 +346,14 @@ export async function getAllies(req, res) {
    };
 
    if (!Number.isInteger(page) || page <= 0) {
-      return res.status(400).send('Página no válida. La página solicitada debe ser un entero positivo');
+      return res.status(400).send(config.get('ally.invalidNegativePage'));
    }
    try {
       answer.data = await getAlliesByPage(itemsByPage, page);
       answer.totalElements = await countAllies();
    } catch (error) {
       console.log(error);
-      return res.status(500).send('Algo salió mal. Mira los logs para mayor información');
+      return res.status(500).send(config.get('seeLogs'));
    }
    return res.status(200).send(answer);
 }

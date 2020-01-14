@@ -17,6 +17,8 @@ var _require2 = require('../schemas/Resource.validations'),
     validateResourceCreation = _require2.validateResourceCreation,
     validateResourceUpdate = _require2.validateResourceUpdate;
 
+var config = require('config');
+
 var _ = require('lodash');
 
 var _require3 = require('luxon'),
@@ -38,7 +40,7 @@ var AlCategory = require('../models/AlCategory');
 /**
  * Verificar la validéz de los parametros del body
  * 
- * @param {Request} req 
+ * @param {Request} req   
  * @param {Response} res 
  * @param {CallableFunction} callBackValidation 
  */
@@ -87,7 +89,7 @@ function createAlly(req, res) {
             break;
           }
 
-          return _context.abrupt("return", res.status(400).send("El correo ya ha sido registrado"));
+          return _context.abrupt("return", res.status(400).send(config.get('ally.mailAlreadyRegistered')));
 
         case 13:
           _context.next = 15;
@@ -418,7 +420,7 @@ function updateAlly(req, res) {
             break;
           }
 
-          return _context5.abrupt("return", res.status(400).send("Id inválido. el id del aliado debe ser un entero positivo"));
+          return _context5.abrupt("return", res.status(400).send(config.get('ally.invalidIdAlly')));
 
         case 4:
           bodyAttributes = getValidParams(req, res, validateBodyAllyUpdate);
@@ -432,7 +434,7 @@ function updateAlly(req, res) {
             break;
           }
 
-          return _context5.abrupt("return", res.status(400).send("Debe haber almenos un campo para actualizar."));
+          return _context5.abrupt("return", res.status(400).send(config.get('ally.emptyUpdate')));
 
         case 11:
           _context5.prev = 11;
@@ -556,7 +558,7 @@ function updateAlly(req, res) {
           _context5.prev = 20;
           _context5.t0 = _context5["catch"](11);
           console.log(_context5.t0);
-          answer.data = "Algo salió mal. Mira los logs para mayor información";
+          answer.data = config.get('seeLogs');
           answer.status = 500;
 
         case 25:
@@ -596,7 +598,7 @@ function getAllyInfo(id_ally) {
     if (result === null) {
       var error = {
         code: 404,
-        message: "No se encontró un aliado con dicho id"
+        message: config.get('ally.idNotFound')
       };
       return error;
     }
@@ -637,7 +639,7 @@ function getAllyById(req, res) {
             break;
           }
 
-          return _context6.abrupt("return", res.status(400).send("Id inválido. el id del aliado debe ser un entero positivo"));
+          return _context6.abrupt("return", res.status(400).send(config.get('ally.invalidIdNegative')));
 
         case 3:
           _context6.prev = 3;
@@ -653,7 +655,7 @@ function getAllyById(req, res) {
           _context6.prev = 9;
           _context6.t0 = _context6["catch"](3);
           console.log(_context6.t0);
-          return _context6.abrupt("return", res.status(500).send("Algo salió mal. Mira los logs para mayor información"));
+          return _context6.abrupt("return", res.status(500).send(config.get('seeLogs')));
 
         case 13:
           if (!(answer.code && answer.code === 404)) {
@@ -698,7 +700,7 @@ function getAllies(req, res) {
             break;
           }
 
-          return _context7.abrupt("return", res.status(400).send('Página no válida. La página solicitada debe ser un entero positivo'));
+          return _context7.abrupt("return", res.status(400).send(config.get('ally.invalidNegativePage')));
 
         case 5:
           _context7.prev = 5;
@@ -719,7 +721,7 @@ function getAllies(req, res) {
           _context7.prev = 14;
           _context7.t0 = _context7["catch"](5);
           console.log(_context7.t0);
-          return _context7.abrupt("return", res.status(500).send('Algo salió mal. Mira los logs para mayor información'));
+          return _context7.abrupt("return", res.status(500).send(config.get('seeLogs')));
 
         case 18:
           return _context7.abrupt("return", res.status(200).send(answer));
