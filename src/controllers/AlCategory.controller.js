@@ -1,4 +1,5 @@
 const AlCategory = require('../models/AlCategory');
+const config = require('config');
 
 
 /**
@@ -10,7 +11,7 @@ const AlCategory = require('../models/AlCategory');
 export async function getAllAlCategories(req, res) {
 
    AlCategory.findAll().then((result) => {
-      return result ? res.send(result) : res.status(404).send("No hay elementos disponibles");
+      return result ? res.send(result) : res.status(404).send(config.get('emptyResponse'));
    
    }).catch((error) => {
       return res.status(500).send(error);

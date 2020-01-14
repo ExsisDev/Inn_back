@@ -3,7 +3,7 @@ const _ = require('lodash');
 const { DateTime } = require('luxon');
 const bcrypt = require('bcrypt');
 const User = require('../models/User');
-
+const config = require('config');
 
 /**
  * Verificar la validéz de los parametros del body
@@ -41,13 +41,13 @@ export async function authenticateAttempts(req, res) {
       const nowDate = DateTime.local().setZone('America/Bogota');
       const differenceBetweenDates = dbDateUserLastLogin.diff(nowDate, 'milliseconds');
 
-      if (!userLastLogin) return res.status(400).send("Correo o contraseña inválida");
+      if (!userLastLogin) return res.status(400).send(config.get('user.invalidEmailOrPassword'));
       timeDifferenceInSeconds = (differenceBetweenDates.toObject().milliseconds) / (1000); // Segundos de diferencia entre hora actual y hora en db
 
       if (timeDifferenceInSeconds <= 0) {
          return await authenticateUser(res, userAttributes);
       } else {
-         return res.status(429).send({ msj: "Excedió los intentos permitidos", minutes: (differenceBetweenDates.toObject().milliseconds / (1000 * 60)) });
+         return res.status(429).send({ msj: config.get('user.exceededTryAccess'), minutes: (differenceBetweenDates.toObject().milliseconds / (1000 * 60)) });
       }
 
    } catch (error) {
@@ -133,7 +133,7 @@ function authenticateUser(res, userAttributes) {
 
    return new Promise(async () => {
       userAuthenticated = await findUserByEmail(userAttributes.user_email);
-      if (!userAuthenticated) return res.status(400).send("Correo o contraseña inválida");
+      if (!userAuthenticated) return res.status(400).send(config.get('user.invalidEmailOrPassword'));
 
       passwordComparison = await comparePassword(userAttributes.user_password, userAuthenticated.user_password);
       if (!passwordComparison) {
@@ -145,13 +145,13 @@ function authenticateUser(res, userAttributes) {
             const futureHour = DateTime.local().setZone('America/Bogota').plus({ minutes: minutesUntilAccess });
             await updateHour(userAttributes.user_email, futureHour);
          }
-         return res.status(400).send("Correo o contraseña inválida");
+         return res.status(400).send(config.get('user.invalidEmailOrPassword'));
 
       }
       await updateHour(userAttributes.user_email, DateTime.local().setZone('America/Bogota'));
       await updateLoginCounter(userAttributes.user_email, 0);
       token = userAuthenticated.generateAuthToken();
-      return res.set('x-auth-token', token).set('Access-Control-Expose-Headers', 'x-auth-token').send("Usuario autenticado");
+      return res.set('x-auth-token', token).set('Access-Control-Expose-Headers', 'x-auth-token').send(config.get('authenticated'));
 
    });
 }
@@ -237,10 +237,10 @@ export async function changePassword(req, res) {
             const updated = await updateUserPassword(hashedPassword, idUser);
             return res.status(200).send(updated);
          } else {
-            return res.status(400).send("Las contraseñas no coinciden");
+            return res.status(400).send(config.get('user.passwordsDoesntMatch'));
          }
       }
-      return res.status(400).send("La contraseña es incorrecta");
+      return res.status(400).send(config.get('invalidPassword'));
    } catch (error) {
       console.log(error)
       return res.status(500).send(error);

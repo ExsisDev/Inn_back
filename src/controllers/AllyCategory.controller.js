@@ -1,4 +1,5 @@
 const AllyCategory = require('../models/AllyCategory');
+const config = require('config');
 
 
 /**
@@ -10,7 +11,7 @@ const AllyCategory = require('../models/AllyCategory');
 export async function getAllAllyCategories(req, res) {
 
    AllyCategory.findAll().then((result) => {
-      return result ? res.send(result) : res.status(404).send("No hay elementos disponibles");
+      return result ? res.send(result) : res.status(404).send(config.get('emptyResponse'));
    
    }).catch((error) => {
       return res.status(500).send(error);

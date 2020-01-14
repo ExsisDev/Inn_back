@@ -1,3 +1,25 @@
 {
-   "name": "Innovalab"
+   "authenticated": "Usuario autenticado",
+   "emptyResponse": "No hay elementos disponibles",
+   "unableToCreate": "No se pudo crear el elemento",
+   "seeLogs": "Algo salió mal. Mira los logs para mayor información",
+   "ally": {
+      "mailAlreadyRegistered": "El correo ya ha sido registrado",
+      "invalidIdAlly": "Id inválido. el id del aliado debe ser un entero positivo",
+      "emptyUpdate": "Debe haber al menos un campo para actualizar.",
+      "invalidIdNegative": "Id inválido. el id del aliado debe ser un entero positivo",
+      "invalidNegativePage": "Página no válida. La página solicitada debe ser un entero positivo",
+      "idNotFound": "No se encontró un aliado con dicho id"
+   },
+   "challenge": {
+      "invalidIdInteger": "Id no válido, idChallenge debe ser un entero.",
+      "challengeDeleted": "Reto eliminado",
+      "unableToDelete": "No se pudo eliminar el reto"
+   },
+   "user": {
+      "exceededTryAccess": "Excedió los intentos permitidos",
+      "invalidEmailOrPassword": "Correo o contraseña inválida",
+      "passwordsDoesntMatch": "Las contraseñas no coinciden",
+      "invalidPassword": "La contraseña es incorrecta"
+   }
 }

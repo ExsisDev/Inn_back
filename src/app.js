@@ -4,15 +4,11 @@ const config = require('config');
 const debug = require('debug')('app:startup'); //export DEBUG=app:startup
 const cors = require('cors');
 
-
 const allyRoutes = require('./routes/Ally.routes');
 const userRoutes = require('./routes/User.routes');
 const challengeRoutes = require('./routes/Challenge.routes');
 const companyRoutes = require('./routes/Company.routes');
 const alCategoriesRoutes = require('./routes/AlCategory.routes');
-
-
-console.log('Application Name: ' + config.get('name'));
 
 
 /**
