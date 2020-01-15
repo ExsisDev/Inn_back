@@ -9,6 +9,6 @@ const { getResourcesByAllyId, deleteAllyResources } = require('../controllers/Re
 // Rutas para /allies/resources
 
 router.get('/:allyId', getResourcesByAllyId);
-router.delete('/:allyId', [auth, isAdmin], deleteAllyResources);
+router.delete('/ally/:allyId/resource/:resourceId', [auth, isAdmin], deleteAllyResources);
 
 module.exports = router;

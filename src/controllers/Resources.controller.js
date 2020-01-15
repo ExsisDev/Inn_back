@@ -1,19 +1,5 @@
 const _ = require('lodash');
 const Resource = require('../models/Resource');
-const {validateResource} = require('../schemas/Resource.validations');
-
-
-/**
- * Verificar la validéz de los parametros del body
- * 
- * @param {Request} req 
- * @param {Response} res 
- * @param {CallableFunction} callBackValidation 
- */
-function getValidParams(req, res, callBackValidation) {
-    const { error } = callBackValidation(req.body);
-    return (error) ? res.status(400).send(error.details[0].message) : req.body;
- }
 
 export async function getResourcesByAllyId(req, res) {
     const id_ally = parseInt(req.params.allyId);
@@ -64,30 +50,31 @@ function getAllyResources(id_ally) {
     })
 }
 
-
+/**
+ * Eliminar de base de datos el recurso de un aliado
+ * @param {*} req 
+ * @param {*} res 
+ */
 export async function deleteAllyResources(req, res) {
     const id_ally = parseInt(req.params.allyId);
+    const id_resource = parseInt(req.params.resourceId);
+
     if (!Number.isInteger(id_ally) || id_ally <= 0) {
         return res.status(400).send("Id inválido. el id del aliado debe ser un entero positivo");
     }
-
-    const resourceToDelete = getValidParams(req, res, validateResource);
-    let answer;
+    if (!Number.isInteger(id_resource) || id_resource <= 0) {
+        return res.status(400).send("Id inválido. el id del recurso debe ser un entero positivo");
+    }
 
     try {
-        answer = await Resource.destroy({
-            where: {
-                fk_id_ally: id_ally, 
-                id_resource: resourceToDelete.id_resource
-            }
+        const answer = await Resource.destroy({
+            where: { id_resource, fk_id_ally: id_ally }
         });
         if (answer){
-            return (res.status(200).send(`Recurso identificado con el id ${resourceToDelete.id_resource} fue eliminado`));
+            return (res.status(200).send(`Recurso identificado con el id ${id_resource} fue eliminado`));
         }
         return res.status(404).send("Recurso no encontrado");
-    } catch (error) {
-        return res.status(500).send('Algo salió mal, comuniquese con los programadores responsables');
+    } catch (error) {        
+        return res.status(500).send('Algo salió mal. Revise los logs para mayor información.');
     }
 }
-
-
