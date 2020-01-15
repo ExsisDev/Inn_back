@@ -16,5 +16,5 @@ var _require3 = require('../controllers/Resources.controller'),
 
 
 router.get('/:allyId', getResourcesByAllyId);
-router["delete"]('/:allyId', [auth, isAdmin], deleteAllyResources);
+router["delete"]('/ally/:allyId/resource/:resourceId', [auth, isAdmin], deleteAllyResources);
 module.exports = router;
