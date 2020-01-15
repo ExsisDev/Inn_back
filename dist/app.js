@@ -1,17 +1,28 @@
 "use strict";
+
 var express = require('express');
+
 var morgan = require('morgan'); //Imprimir las peticiones
+
+
 var config = require('config');
+
 var debug = require('debug')('app:startup'); //export DEBUG=app:startup
+
+
 var cors = require('cors');
+
 var allyRoutes = require('./routes/Ally.routes');
+
 var userRoutes = require('./routes/User.routes');
+
 var challengeRoutes = require('./routes/Challenge.routes');
+
 var companyRoutes = require('./routes/Company.routes');
+
 var alCategoriesRoutes = require('./routes/AlCategory.routes');
+
 var resourcesRoutes = require('./routes/resources.routes');
-
-
 /**
  * Inicialización de express
  */

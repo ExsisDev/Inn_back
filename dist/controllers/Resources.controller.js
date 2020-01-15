@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.getResourcesByAllyId = getResourcesByAllyId;
+exports.deleteAllyResources = deleteAllyResources;
 
 var _ = require('lodash');
 
@@ -85,4 +86,70 @@ function getAllyResources(id_ally) {
     console.log(error);
     throw error;
   });
+}
+/**
+ * Eliminar de base de datos el recurso de un aliado
+ * @param {*} req 
+ * @param {*} res 
+ */
+
+
+function deleteAllyResources(req, res) {
+  var id_ally, id_resource, answer;
+  return regeneratorRuntime.async(function deleteAllyResources$(_context2) {
+    while (1) {
+      switch (_context2.prev = _context2.next) {
+        case 0:
+          id_ally = parseInt(req.params.allyId);
+          id_resource = parseInt(req.params.resourceId);
+
+          if (!(!Number.isInteger(id_ally) || id_ally <= 0)) {
+            _context2.next = 4;
+            break;
+          }
+
+          return _context2.abrupt("return", res.status(400).send("Id inválido. el id del aliado debe ser un entero positivo"));
+
+        case 4:
+          if (!(!Number.isInteger(id_resource) || id_resource <= 0)) {
+            _context2.next = 6;
+            break;
+          }
+
+          return _context2.abrupt("return", res.status(400).send("Id inválido. el id del recurso debe ser un entero positivo"));
+
+        case 6:
+          _context2.prev = 6;
+          _context2.next = 9;
+          return regeneratorRuntime.awrap(Resource.destroy({
+            where: {
+              id_resource: id_resource,
+              fk_id_ally: id_ally
+            }
+          }));
+
+        case 9:
+          answer = _context2.sent;
+
+          if (!answer) {
+            _context2.next = 12;
+            break;
+          }
+
+          return _context2.abrupt("return", res.status(200).send("Recurso identificado con el id ".concat(id_resource, " fue eliminado")));
+
+        case 12:
+          return _context2.abrupt("return", res.status(404).send("Recurso no encontrado"));
+
+        case 15:
+          _context2.prev = 15;
+          _context2.t0 = _context2["catch"](6);
+          return _context2.abrupt("return", res.status(500).send('Algo salió mal. Revise los logs para mayor información.'));
+
+        case 18:
+        case "end":
+          return _context2.stop();
+      }
+    }
+  }, null, null, [[6, 15]]);
 }

@@ -11,8 +11,10 @@ var _require2 = require('../middleware/admin'),
 var router = express.Router();
 
 var _require3 = require('../controllers/Resources.controller'),
-    getResourcesByAllyId = _require3.getResourcesByAllyId; // Rutas para /allies/resources
+    getResourcesByAllyId = _require3.getResourcesByAllyId,
+    deleteAllyResources = _require3.deleteAllyResources; // Rutas para /allies/resources
 
 
 router.get('/:allyId', getResourcesByAllyId);
+router["delete"]('/ally/:allyId/resource/:resourceId', [auth, isAdmin], deleteAllyResources);
 module.exports = router;
