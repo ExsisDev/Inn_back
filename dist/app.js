@@ -21,10 +21,13 @@ var app = express();
 debug("NODE_ENV: ".concat(process.env.NODE_ENV)); //export NODE_ENV=production
 
 debug("app environment: ".concat(app.get('env')));
+
+
 /**
  * Middlewares
  */
 
+ 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({
@@ -38,6 +41,8 @@ if (app.get('env') === 'development') {
   app.use(morgan('dev'));
   debug('Morgan is enabled...');
 }
+
+
 /**
  * Rutas
  */
