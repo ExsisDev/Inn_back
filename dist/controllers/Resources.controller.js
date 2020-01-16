@@ -5,10 +5,29 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.getResourcesByAllyId = getResourcesByAllyId;
 exports.deleteAllyResources = deleteAllyResources;
+exports.createAllyResource = createAllyResource;
 
 var _ = require('lodash');
 
 var Resource = require('../models/Resource');
+
+var _require = require('../schemas/Resource.validations'),
+    validateNewResource = _require.validateNewResource;
+/**
+ * Verificar la validéz de los parametros del body
+ * 
+ * @param {Request} req   
+ * @param {Response} res 
+ * @param {CallableFunction} callBackValidation 
+ */
+
+
+function getValidParams(req, res, callBackValidation) {
+  var _callBackValidation = callBackValidation(req.body),
+      error = _callBackValidation.error;
+
+  return error ? res.status(400).send(error.details[0].message) : req.body;
+}
 
 function getResourcesByAllyId(req, res) {
   var id_ally, answer;
@@ -152,4 +171,43 @@ function deleteAllyResources(req, res) {
       }
     }
   }, null, null, [[6, 15]]);
+}
+
+function createAllyResource(req, res) {
+  var id_ally, newResource, answer;
+  return regeneratorRuntime.async(function createAllyResource$(_context3) {
+    while (1) {
+      switch (_context3.prev = _context3.next) {
+        case 0:
+          id_ally = parseInt(req.params.allyId);
+
+          if (!(!Number.isInteger(id_ally) || id_ally <= 0)) {
+            _context3.next = 3;
+            break;
+          }
+
+          return _context3.abrupt("return", res.status(400).send("Id inválido. el id del aliado debe ser un entero positivo"));
+
+        case 3:
+          newResource = getValidParams(req, res, validateNewResource);
+          newResource.fk_id_ally = id_ally;
+          _context3.prev = 5;
+          _context3.next = 8;
+          return regeneratorRuntime.awrap(Resource.create(newResource));
+
+        case 8:
+          answer = _context3.sent;
+          return _context3.abrupt("return", res.status(200).send('Recurso creado exitosamente'));
+
+        case 12:
+          _context3.prev = 12;
+          _context3.t0 = _context3["catch"](5);
+          return _context3.abrupt("return", res.status(500).send('Algo ha fallado, revise los logs para más información'));
+
+        case 15:
+        case "end":
+          return _context3.stop();
+      }
+    }
+  }, null, null, [[5, 12]]);
 }
