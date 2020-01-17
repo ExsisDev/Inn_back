@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.validateResource = validateResource;
+exports.validateNewResource = validateNewResource;
 exports.updateResourceSchema = exports.createResourceSchema = void 0;
 
 var Joi = require('@hapi/joi');
@@ -24,4 +25,8 @@ exports.updateResourceSchema = updateResourceSchema;
 
 function validateResource(resource) {
   return updateResourceSchema.validate(resource);
+}
+
+function validateNewResource(resource) {
+  return createResourceSchema.validate(resource);
 }

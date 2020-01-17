@@ -16,3 +16,7 @@ export const updateResourceSchema = Joi.object({
 export function validateResource(resource) {
    return(updateResourceSchema.validate(resource));
 }
+
+export function validateNewResource(resource) {
+   return(createResourceSchema.validate(resource));
+}
