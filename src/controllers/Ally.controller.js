@@ -2,6 +2,7 @@ const { validateBodyAllyCreation, validateBodyAllyUpdate, validateAllyAuth } = r
 const { validateResourceCreation, validateResourceUpdate } = require('../schemas/Resource.validations');
 
 const config = require('config');
+const jwt = require('jsonwebtoken');
 const _ = require('lodash');
 const { DateTime } = require('luxon');
 const bcrypt = require('bcrypt');
@@ -398,4 +399,26 @@ function countAllies() {
          throw error;
 
       });
+}
+
+
+/**
+ * Retornar la información del aliado actual
+ */
+export async function getCurrentAlly(req, res) {
+
+   let answer;
+   try {
+      const tokenElements = jwt.verify(req.headers['x-auth-token'], config.get('jwtPrivateKey'));
+      console.log(tokenElements.id_user)
+      answer = await getAllyInfo(tokenElements.id_user);
+
+   } catch (error) {
+      console.log(error);
+      return res.status(500).send(config.get('seeLogs'));
+   }
+   if (answer.code && answer.code === 404) {
+      return res.status(404).send(answer.message);
+   }
+   return res.status(200).send(answer);
 }

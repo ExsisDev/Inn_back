@@ -7,6 +7,7 @@ exports.createAlly = createAlly;
 exports.updateAlly = updateAlly;
 exports.getAllyById = getAllyById;
 exports.getAllies = getAllies;
+exports.getCurrentAlly = getCurrentAlly;
 
 var _require = require('../schemas/Ally.validations'),
     validateBodyAllyCreation = _require.validateBodyAllyCreation,
@@ -18,6 +19,8 @@ var _require2 = require('../schemas/Resource.validations'),
     validateResourceUpdate = _require2.validateResourceUpdate;
 
 var config = require('config');
+
+var jwt = require('jsonwebtoken');
 
 var _ = require('lodash');
 
@@ -763,4 +766,50 @@ function countAllies() {
   })["catch"](function (error) {
     throw error;
   });
+}
+/**
+ * Retornar la información del aliado actual
+ */
+
+
+function getCurrentAlly(req, res) {
+  var answer, tokenElements;
+  return regeneratorRuntime.async(function getCurrentAlly$(_context8) {
+    while (1) {
+      switch (_context8.prev = _context8.next) {
+        case 0:
+          _context8.prev = 0;
+          tokenElements = jwt.verify(req.headers['x-auth-token'], config.get('jwtPrivateKey'));
+          console.log(tokenElements.id_user);
+          _context8.next = 5;
+          return regeneratorRuntime.awrap(getAllyInfo(tokenElements.id_user));
+
+        case 5:
+          answer = _context8.sent;
+          _context8.next = 12;
+          break;
+
+        case 8:
+          _context8.prev = 8;
+          _context8.t0 = _context8["catch"](0);
+          console.log(_context8.t0);
+          return _context8.abrupt("return", res.status(500).send(config.get('seeLogs')));
+
+        case 12:
+          if (!(answer.code && answer.code === 404)) {
+            _context8.next = 14;
+            break;
+          }
+
+          return _context8.abrupt("return", res.status(404).send(answer.message));
+
+        case 14:
+          return _context8.abrupt("return", res.status(200).send(answer));
+
+        case 15:
+        case "end":
+          return _context8.stop();
+      }
+    }
+  }, null, null, [[0, 8]]);
 }
