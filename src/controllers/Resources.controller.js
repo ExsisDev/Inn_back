@@ -14,6 +14,7 @@ function getValidParams(req, res, callBackValidation) {
     return (error) ? res.status(400).send(error.details[0].message) : req.body;
 }
 
+
 export async function getResourcesByAllyId(req, res) {
     const id_ally = parseInt(req.params.allyId);
 
@@ -92,6 +93,7 @@ export async function deleteAllyResources(req, res) {
         return res.status(500).send('Algo salió mal. Revise los logs para mayor información.');
     }
 }
+
 
 export async function createAllyResource(req, res) {
     const id_ally = parseInt(req.params.allyId);

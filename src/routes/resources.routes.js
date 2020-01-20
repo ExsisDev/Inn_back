@@ -11,4 +11,5 @@ const { getResourcesByAllyId, deleteAllyResources, createAllyResource } = requir
 router.get('/:allyId', getResourcesByAllyId);
 router.delete('/ally/:allyId/resource/:resourceId', [auth, isAdmin], deleteAllyResources);
 router.post('/:allyId', [auth, isAdmin], createAllyResource);
+
 module.exports = router;

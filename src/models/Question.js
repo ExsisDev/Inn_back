@@ -3,7 +3,7 @@ const sequelize = require('../utils/database');
 const SurveyQuestion = require('./SurveyQuestion');
 
 
-const Question = sequelize.define('question', {
+const Question = sequelize.define('questions', {
    id_question: {
       type: Sequelize.INTEGER,
       autoIncrement: true,
