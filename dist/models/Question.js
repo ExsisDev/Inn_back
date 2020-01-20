@@ -6,7 +6,7 @@ var sequelize = require('../utils/database');
 
 var SurveyQuestion = require('./SurveyQuestion');
 
-var Question = sequelize.define('question', {
+var Question = sequelize.define('questions', {
   id_question: {
     type: Sequelize.INTEGER,
     autoIncrement: true,
