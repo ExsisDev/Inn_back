@@ -37,7 +37,12 @@ function createProposal(req, res) {
           Proposal.create(newProposal).then(function (result) {
             return result ? res.status(200).send(result) : res.status(500).send(config.get('unableToCreate'));
           })["catch"](function (error) {
-            console.log(error);
+            console.log(error.errors[0].type);
+
+            if (error.errors[0].type === "unique violation") {
+              return res.status(409).send("La propuesta ya ha sido enviada");
+            }
+
             return res.status(500).send(error);
           });
 
