@@ -15,10 +15,10 @@ router.post('/', [auth], createProposal);
 
 /**
  * Obtener los retos de acuerdo al estado de la propuesta
- * :page -> pagina a buscar
  * :status -> estado de la propuesta
+ * :page -> pagina a buscar
  * 
  */
-router.get('/:status', [auth], searchProposalByState);
+router.get('/:status/:page', [auth], searchProposalByState);
 
 module.exports = router;

@@ -1,6 +1,7 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../utils/database');
 const ProposalState = require('./ProposalState');
+const Challenge = require('./Challenge');
 
 
 const Proposal = sequelize.define('proposals', {

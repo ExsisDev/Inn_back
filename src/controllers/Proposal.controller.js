@@ -1,6 +1,7 @@
 const Proposal = require('../models/Proposal');
 const ProposalState = require('../models/ProposalState');
 const Challenge = require('../models/Challenge');
+const Company = require('../models/Company');
 const { validateBodyProposalCreation } = require('../schemas/Proposal.validation');
 const config = require('config');
 const jwt = require('jsonwebtoken');
@@ -52,7 +53,11 @@ export async function createProposal(req, res) {
 
 
 
-
+/**
+ * Encontrar las propuestas del usuario (con el id del token) dado un estado y una página
+ * @param {*} req 
+ * @param {*} res 
+ */
 export async function searchProposalByState(req, res) {
 
    let itemsByPage = 5;
@@ -64,7 +69,7 @@ export async function searchProposalByState(req, res) {
 
    try {
       elementsCountByState = await countElementsByState(state, tokenElements.id_user);
-      // elementsByState = await getChallengesByPageAndState(itemsByPage, page, state);
+      elementsByState = await getChallengesByPageAndState(itemsByPage, page, state, tokenElements.id_user);
       // for (let challenge of elementsByState) {
       //    challenge.dataValues['categories'] = await getCategoriesByChallenge(challenge.id_challenge);
       // }
@@ -75,7 +80,7 @@ export async function searchProposalByState(req, res) {
 
    } finally {
       //return elementsCountByState && elementsByState ? res.send({ result: elementsByState, totalElements: elementsCountByState }) : res.status(404).send(config.get('emptyResponse'));
-      return res.send({count: elementsCountByState});
+      return res.send({ result: elementsByState, count: elementsCountByState });
    }
 }
 
@@ -86,22 +91,18 @@ export async function searchProposalByState(req, res) {
  * @param {String} state 
  */
 function countElementsByState(state, id_user) {
-   return Challenge.count({
+   return Proposal.count({
 
+      where: {
+         fk_id_ally: id_user
+      },
       include: [{
-         model: Proposal,
-         where: {
-            fk_id_ally: id_user
-         },
-         include: [{
-            model: ProposalState,
-            where: {
-               id_proposal_state: state
-            }
-         }]
+         model: ProposalState,
+         where:{
+            id_proposal_state:state
+         }
       }]
    }).then((result) => {
-      console.log("hay "+result)
       return result ? result : null;
 
    }).catch((error) => {
@@ -118,24 +119,29 @@ function countElementsByState(state, id_user) {
  * @param {Number} page 
  * @param {String} state 
  */
-function getChallengesByPageAndState(itemsByPage, page, state) {
-   return Challenge.findAll({
+function getChallengesByPageAndState(itemsByPage, page, state, id_user) {
+   return Proposal.findAll({
       offset: (page - 1) * itemsByPage,
-      limit: itemsByPage,
+      limit: 5,
       order: [
          ['created_at', 'DESC']
       ],
       where: {
-         fk_id_challenge_state: state,
-         is_deleted: false
+         fk_id_ally: id_user
       },
       include: [{
-         model: Company,
-         attributes: ['company_name', 'company_description']
-      }]
-
+         model: Challenge,
+         include: [{
+            model: Company
+         }]
+      },{
+         model: ProposalState,
+         where:{
+            id_proposal_state:state
+         }
+      }],
    }).then((result) => {
-      return result ? result : undefined;
+      return result ? result : null;
 
    }).catch((error) => {
       throw error;
