@@ -2,6 +2,8 @@ const Proposal = require('../models/Proposal');
 const ProposalState = require('../models/ProposalState');
 const Challenge = require('../models/Challenge');
 const Company = require('../models/Company');
+const ChallengeCategory = require('../models/ChallengeCategory');
+const ChCategories = require('../models/ChCategory');
 const { validateBodyProposalCreation } = require('../schemas/Proposal.validation');
 const config = require('config');
 const jwt = require('jsonwebtoken');
@@ -70,9 +72,9 @@ export async function searchProposalByState(req, res) {
    try {
       elementsCountByState = await countElementsByState(state, tokenElements.id_user);
       elementsByState = await getChallengesByPageAndState(itemsByPage, page, state, tokenElements.id_user);
-      // for (let challenge of elementsByState) {
-      //    challenge.dataValues['categories'] = await getCategoriesByChallenge(challenge.id_challenge);
-      // }
+      for (let challenge of elementsByState) {
+         challenge.dataValues['categories'] = await getCategoriesByChallenge(challenge.challenge.id_challenge);
+      }
 
    } catch (error) {
       console.log(error);
