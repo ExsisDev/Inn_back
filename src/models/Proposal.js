@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../utils/database');
+const ProposalState = require('./ProposalState');
 
 
 const Proposal = sequelize.define('proposals', {
@@ -39,5 +40,8 @@ const Proposal = sequelize.define('proposals', {
    updatedAt: 'updated_at',
    createdAt: 'created_at'
 });
+
+ProposalState.hasMany(Proposal, { foreignKey: 'fk_id_proposal_state', sourceKey: 'id_proposal_state' });
+Proposal.belongsTo(ProposalState, { foreignKey: 'fk_id_proposal_state', targetKey: 'id_proposal_state' });
 
 module.exports = Proposal;

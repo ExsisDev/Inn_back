@@ -1,6 +1,8 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../utils/database');
 const Company = require('./Company');
+const Proposal = require('./Proposal');
+const ProposalState = require('./ProposalState');
 
 const Challenge = sequelize.define('challenge', {
    id_challenge: {
@@ -46,6 +48,10 @@ const Challenge = sequelize.define('challenge', {
 
 Company.hasMany(Challenge, {foreignKey: 'fk_id_company', sourceKey: 'id_company'});
 Challenge.belongsTo(Company, { foreignKey: 'fk_id_company', targetKey: 'id_company' });
+
+Challenge.hasMany(Proposal, {foreignKey: 'fk_id_challenge', sourceKey: 'id_challenge'});
+Proposal.belongsTo(ProposalState, { foreignKey: 'fk_id_proposal_state', targetKey: 'id_proposal_state' });
+
 
 // Challenge.belongsTo(Survey, { foreignKey: 'fk_id_survey', targetKey: 'id_survey' });
 
