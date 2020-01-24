@@ -32,10 +32,6 @@ const Proposal = sequelize.define('proposals', {
       type: Sequelize.STRING,
       allowNull: false,
    },
-   proposal_is_assigned: {
-      type: Sequelize.BOOLEAN,
-      allowNull: false,
-   },
    proposal_resources: {
       type: Sequelize.STRING,
       allowNull: false

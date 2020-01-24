@@ -8,8 +8,7 @@ export function validateBodyProposalCreation(proposal) {
       ideation_hours: Joi.number().required(),
       experimentation_hours: Joi.number().required(),
       solution_description: Joi.string().required(),
-      proposal_resources: Joi.string().required(),
-      proposal_is_assigned: Joi.boolean().required()
+      proposal_resources: Joi.string().required()
    });
    return createProposalSchema.validate(proposal);
 }
@@ -23,8 +22,7 @@ export function validateBodyProposalUpdate(proposal) {
       ideation_hours: Joi.number(),
       experimentation_hours: Joi.number(),
       solution_description: Joi.string(),
-      proposal_resources: Joi.string(),
-      proposal_is_assigned: Joi.boolean()
+      proposal_resources: Joi.string()
    });
    return updateProposalSchema.validate(proposal);
 }
