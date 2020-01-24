@@ -6,7 +6,11 @@ var sequelize = require('../utils/database');
 
 var Company = require('./Company');
 
-var Challenge = sequelize.define('challenge', {
+var Proposal = require('./Proposal');
+
+var ProposalState = require('./ProposalState');
+
+var Challenge = sequelize.define('challenges', {
   id_challenge: {
     type: Sequelize.INTEGER,
     autoIncrement: true,
@@ -53,6 +57,14 @@ Company.hasMany(Challenge, {
 Challenge.belongsTo(Company, {
   foreignKey: 'fk_id_company',
   targetKey: 'id_company'
+});
+Challenge.hasMany(Proposal, {
+  foreignKey: 'fk_id_challenge',
+  sourceKey: 'id_challenge'
+});
+Proposal.belongsTo(Challenge, {
+  foreignKey: 'fk_id_challenge',
+  targetKey: 'id_challenge'
 }); // Challenge.belongsTo(Survey, { foreignKey: 'fk_id_survey', targetKey: 'id_survey' });
 
 module.exports = Challenge;

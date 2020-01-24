@@ -4,6 +4,10 @@ var Sequelize = require('sequelize');
 
 var sequelize = require('../utils/database');
 
+var ProposalState = require('./ProposalState');
+
+var Challenge = require('./Challenge');
+
 var Proposal = sequelize.define('proposals', {
   fk_id_challenge: {
     primaryKey: true,
@@ -32,13 +36,21 @@ var Proposal = sequelize.define('proposals', {
     type: Sequelize.STRING,
     allowNull: false
   },
-  proposal_is_assigned: {
-    type: Sequelize.BOOLEAN,
+  proposal_resources: {
+    type: Sequelize.STRING,
     allowNull: false
   }
 }, {
   timestamps: true,
   updatedAt: 'updated_at',
   createdAt: 'created_at'
+});
+ProposalState.hasMany(Proposal, {
+  foreignKey: 'fk_id_proposal_state',
+  sourceKey: 'id_proposal_state'
+});
+Proposal.belongsTo(ProposalState, {
+  foreignKey: 'fk_id_proposal_state',
+  targetKey: 'id_proposal_state'
 });
 module.exports = Proposal;

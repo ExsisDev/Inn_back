@@ -9,6 +9,7 @@ var Enum = require('enum');
 
 var proposalStateEnum = new Enum({
   'SEND': 1,
-  'REJECTED': 2
+  'REJECTED': 2,
+  'ASSIGNED': 3
 });
 exports.proposalStateEnum = proposalStateEnum;

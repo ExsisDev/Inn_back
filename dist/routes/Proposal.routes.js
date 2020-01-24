@@ -11,8 +11,17 @@ var _require2 = require('../middleware/admin'),
 var router = express.Router();
 
 var _require3 = require('../controllers/Proposal.controller'),
-    createProposal = _require3.createProposal; //Rutas para proposals/
+    createProposal = _require3.createProposal,
+    searchProposalByState = _require3.searchProposalByState; //Rutas para proposals/
 
 
 router.post('/', [auth], createProposal);
+/**
+ * Obtener los retos de acuerdo al estado de la propuesta
+ * :status -> estado de la propuesta
+ * :page -> pagina a buscar
+ * 
+ */
+
+router.get('/:status/:page', [auth], searchProposalByState);
 module.exports = router;
