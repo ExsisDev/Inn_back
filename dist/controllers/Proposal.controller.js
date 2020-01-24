@@ -213,7 +213,7 @@ function countElementsByState(state, id_user) {
       }
     }]
   }).then(function (result) {
-    return result ? result : null;
+    return result ? result : 0;
   })["catch"](function (error) {
     throw error;
   });

@@ -105,7 +105,7 @@ function countElementsByState(state, id_user) {
          }
       }]
    }).then((result) => {
-      return result ? result : null;
+      return result ? result : 0;
 
    }).catch((error) => {
       throw error;
