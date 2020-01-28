@@ -34,7 +34,7 @@ var _require3 = require('../controllers/Ally.controller'),
 
 router.get('/me', [auth], getCurrentAlly);
 router.get('/:idAlly', [auth, isAdmin], getAllyById);
-router.put('/:idAlly', [auth, isAdmin], updateAlly);
+router.put('/:idAlly', [auth], updateAlly);
 /**
  * Obtener retos por página
  */
