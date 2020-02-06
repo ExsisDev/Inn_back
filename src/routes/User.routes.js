@@ -23,6 +23,6 @@ router.post('/', authenticateAttempts);
  * Cambiar la contraseña
  * {actual_password, new_password, confirm_new_password}
  */
-router.post('/changePassword', [auth, isAdmin], changePassword);
+router.post('/changePassword', auth, changePassword);
 
 module.exports = router;
