@@ -2,6 +2,7 @@ const Sequelize = require('sequelize');
 const sequelize = require('../utils/database');
 const ProposalState = require('./ProposalState');
 const Challenge = require('./Challenge');
+const Ally = require('./Ally');
 
 
 const Proposal = sequelize.define('proposals', {
@@ -44,5 +45,8 @@ const Proposal = sequelize.define('proposals', {
 
 ProposalState.hasMany(Proposal, { foreignKey: 'fk_id_proposal_state', sourceKey: 'id_proposal_state' });
 Proposal.belongsTo(ProposalState, { foreignKey: 'fk_id_proposal_state', targetKey: 'id_proposal_state' });
+
+Ally.hasMany(Proposal, {foreignKey: 'fk_id_ally', sourceKey: 'id_ally'});
+Proposal.belongsTo(Ally, {foreignKey: 'fk_id_ally', targetKey: 'id_ally'});
 
 module.exports = Proposal;

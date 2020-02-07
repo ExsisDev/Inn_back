@@ -1,4 +1,5 @@
 const Proposal = require('../models/Proposal');
+const Ally = require('../models/Ally');
 const ProposalState = require('../models/ProposalState');
 const Challenge = require('../models/Challenge');
 const Company = require('../models/Company');
@@ -22,10 +23,10 @@ function getValidParams(req, res, callBackValidation) {
    return (error) ? res.status(400).send(error.details[0].message) : req.body;
 }
 
-export async function searchProposalByState1(req, res) {
-   // const page, 
-   // console.log(req.params.state)
-   // const tokenElements = jwt.verify(req.headers['x-auth-token'], config.get('jwtPrivateKey'));
+// export async function searchProposalByState1(req, res) {
+// const page, 
+// console.log(req.params.state)
+// const tokenElements = jwt.verify(req.headers['x-auth-token'], config.get('jwtPrivateKey'));
 
 
 
@@ -33,7 +34,7 @@ export async function searchProposalByState1(req, res) {
 
 
 
-}
+// }
 
 export async function createProposal(req, res) {
    let newProposal = getValidParams(req, res, validateBodyProposalCreation);
@@ -86,6 +87,37 @@ export async function searchProposalByState(req, res) {
    }
 }
 
+/**
+ * Encontrar las propuestas por el id del reto, dado un estado y una página
+ * @param {*} req 
+ * @param {*} res 
+ */
+export async function searchProposalByChallengeAndState(req, res) {
+
+   let itemsByPage = 5;
+   let page = req.params.page;
+   let state = proposalStateEnum.get(`${req.params.status.toUpperCase()}`).value;
+   // let elementsCountByState;
+   let elementsByState;
+   let challenge_id = req.params.id_challenge;
+
+   try {
+      // elementsCountByState = await countElementsByState(state, tokenElements.id_user);
+      elementsByState = await getProposalsByChalengeAndState(itemsByPage, page, state, challenge_id);
+      for (let challenge of elementsByState) {
+         challenge.dataValues['categories'] = await getCategoriesByChallenge(challenge.challenge.id_challenge);
+      }
+
+   } catch (error) {
+      console.log(error);
+      return res.status(500).send(error);
+
+   } finally {
+      //return elementsCountByState && elementsByState ? res.send({ result: elementsByState, totalElements: elementsCountByState }) : res.status(404).send(config.get('emptyResponse'));
+      return res.send({ result: elementsByState });
+   }
+}
+
 
 /**
  * Contar los elementos totales del estado
@@ -100,8 +132,8 @@ function countElementsByState(state, id_user) {
       },
       include: [{
          model: ProposalState,
-         where:{
-            id_proposal_state:state
+         where: {
+            id_proposal_state: state
          }
       }]
    }).then((result) => {
@@ -136,11 +168,51 @@ function getChallengesByPageAndState(itemsByPage, page, state, id_user) {
          include: [{
             model: Company
          }]
-      },{
+      },
+      {
          model: ProposalState,
-         where:{
-            id_proposal_state:state
+         where: {
+            id_proposal_state: state
          }
+      }],
+   }).then((result) => {
+      return result ? result : null;
+
+   }).catch((error) => {
+      throw error;
+
+   });
+}
+
+/**
+ * Encontrar los elementos por estado, pagina y cantidad
+ * 
+ * @param {Number} itemsByPage 
+ * @param {Number} page 
+ * @param {String} state 
+ */
+function getProposalsByChalengeAndState(itemsByPage, page, state, challenge_id) {
+   return Proposal.findAll({
+      offset: (page - 1) * itemsByPage,
+      limit: 5,
+      order: [
+         ['created_at', 'DESC']
+      ],
+      where: {
+         fk_id_challenge: challenge_id
+      },
+      include: [{
+         model: Challenge,
+         include: [{
+            model: Company
+         }]
+      }, {
+         model: ProposalState,
+         where: {
+            id_proposal_state: state
+         }
+      },{
+         model: Ally
       }],
    }).then((result) => {
       return result ? result : null;
