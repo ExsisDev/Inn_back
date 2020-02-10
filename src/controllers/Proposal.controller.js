@@ -22,18 +22,6 @@ function getValidParams(req, res, callBackValidation) {
    return (error) ? res.status(400).send(error.details[0].message) : req.body;
 }
 
-export async function searchProposalByState1(req, res) {
-   // const page, 
-   // console.log(req.params.state)
-   // const tokenElements = jwt.verify(req.headers['x-auth-token'], config.get('jwtPrivateKey'));
-
-
-
-
-
-
-
-}
 
 export async function createProposal(req, res) {
    let newProposal = getValidParams(req, res, validateBodyProposalCreation);

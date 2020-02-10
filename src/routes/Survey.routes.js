@@ -12,7 +12,7 @@ const { createSurvey } = require('../controllers/Survey.controller');
  * Además enlaza las preguntas correspondientes
  * {"survey_date", "user_id_creator"}
  */
-router.post('/', [auth, isAdmin], createSurvey);
+// router.post('/', [auth, isAdmin], createSurvey);
 
 
 module.exports = router;
