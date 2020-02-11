@@ -11,6 +11,7 @@ const companyRoutes = require('./routes/Company.routes');
 const alCategoriesRoutes = require('./routes/AlCategory.routes');
 const resourcesRoutes = require('./routes/Resources.routes');
 const proposalRoutes = require('./routes/Proposal.routes');
+const noteRoutes = require('./routes/Note.routes');
 
 
 /**
@@ -45,6 +46,7 @@ app.use('/api/companies', companyRoutes);
 app.use('/api/al_categories', alCategoriesRoutes);
 app.use('/api/resources', resourcesRoutes);
 app.use('/api/proposals', proposalRoutes);
+app.use('/api/notes', noteRoutes);
 // app.use('/api/surveys', surveyRoutes);
 
 
