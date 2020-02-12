@@ -14,7 +14,8 @@
    "challenge": {
       "invalidIdInteger": "Id no válido, idChallenge debe ser un entero.",
       "challengeDeleted": "Reto eliminado",
-      "unableToDelete": "No se pudo eliminar el reto"
+      "unableToDelete": "No se pudo eliminar el reto",
+      "unableToUpdate": "No se pudo actualizar el reto"
    },
    "user": {
       "exceededTryAccess": "Excedió los intentos permitidos",

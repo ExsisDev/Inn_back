@@ -9,7 +9,8 @@ const {
    getAllChallenges,
    getChallengesByPageAndStatus,
    getChallengesByPageStatusAndPhrase,
-   deleteChallenge
+   deleteChallenge,
+   updateFinalComment
 } = require('../controllers/Challenge.controller');
 
 
@@ -44,5 +45,10 @@ router.get('/:page/:status/search', [auth], getChallengesByPageStatusAndPhrase);
  */
 router.delete('/:idChallenge', [auth, isAdmin], deleteChallenge);
 
+
+/**
+ * Actualizar un reto pasando en body el texto y en url el id del reto a actualizar
+ */
+router.put('/:idChallenge', [auth], updateFinalComment);
 
 module.exports = router;

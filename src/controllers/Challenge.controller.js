@@ -49,6 +49,7 @@ export async function createChallenge(req, res) {
          surveyCreated = await SurveyController.createSurvey(bodySurvey);
          bodyChallenge['fk_id_survey'] = surveyCreated.id_survey;
          bodyChallenge['is_deleted'] = false;
+         bodyChallenge['final_comment'] = " ";
          challengeEmpty = await createEmptyChallenge(bodyChallenge);
          for (let id_category of bodyCategories.categories_selected) {
             await linkChallengeWithCategories(challengeEmpty.id_challenge, id_category);
@@ -127,7 +128,7 @@ export async function deleteChallenge(req, res) {
    try {
       challengeUpdated = await Challenge.update({ is_deleted: true }, { where: { id_challenge } });
    } catch (error) {
-      return res.status(500).send(config.get('seeLogs'));      
+      return res.status(500).send(config.get('seeLogs'));
    } finally {
       if (challengeUpdated) {
          return res.status(200).send(config.get('challenge.challengeDeleted'));
@@ -280,7 +281,7 @@ export async function getChallengesByPageStatusAndPhrase(req, res) {
          challenge.dataValues['categories'] = await getCategoriesByChallenge(challenge.id_challenge);
       }
 
-   }  catch (error) {
+   } catch (error) {
       console.log(error);
       return res.status(500).send(error);
 
@@ -369,4 +370,25 @@ function getChallengesByPageStateAndPhrase(itemsByPage, page, state, phrase) {
       throw error;
 
    });
+}
+
+
+//------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------
+
+
+export async function updateFinalComment(req, res) {
+   const bodyAttributes = getValidParams(req, res, validateBodyChallengeUpdate);
+
+   Challenge.update(
+      bodyAttributes,
+      {
+         where: {
+            id_challenge: req.params.idChallenge
+         }
+      }).then((updated) => {
+         return updated ? res.status(200).send(updated) : res.status(500).send(config.get('challenge.unableToUpdate'));
+      }).catch((error) => {
+         return res.status(500).send(config.get('challenge.unableToUpdate'));
+      })
 }
