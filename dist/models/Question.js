@@ -6,6 +6,8 @@ var sequelize = require('../utils/database');
 
 var SurveyQuestion = require('./SurveyQuestion');
 
+var Question_Answer = require('./Question_answer');
+
 var Question = sequelize.define('questions', {
   id_question: {
     type: Sequelize.INTEGER,
@@ -24,6 +26,25 @@ var Question = sequelize.define('questions', {
   timestamps: true,
   updatedAt: 'updated_at',
   createdAt: 'created_at'
-}); // Question.hasMany(SurveyQuestion, { foreignKey: 'fk_id_question', sourceKey: 'id_question' });
+}); 
+
+Question.hasMany(SurveyQuestion, {
+  foreignKey: 'fk_id_question',
+  sourceKey: 'id_question'
+});
+SurveyQuestion.belongsTo(Question, {
+  foreignKey: 'fk_id_question',
+  targetKey: 'id_question'
+});
+
+
+Question.hasMany(Question_Answer, {
+  foreignKey: 'fk_id_question',
+  sourceKey: 'id_question'
+});
+Question_Answer.belongsTo(Question, {
+  foreignKey: 'fk_id_question',
+  targetKey: 'id_question'
+});
 
 module.exports = Question;
