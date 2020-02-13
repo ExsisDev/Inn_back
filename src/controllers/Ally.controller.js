@@ -309,6 +309,64 @@ function getAllyInfo(id_ally) {
 
 
 /**
+ * Obtener la información del aliado con sus respectivas categorías.
+ * @param {Number} id_ally - Un entero que representa el id del aliado
+ * @returns {Promise} - Promesa
+ */
+function getAllyInfoByFk(fk_id_ally) {
+   return Ally.findOne({
+      where: { fk_id_user : fk_id_ally },
+      include: [{
+         model: AllyCategory,
+         include: [{
+            model: AlCategory,
+            attributes: ['id_category', 'category_name']
+         }],
+      },
+      {
+         model: User,
+         attributes: ['user_email']
+      }],
+      attributes: [
+         'id_ally',
+         'ally_name',
+         'ally_nit',
+         'ally_web_page',
+         'ally_phone',
+         'ally_month_ideation_hours',
+         'ally_month_experimentation_hours',
+         'ally_challenge_ideation_hours',
+         'ally_challenge_experimentation_hours'
+      ]
+   }).then(result => {
+      if (result === null) {
+         const error = {
+            code: 404,
+            message: config.get('ally.idNotFound')
+         };
+         return error;
+      }
+
+      let categories = [];
+      let user_email = result.dataValues['user'].user_email;
+      let answer = _.omit(result.dataValues, ['user']);
+
+      result.dataValues['ally_categories'].map(category => {
+         categories.push(category.al_category);
+      });
+
+      answer['user_email'] = user_email;
+      answer['ally_categories'] = categories;
+
+      return answer;
+   }).catch(error => {
+      console.log(error);
+      throw error;
+   })
+}
+
+
+/**
  * Obtener la información del aliado mediante el id que lo identifica.
  * @param {*} req 
  * @param {*} res 
@@ -411,7 +469,7 @@ export async function getCurrentAlly(req, res) {
    try {
       const tokenElements = jwt.verify(req.headers['x-auth-token'], config.get('jwtPrivateKey'));
       console.log(tokenElements.id_user)
-      answer = await getAllyInfo(tokenElements.id_user);
+      answer = await getAllyInfoByFk(tokenElements.id_user);
 
    } catch (error) {
       console.log(error);
