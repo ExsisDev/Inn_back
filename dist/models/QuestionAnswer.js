@@ -6,7 +6,7 @@ var sequelize = require('../utils/database');
 
 var Question = require('./Question');
 
-var Answer_Option = require('./Answer_Option');
+var Answer_Option = require('./AnswerOption');
 
 var Question_Answer = sequelize.define('question_answer', {
   fk_id_question: {
