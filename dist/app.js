@@ -25,6 +25,8 @@ var alCategoriesRoutes = require('./routes/AlCategory.routes');
 var resourcesRoutes = require('./routes/Resources.routes');
 
 var proposalRoutes = require('./routes/Proposal.routes');
+
+var noteRoutes = require('./routes/Note.routes');
 /**
  * Inicialización de express
  */
@@ -62,6 +64,7 @@ app.use('/api/challenges', challengeRoutes);
 app.use('/api/companies', companyRoutes);
 app.use('/api/al_categories', alCategoriesRoutes);
 app.use('/api/resources', resourcesRoutes);
-app.use('/api/proposals', proposalRoutes); // app.use('/api/surveys', surveyRoutes);
+app.use('/api/proposals', proposalRoutes);
+app.use('/api/notes', noteRoutes); // app.use('/api/surveys', surveyRoutes);
 
 module.exports = app;

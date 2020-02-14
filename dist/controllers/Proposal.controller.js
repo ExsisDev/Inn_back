@@ -3,9 +3,11 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.searchProposalByState1 = searchProposalByState1;
 exports.createProposal = createProposal;
 exports.searchProposalByState = searchProposalByState;
+exports.updateProposalState = updateProposalState;
+
+var _Proposal = require("../schemas/Proposal.validation");
 
 var Proposal = require('../models/Proposal');
 
@@ -47,23 +49,11 @@ function getValidParams(req, res, callBackValidation) {
   return error ? res.status(400).send(error.details[0].message) : req.body;
 }
 
-function searchProposalByState1(req, res) {
-  return regeneratorRuntime.async(function searchProposalByState1$(_context) {
-    while (1) {
-      switch (_context.prev = _context.next) {
-        case 0:
-        case "end":
-          return _context.stop();
-      }
-    }
-  });
-}
-
 function createProposal(req, res) {
   var newProposal;
-  return regeneratorRuntime.async(function createProposal$(_context2) {
+  return regeneratorRuntime.async(function createProposal$(_context) {
     while (1) {
-      switch (_context2.prev = _context2.next) {
+      switch (_context.prev = _context.next) {
         case 0:
           newProposal = getValidParams(req, res, validateBodyProposalCreation);
           Proposal.create(newProposal).then(function (result) {
@@ -78,11 +68,13 @@ function createProposal(req, res) {
 
         case 2:
         case "end":
-          return _context2.stop();
+          return _context.stop();
       }
     }
   });
-}
+} //----------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------
+
 /**
  * Encontrar las propuestas del usuario (con el id del token) dado un estado y una página
  * @param {*} req 
@@ -93,103 +85,103 @@ function createProposal(req, res) {
 function searchProposalByState(req, res) {
   var itemsByPage, page, state, elementsCountByState, elementsByState, tokenElements, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, challenge;
 
-  return regeneratorRuntime.async(function searchProposalByState$(_context3) {
+  return regeneratorRuntime.async(function searchProposalByState$(_context2) {
     while (1) {
-      switch (_context3.prev = _context3.next) {
+      switch (_context2.prev = _context2.next) {
         case 0:
           itemsByPage = 5;
           page = req.params.page;
           state = proposalStateEnum.get("".concat(req.params.status.toUpperCase())).value;
           tokenElements = jwt.verify(req.headers['x-auth-token'], config.get('jwtPrivateKey'));
-          _context3.prev = 4;
-          _context3.next = 7;
+          _context2.prev = 4;
+          _context2.next = 7;
           return regeneratorRuntime.awrap(countElementsByState(state, tokenElements.id_user));
 
         case 7:
-          elementsCountByState = _context3.sent;
-          _context3.next = 10;
+          elementsCountByState = _context2.sent;
+          _context2.next = 10;
           return regeneratorRuntime.awrap(getChallengesByPageAndState(itemsByPage, page, state, tokenElements.id_user));
 
         case 10:
-          elementsByState = _context3.sent;
+          elementsByState = _context2.sent;
           _iteratorNormalCompletion = true;
           _didIteratorError = false;
           _iteratorError = undefined;
-          _context3.prev = 14;
+          _context2.prev = 14;
           _iterator = elementsByState[Symbol.iterator]();
 
         case 16:
           if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-            _context3.next = 24;
+            _context2.next = 24;
             break;
           }
 
           challenge = _step.value;
-          _context3.next = 20;
+          _context2.next = 20;
           return regeneratorRuntime.awrap(getCategoriesByChallenge(challenge.challenge.id_challenge));
 
         case 20:
-          challenge.dataValues['categories'] = _context3.sent;
+          challenge.dataValues['categories'] = _context2.sent;
 
         case 21:
           _iteratorNormalCompletion = true;
-          _context3.next = 16;
+          _context2.next = 16;
           break;
 
         case 24:
-          _context3.next = 30;
+          _context2.next = 30;
           break;
 
         case 26:
-          _context3.prev = 26;
-          _context3.t0 = _context3["catch"](14);
+          _context2.prev = 26;
+          _context2.t0 = _context2["catch"](14);
           _didIteratorError = true;
-          _iteratorError = _context3.t0;
+          _iteratorError = _context2.t0;
 
         case 30:
-          _context3.prev = 30;
-          _context3.prev = 31;
+          _context2.prev = 30;
+          _context2.prev = 31;
 
           if (!_iteratorNormalCompletion && _iterator["return"] != null) {
             _iterator["return"]();
           }
 
         case 33:
-          _context3.prev = 33;
+          _context2.prev = 33;
 
           if (!_didIteratorError) {
-            _context3.next = 36;
+            _context2.next = 36;
             break;
           }
 
           throw _iteratorError;
 
         case 36:
-          return _context3.finish(33);
+          return _context2.finish(33);
 
         case 37:
-          return _context3.finish(30);
+          return _context2.finish(30);
 
         case 38:
-          _context3.next = 44;
+          _context2.next = 44;
           break;
 
         case 40:
-          _context3.prev = 40;
-          _context3.t1 = _context3["catch"](4);
-          console.log(_context3.t1);
-          return _context3.abrupt("return", res.status(500).send(_context3.t1));
+          _context2.prev = 40;
+          _context2.t1 = _context2["catch"](4);
+          console.log(_context2.t1);
+          return _context2.abrupt("return", res.status(500).send(_context2.t1));
 
         case 44:
-          _context3.prev = 44;
-          return _context3.abrupt("return", res.send({
+          _context2.prev = 44;
+          return _context2.abrupt("return", res.send({
             result: elementsByState,
             count: elementsCountByState
           }));
 
         case 47:
         case "end":
-          return _context3.stop();
+          return _context2.stop();
       }
     }
   }, null, null, [[4, 40, 44, 47], [14, 26, 30, 38], [31,, 33, 37]]);
@@ -277,5 +269,33 @@ function getCategoriesByChallenge(id_challenge) {
     return result ? AllCategoriesResult : undefined;
   })["catch"](function (error) {
     throw error;
+  });
+} //----------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------
+
+
+function updateProposalState(req, res) {
+  var bodyAttributes;
+  return regeneratorRuntime.async(function updateProposalState$(_context3) {
+    while (1) {
+      switch (_context3.prev = _context3.next) {
+        case 0:
+          bodyAttributes = getValidParams(req, res, _Proposal.validateBodyProposalUpdate);
+          Proposal.update(bodyAttributes, {
+            where: {
+              fk_id_challenge: req.params.idChallenge,
+              fk_id_ally: req.params.idAlly
+            }
+          }).then(function (updated) {
+            return updated ? res.status(200).send(updated) : res.status(500).send(config.get('challenge.unableToUpdate'));
+          })["catch"](function (error) {
+            return res.status(500).send(config.get('challenge.unableToUpdate'));
+          });
+
+        case 2:
+        case "end":
+          return _context3.stop();
+      }
+    }
   });
 }
