@@ -34,6 +34,7 @@ export async function getNotesByChallenge(req, res){
    });
 }
 
+
 export async function createNote(req, res){
    const bodyAttributes = getValidParams(req, res, validateBodyNoteCreation);
    
