@@ -7,6 +7,8 @@ exports.createChallenge = createChallenge;
 exports.deleteChallenge = deleteChallenge;
 exports.getChallengesByPageAndStatus = getChallengesByPageAndStatus;
 exports.getChallengesByPageStatusAndPhrase = getChallengesByPageStatusAndPhrase;
+exports.updateChallenge = updateChallenge;
+exports.getFinalComment = getFinalComment;
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -89,72 +91,73 @@ function createChallenge(req, res) {
                     surveyCreated = _context.sent;
                     bodyChallenge['fk_id_survey'] = surveyCreated.id_survey;
                     bodyChallenge['is_deleted'] = false;
-                    _context.next = 7;
+                    bodyChallenge['final_comment'] = " ";
+                    _context.next = 8;
                     return regeneratorRuntime.awrap(createEmptyChallenge(bodyChallenge));
 
-                  case 7:
+                  case 8:
                     challengeEmpty = _context.sent;
                     _iteratorNormalCompletion = true;
                     _didIteratorError = false;
                     _iteratorError = undefined;
-                    _context.prev = 11;
+                    _context.prev = 12;
                     _iterator = bodyCategories.categories_selected[Symbol.iterator]();
 
-                  case 13:
+                  case 14:
                     if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-                      _context.next = 20;
+                      _context.next = 21;
                       break;
                     }
 
                     id_category = _step.value;
-                    _context.next = 17;
+                    _context.next = 18;
                     return regeneratorRuntime.awrap(linkChallengeWithCategories(challengeEmpty.id_challenge, id_category));
 
-                  case 17:
+                  case 18:
                     _iteratorNormalCompletion = true;
-                    _context.next = 13;
+                    _context.next = 14;
                     break;
 
-                  case 20:
-                    _context.next = 26;
+                  case 21:
+                    _context.next = 27;
                     break;
 
-                  case 22:
-                    _context.prev = 22;
-                    _context.t0 = _context["catch"](11);
+                  case 23:
+                    _context.prev = 23;
+                    _context.t0 = _context["catch"](12);
                     _didIteratorError = true;
                     _iteratorError = _context.t0;
 
-                  case 26:
-                    _context.prev = 26;
+                  case 27:
                     _context.prev = 27;
+                    _context.prev = 28;
 
                     if (!_iteratorNormalCompletion && _iterator["return"] != null) {
                       _iterator["return"]();
                     }
 
-                  case 29:
-                    _context.prev = 29;
+                  case 30:
+                    _context.prev = 30;
 
                     if (!_didIteratorError) {
-                      _context.next = 32;
+                      _context.next = 33;
                       break;
                     }
 
                     throw _iteratorError;
 
-                  case 32:
-                    return _context.finish(29);
-
                   case 33:
-                    return _context.finish(26);
+                    return _context.finish(30);
 
                   case 34:
+                    return _context.finish(27);
+
+                  case 35:
                   case "end":
                     return _context.stop();
                 }
               }
-            }, null, null, [[11, 22, 26, 34], [27,, 29, 33]]);
+            }, null, null, [[12, 23, 27, 35], [28,, 30, 34]]);
           }));
 
         case 7:
@@ -638,5 +641,59 @@ function getChallengesByPageStateAndPhrase(itemsByPage, page, state, phrase) {
     return result ? result : undefined;
   })["catch"](function (error) {
     throw error;
+  });
+} //------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------
+
+
+function updateChallenge(req, res) {
+  var bodyAttributes;
+  return regeneratorRuntime.async(function updateChallenge$(_context6) {
+    while (1) {
+      switch (_context6.prev = _context6.next) {
+        case 0:
+          bodyAttributes = getValidParams(req, res, validateBodyChallengeUpdate);
+          Challenge.update(bodyAttributes, {
+            where: {
+              id_challenge: req.params.idChallenge
+            }
+          }).then(function (updated) {
+            return updated ? res.status(200).send(updated) : res.status(500).send(config.get('challenge.unableToUpdate'));
+          })["catch"](function (error) {
+            return res.status(500).send(config.get('challenge.unableToUpdate'));
+          });
+
+        case 2:
+        case "end":
+          return _context6.stop();
+      }
+    }
+  });
+} //------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------
+
+
+function getFinalComment(req, res) {
+  var id_challenge;
+  return regeneratorRuntime.async(function getFinalComment$(_context7) {
+    while (1) {
+      switch (_context7.prev = _context7.next) {
+        case 0:
+          id_challenge = req.params.idChallenge;
+          Challenge.findOne({
+            where: {
+              id_challenge: id_challenge
+            }
+          }).then(function (result) {
+            return result ? res.status(200).send(result.final_comment) : res.status(500).send(config.get('challenge.notFound'));
+          })["catch"](function (error) {
+            return res.status(500).send(config.get('challenge.unableToUpdate'));
+          });
+
+        case 2:
+        case "end":
+          return _context7.stop();
+      }
+    }
   });
 }
