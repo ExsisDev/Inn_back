@@ -1,7 +1,11 @@
+import { validateBodySurveyUpdate, validateBodyAnswers} from '../schemas/Survey.validation'
+
 const { validateBodySurveyCreation, validateBodySurveyUpdate } = require('../schemas/Survey.validation');
+const Challenge = require('../models/Challenge');
 const Survey = require('../models/Survey');
 const SurveyQuestion = require('../models/SurveyQuestion');
 const Question = require('../models/Question');
+const AnswerOption = require('../models/AnswerOption');
 
 
 /**
@@ -21,7 +25,7 @@ function getValidParams(req, res, callBackValidation) {
  * Crear encuesta
  * 1. Creando encuesta vacia
  * 2. Obteniendo las preguntas activas
- * 3. enlazando las preguntas con la encuesta creada
+ * 3. Enlazando las preguntas con la encuesta creada
  * 
  * @param {Request} req 
  * @param {Response} res 
@@ -43,9 +47,8 @@ export async function createSurvey(bodySurvey) {
 		// return res.status(500).send(error);
 		throw error;
 
-	} 
+	}
 }
-
 
 /**
  * Crear encuesta vacia
@@ -60,7 +63,6 @@ function createEmptySurvey(bodyAttributes) {
 
 	})
 }
-
 
 /**
  * Obtener las preguntas activas
@@ -77,7 +79,6 @@ function getAllQuestions() {
 		throw error;
 	})
 }
-
 
 /**
  * Enlazar encuesta con las preguntas
@@ -98,4 +99,84 @@ function linkQuestionWithSurvey(question, survey) {
 		throw error;
 
 	});
+}
+
+/**
+ * Obetener el id_survey para el reto
+ * 
+ * @param {Object} id_challenge
+ * 
+ */
+function getSurveyByChallenge(id_challenge_temp) {
+
+	let id_survey_temp = 0;
+	return Challenge.findByPk(
+		id_challenge_temp
+	).then((result) => {
+		id_survey_temp = result.fk_id_survey;
+		console.log("Impresion 2: " + id_survey_temp);
+		return id_survey_temp;
+	}).catch((error) => {
+		console.log(error);
+		return res.status(500).send(error);
+	});
+}
+
+export async function getQuestionsBySurvey(req, res) {
+	let id_challenge_temp = req.params.id_challenge;
+	console.log("Impresion 1: " + id_challenge_temp);
+	let id_survey_temp = await getSurveyByChallenge(id_challenge_temp);
+	console.log("Impresion 3: " + id_survey_temp);
+
+	SurveyQuestion.findAll({
+		where: {
+			fk_id_survey: id_survey_temp
+		},
+		include: [{
+			model: Question,
+			include: [{
+				model: AnswerOption,
+				attributes: ['answer_option']
+			}],
+			attributes: ['id_question', 'question_header']
+		}],
+		attributes: ['fk_id_survey']
+	}).then((result) => {
+		let resultReturned = [];
+		result.map((item) => {
+			let item_tmp = {
+				question_body: item.question.question_header,
+				answer_option: item.question.answer_option.answer_option,
+				id_question: item.question.id_question,
+				id_survey: item.fk_id_survey
+			};
+			resultReturned.push(item_tmp);
+			// return item.question.id_question
+		})
+		return res.status(200).send(resultReturned);
+	})
+
+}
+
+async function saveAnswerSurveyQuestion(req, res) {
+	let answer= getValidParams(req, res, validateBodyAnswers);
+	console.log(answer);
+	
+	for (let answer of req.body ){
+
+	
+		// SurveyQuestion.update(
+		// 	answer, 
+		// 	{
+		// 	where:{
+		// 		fk_id_question:,
+		// 		fk_id_survey:
+		// 	}
+		// }).then((updated) => {
+		// 	return updated ? res.status(200).send(updated) : res.status(500).send(config.get('challenge.unableToUpdate'));
+		//  }).catch((error) => {
+		// 	return res.status(500).send(config.get('challenge.unableToUpdate'));
+		//  })
+	}
+
 }

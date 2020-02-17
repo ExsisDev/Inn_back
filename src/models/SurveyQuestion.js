@@ -1,7 +1,6 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../utils/database');
 const Question = require('./Question');
-const Survey = require('./Survey');
 
 const SurveyQuestion = sequelize.define('survey_questions', {
    fk_id_survey: {
@@ -24,9 +23,13 @@ const SurveyQuestion = sequelize.define('survey_questions', {
    createdAt: 'created_at'
 });
 
-
-// SurveyQuestion.belongsTo(Question, { foreignKey: 'fk_id_question', targetKey: 'id_question' });
-// SurveyQuestion.belongsTo(Survey, { foreignKey: 'fk_id_survey', targetKey: 'id_survey' });
-
+Question.hasMany(SurveyQuestion, {
+   foreignKey: 'fk_id_question',
+   sourceKey: 'id_question'
+ });
+ SurveyQuestion.belongsTo(Question, {
+   foreignKey: 'fk_id_question',
+   targetKey: 'id_question'
+ });
 
 module.exports = SurveyQuestion;
