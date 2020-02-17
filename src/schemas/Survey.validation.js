@@ -16,12 +16,12 @@ export function validateBodySurveyUpdate(survey) {
    return updateSurveySchema.validate(survey);
 }
 
+export function validateBodyAnswers(answers) {
+   const updateSurveyQuestionSchema = Joi.array().items(answerSchema).required();
+   return updateSurveyQuestionSchema.validate(answers);
+}
 const answerSchema = Joi.object({
    fk_id_survey: Joi.number().integer().positive().required(),
    fk_id_question: Joi.number().integer().positive().required(),
    answer: Joi.string().required()
 });
-export function validateBodyAnswers(answers) {
-   const updateSurveyQuestionSchema = Joi.array().items(answerSchema);    
-   return updateSurveyQuestionSchema.validate(survey);
-}

@@ -1,6 +1,4 @@
-import { validateBodySurveyUpdate, validateBodyAnswers} from '../schemas/Survey.validation'
-
-const { validateBodySurveyCreation, validateBodySurveyUpdate } = require('../schemas/Survey.validation');
+const { validateBodySurveyCreation, validateBodySurveyUpdate, validateBodyAnswers } = require('../schemas/Survey.validation');
 const Challenge = require('../models/Challenge');
 const Survey = require('../models/Survey');
 const SurveyQuestion = require('../models/SurveyQuestion');
@@ -158,13 +156,11 @@ export async function getQuestionsBySurvey(req, res) {
 
 }
 
-async function saveAnswerSurveyQuestion(req, res) {
-	let answer= getValidParams(req, res, validateBodyAnswers);
+export async function saveAnswerSurveyQuestion(req, res) {
+	let answer = getValidParams(req, res, validateBodyAnswers);
+	console.log("#################### Answers ############################");	
 	console.log(answer);
-	
-	for (let answer of req.body ){
-
-	
+		
 		// SurveyQuestion.update(
 		// 	answer, 
 		// 	{
@@ -177,6 +173,6 @@ async function saveAnswerSurveyQuestion(req, res) {
 		//  }).catch((error) => {
 		// 	return res.status(500).send(config.get('challenge.unableToUpdate'));
 		//  })
-	}
+	return res.status(200).send("probando ...");
 
 }
