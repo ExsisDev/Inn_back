@@ -1,3 +1,5 @@
+import { validateBodySurveyUpdate, validateBodyAnswers} from '../schemas/Survey.validation'
+
 const { validateBodySurveyCreation, validateBodySurveyUpdate } = require('../schemas/Survey.validation');
 const Challenge = require('../models/Challenge');
 const Survey = require('../models/Survey');
@@ -140,7 +142,7 @@ export async function getQuestionsBySurvey(req, res) {
 		}],
 		attributes: ['fk_id_survey']
 	}).then((result) => {
-		let resultReturned=[];
+		let resultReturned = [];
 		result.map((item) => {
 			let item_tmp = {
 				question_body: item.question.question_header,
@@ -153,5 +155,28 @@ export async function getQuestionsBySurvey(req, res) {
 		})
 		return res.status(200).send(resultReturned);
 	})
+
+}
+
+async function saveAnswerSurveyQuestion(req, res) {
+	let answer= getValidParams(req, res, validateBodyAnswers);
+	console.log(answer);
+	
+	for (let answer of req.body ){
+
+	
+		// SurveyQuestion.update(
+		// 	answer, 
+		// 	{
+		// 	where:{
+		// 		fk_id_question:,
+		// 		fk_id_survey:
+		// 	}
+		// }).then((updated) => {
+		// 	return updated ? res.status(200).send(updated) : res.status(500).send(config.get('challenge.unableToUpdate'));
+		//  }).catch((error) => {
+		// 	return res.status(500).send(config.get('challenge.unableToUpdate'));
+		//  })
+	}
 
 }

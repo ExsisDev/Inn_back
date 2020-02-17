@@ -3,7 +3,7 @@ const router = express.Router();
 const { auth } = require('../middleware/auth');
 const { isAdmin } = require('../middleware/admin');
 
-const { getSurveyByChallenge, createSurvey, saveSurvey, getAnswersByQuestion, getQuestionsBySurvey} = require('../controllers/Survey.controller');
+const { createSurvey, saveAnswerSurveyQuestion, getQuestionsBySurvey} = require('../controllers/Survey.controller');
 
 /** Rutas para /api/surveys/
 
@@ -15,7 +15,7 @@ const { getSurveyByChallenge, createSurvey, saveSurvey, getAnswersByQuestion, ge
 router.post('/', [auth, isAdmin], createSurvey);
 
 router.get('/:id_challenge', getQuestionsBySurvey);
-// router.post('/', [auth], saveSurvey);
+router.put('/', [auth], saveAnswerSurveyQuestion);
 
 
 module.exports = router;
