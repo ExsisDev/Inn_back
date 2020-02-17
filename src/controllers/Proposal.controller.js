@@ -5,6 +5,7 @@ const Challenge = require('../models/Challenge');
 const Company = require('../models/Company');
 const ChallengeCategory = require('../models/ChallengeCategory');
 const ChCategories = require('../models/ChCategory');
+const Resource = require('../models/Resource');
 const { validateBodyProposalCreation } = require('../schemas/Proposal.validation');
 const config = require('config');
 const jwt = require('jsonwebtoken');
@@ -86,23 +87,23 @@ export async function searchProposalByChallengeAndState(req, res) {
    let page = req.params.page;
    let state = proposalStateEnum.get(`${req.params.status.toUpperCase()}`).value;
    // let elementsCountByState;
-   let elementsByState;
+   let proposalsByState;
    let challenge_id = req.params.id_challenge;
 
    try {
       // elementsCountByState = await countElementsByState(state, tokenElements.id_user);
-      elementsByState = await getProposalsByChalengeAndState(itemsByPage, page, state, challenge_id);
-      for (let challenge of elementsByState) {
+      proposalsByState = await getProposalsByChalengeAndState(itemsByPage, page, state, challenge_id);
+      for (let challenge of proposalsByState) {
          challenge.dataValues['categories'] = await getCategoriesByChallenge(challenge.challenge.id_challenge);
       }
+      for (let proposal of proposalsByState) {
+         proposal.dataValues['resources'] = await getResourcesByAlly(proposal.dataValues.fk_id_ally);
+      }
 
+      return res.send({ result: proposalsByState });
    } catch (error) {
       console.log(error);
       return res.status(500).send(error);
-
-   } finally {
-      //return elementsCountByState && elementsByState ? res.send({ result: elementsByState, totalElements: elementsCountByState }) : res.status(404).send(config.get('emptyResponse'));
-      return res.send({ result: elementsByState });
    }
 }
 
@@ -163,12 +164,6 @@ function getChallengesByPageAndState(itemsByPage, page, state, id_user) {
             id_proposal_state: state
          }
       }],
-   }).then((result) => {
-      return result ? result : null;
-
-   }).catch((error) => {
-      throw error;
-
    });
 }
 
@@ -199,7 +194,7 @@ function getProposalsByChalengeAndState(itemsByPage, page, state, challenge_id) 
          where: {
             id_proposal_state: state
          }
-      },{
+      }, {
          model: Ally
       }],
    }).then((result) => {
@@ -211,6 +206,18 @@ function getProposalsByChalengeAndState(itemsByPage, page, state, challenge_id) 
    });
 }
 
+/**
+ * Obtener todos los recursos asociados a un aliado
+ * @param {Numeric} idAlly 
+ */
+function getResourcesByAlly(idAlly) {
+   return Resource.findAll({
+      where: {
+         fk_id_ally: idAlly
+      },
+      attributes: ['id_resource', 'resource_name', 'resource_profile', 'resource_experience']
+   });
+}
 
 /**
  * Encontrar todas los nombres de categorias por reto 
