@@ -9,7 +9,6 @@ const {
    changePassword
 } = require('../controllers/User.controller');
 
-
 /*** Rutas para /api/allies*/
 
 /** 
