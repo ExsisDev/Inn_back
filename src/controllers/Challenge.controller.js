@@ -377,7 +377,7 @@ function getChallengesByPageStateAndPhrase(itemsByPage, page, state, phrase) {
 //------------------------------------------------------------------------------------------------------------------------------------
 
 
-export async function updateFinalComment(req, res) {
+export async function updateChallenge(req, res) {
    const bodyAttributes = getValidParams(req, res, validateBodyChallengeUpdate);
 
    Challenge.update(
@@ -391,4 +391,24 @@ export async function updateFinalComment(req, res) {
       }).catch((error) => {
          return res.status(500).send(config.get('challenge.unableToUpdate'));
       })
+}
+
+
+//------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------
+
+
+export async function getFinalComment(req, res) {
+   
+   let id_challenge = req.params.idChallenge;
+
+   Challenge.findOne({
+      where: {
+         id_challenge: id_challenge
+      }
+   }).then((result) => {
+      return result ? res.status(200).send(result.final_comment) : res.status(500).send(config.get('challenge.notFound'));
+   }).catch((error) => {
+      return res.status(500).send(config.get('challenge.unableToUpdate'));
+   });
 }

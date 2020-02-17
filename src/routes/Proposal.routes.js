@@ -6,7 +6,8 @@ const router = express.Router();
 
 const {
    createProposal,
-   searchProposalByState
+   searchProposalByState,
+   updateProposalState
 } = require ('../controllers/Proposal.controller');
 
 //Rutas para proposals/
@@ -20,5 +21,10 @@ router.post('/', [auth], createProposal);
  * 
  */
 router.get('/:status/:page', [auth], searchProposalByState);
+
+/**
+ * Actualizar la propuesta pasando en el body los atributos
+ */
+router.put('/:idChallenge/:idAlly', [auth], updateProposalState);
 
 module.exports = router;

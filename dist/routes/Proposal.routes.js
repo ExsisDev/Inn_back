@@ -12,7 +12,8 @@ var router = express.Router();
 
 var _require3 = require('../controllers/Proposal.controller'),
     createProposal = _require3.createProposal,
-    searchProposalByState = _require3.searchProposalByState; //Rutas para proposals/
+    searchProposalByState = _require3.searchProposalByState,
+    updateProposalState = _require3.updateProposalState; //Rutas para proposals/
 
 
 router.post('/', [auth], createProposal);
@@ -24,4 +25,9 @@ router.post('/', [auth], createProposal);
  */
 
 router.get('/:status/:page', [auth], searchProposalByState);
+/**
+ * Actualizar la propuesta pasando en el body los atributos
+ */
+
+router.put('/:idChallenge/:idAlly', [auth], updateProposalState);
 module.exports = router;

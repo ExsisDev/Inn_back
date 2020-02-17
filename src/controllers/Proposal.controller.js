@@ -1,3 +1,5 @@
+import { validateBodyProposalUpdate } from '../schemas/Proposal.validation';
+
 const Proposal = require('../models/Proposal');
 const ProposalState = require('../models/ProposalState');
 const Challenge = require('../models/Challenge');
@@ -41,6 +43,9 @@ export async function createProposal(req, res) {
 
 }
 
+
+//----------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------
 
 
 /**
@@ -168,3 +173,25 @@ function getCategoriesByChallenge(id_challenge) {
 
    });
 }
+
+
+//----------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------
+
+
+export async function updateProposalState(req, res) {
+   const bodyAttributes = getValidParams(req, res, validateBodyProposalUpdate);
+
+   Proposal.update(
+      bodyAttributes,
+      {
+         where: {
+            fk_id_challenge: req.params.idChallenge,
+            fk_id_ally: req.params.idAlly
+         }
+      }).then((updated) => {
+         return updated ? res.status(200).send(updated) : res.status(500).send(config.get('challenge.unableToUpdate'));
+      }).catch((error) => {
+         return res.status(500).send(config.get('challenge.unableToUpdate'));
+      })
+} 
