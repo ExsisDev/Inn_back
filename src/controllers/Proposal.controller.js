@@ -1,11 +1,13 @@
 import { validateBodyProposalUpdate } from '../schemas/Proposal.validation';
 
 const Proposal = require('../models/Proposal');
+const Ally = require('../models/Ally');
 const ProposalState = require('../models/ProposalState');
 const Challenge = require('../models/Challenge');
 const Company = require('../models/Company');
 const ChallengeCategory = require('../models/ChallengeCategory');
 const ChCategories = require('../models/ChCategory');
+const Resource = require('../models/Resource');
 const { validateBodyProposalCreation } = require('../schemas/Proposal.validation');
 const config = require('config');
 const jwt = require('jsonwebtoken');
@@ -79,6 +81,37 @@ export async function searchProposalByState(req, res) {
    }
 }
 
+/**
+ * Encontrar las propuestas por el id del reto, dado un estado y una página
+ * @param {*} req 
+ * @param {*} res 
+ */
+export async function searchProposalByChallengeAndState(req, res) {
+
+   let itemsByPage = 5;
+   let page = req.params.page;
+   let state = proposalStateEnum.get(`${req.params.status.toUpperCase()}`).value;
+   // let elementsCountByState;
+   let proposalsByState;
+   let challenge_id = req.params.id_challenge;
+
+   try {
+      // elementsCountByState = await countElementsByState(state, tokenElements.id_user);
+      proposalsByState = await getProposalsByChalengeAndState(itemsByPage, page, state, challenge_id);
+      for (let challenge of proposalsByState) {
+         challenge.dataValues['categories'] = await getCategoriesByChallenge(challenge.challenge.id_challenge);
+      }
+      for (let proposal of proposalsByState) {
+         proposal.dataValues['resources'] = await getResourcesByAlly(proposal.dataValues.fk_id_ally);
+      }
+
+      return res.send({ result: proposalsByState });
+   } catch (error) {
+      console.log(error);
+      return res.status(500).send(error);
+   }
+}
+
 
 /**
  * Contar los elementos totales del estado
@@ -93,8 +126,8 @@ function countElementsByState(state, id_user) {
       },
       include: [{
          model: ProposalState,
-         where:{
-            id_proposal_state:state
+         where: {
+            id_proposal_state: state
          }
       }]
    }).then((result) => {
@@ -129,11 +162,45 @@ function getChallengesByPageAndState(itemsByPage, page, state, id_user) {
          include: [{
             model: Company
          }]
-      },{
+      },
+      {
          model: ProposalState,
-         where:{
-            id_proposal_state:state
+         where: {
+            id_proposal_state: state
          }
+      }],
+   });
+}
+
+/**
+ * Encontrar los elementos por estado, pagina y cantidad
+ * 
+ * @param {Number} itemsByPage 
+ * @param {Number} page 
+ * @param {String} state 
+ */
+function getProposalsByChalengeAndState(itemsByPage, page, state, challenge_id) {
+   return Proposal.findAll({
+      offset: (page - 1) * itemsByPage,
+      limit: 5,
+      order: [
+         ['created_at', 'DESC']
+      ],
+      where: {
+         fk_id_challenge: challenge_id
+      },
+      include: [{
+         model: Challenge,
+         include: [{
+            model: Company
+         }]
+      }, {
+         model: ProposalState,
+         where: {
+            id_proposal_state: state
+         }
+      }, {
+         model: Ally
       }],
    }).then((result) => {
       return result ? result : null;
@@ -144,6 +211,18 @@ function getChallengesByPageAndState(itemsByPage, page, state, id_user) {
    });
 }
 
+/**
+ * Obtener todos los recursos asociados a un aliado
+ * @param {Numeric} idAlly 
+ */
+function getResourcesByAlly(idAlly) {
+   return Resource.findAll({
+      where: {
+         fk_id_ally: idAlly
+      },
+      attributes: ['id_resource', 'resource_name', 'resource_profile', 'resource_experience']
+   });
+}
 
 /**
  * Encontrar todas los nombres de categorias por reto 
