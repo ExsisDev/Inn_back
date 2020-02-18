@@ -112,19 +112,19 @@ function getSurveyByChallenge(id_challenge_temp) {
 		id_challenge_temp
 	).then((result) => {
 		id_survey_temp = result.fk_id_survey;
-		console.log("Impresion 2: " + id_survey_temp);
+
 		return id_survey_temp;
 	}).catch((error) => {
-		console.log(error);
+
 		return res.status(500).send(error);
 	});
 }
 
 export async function getQuestionsBySurvey(req, res) {
 	let id_challenge_temp = req.params.id_challenge;
-	console.log("Impresion 1: " + id_challenge_temp);
+
 	let id_survey_temp = await getSurveyByChallenge(id_challenge_temp);
-	console.log("Impresion 3: " + id_survey_temp);
+
 
 	SurveyQuestion.findAll({
 		where: {
@@ -158,21 +158,21 @@ export async function getQuestionsBySurvey(req, res) {
 
 export async function saveAnswerSurveyQuestion(req, res) {
 	let answer = getValidParams(req, res, validateBodyAnswers);
-	console.log("#################### Answers ############################");	
-	console.log(answer);
-		
-		// SurveyQuestion.update(
-		// 	answer, 
-		// 	{
-		// 	where:{
-		// 		fk_id_question:,
-		// 		fk_id_survey:
-		// 	}
-		// }).then((updated) => {
-		// 	return updated ? res.status(200).send(updated) : res.status(500).send(config.get('challenge.unableToUpdate'));
-		//  }).catch((error) => {
-		// 	return res.status(500).send(config.get('challenge.unableToUpdate'));
-		//  })
+	answer.forEach(element => {
+
+		SurveyQuestion.update(
+			element, {
+			where: {
+				fk_id_question: element.fk_id_question,
+				fk_id_survey: element.fk_id_survey
+			}
+		}).then((updated) => {
+			return updated ? res.status(200).send(updated) : res.status(500).send(config.get('surveyQuestion.unableToUpdate'));
+		}).catch((error) => {
+			return res.status(500).send(config.get('surveyQuestion.unableToUpdate'));
+		});
+	});
+
 	return res.status(200).send("probando ...");
 
 }
