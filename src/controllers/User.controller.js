@@ -1,9 +1,11 @@
-const { validateUserAuth, validatePasswordChange } = require('../schemas/User.validations');
+const { validateUserAuth, validatePasswordChange, validateEmail } = require('../schemas/User.validations');
 const _ = require('lodash');
 const { DateTime } = require('luxon');
 const bcrypt = require('bcrypt');
 const User = require('../models/User');
 const config = require('config');
+const Mailer = require('../mailer/mailer');
+const crypto = require('crypto');
 
 /**
  * Verificar la validéz de los parametros del body
@@ -303,5 +305,45 @@ function updateUserPassword(newUnhashedPassword, id_user) {
       return result ? result : undefined;
    }).catch((error) => {
       throw error;
+   })
+}
+
+//----------------------------------------------------------------------------------
+//-------------------------- Recover password --------------------------------------
+
+export async function recoverPassword(req, res) {
+   const bodyParams = getValidParams(req, res, validateEmail);
+   let userFound, hash, minutesUntilAccess = 15;
+   User.findOne({
+      where: {
+         user_email: bodyParams.user_email
+      }
+   }).then((result) => {      
+      if(!result){
+         return res.status(400).send('El email proporcionado no se encuentra registrado.');
+      }
+      userFound = result;
+      try {         
+         hash = crypto.randomBytes(64).toString('hex');
+         return hash;
+      } catch (error) {
+         console.log(error);         
+         return res.status(500).send('Algo salió mal. Para mayor información revisar los logs.');
+      }      
+   }).then((hash)=>{
+      const futureHour = DateTime.local().setZone('America/Bogota').plus({ minutes: minutesUntilAccess });
+      return User.update({
+         recovery_token: hash,
+         recovery_token_expiration: futureHour
+      },{
+         where: { id_user: userFound.id_user }
+      })
+   }).then((resultUpdate) => {
+      let recipient = "dago.fonseca@exsis.com.co";
+      let message = `http:localhost:3000/recoverPassword/${userFound.id_user}/${hash}`;
+      Mailer.sendTextMail(recipient, message);
+      return res.status(200).send("Link the recuperación generado exitosamente");
+   }).catch((error) => {
+      return res.status(500).send('Algo salió mal. Mire los logs para mayor información.');
    })
 }

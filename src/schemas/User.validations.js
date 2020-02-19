@@ -16,3 +16,10 @@ export function validatePasswordChange(passwordObject) {
    });
    return passwordSchema.validate(passwordObject);
 }
+
+export function validateEmail(userEmail) {
+   const emailSchema = Joi.object({      
+      user_email: Joi.string().email().max(50).required()
+   });
+   return emailSchema.validate(userEmail);
+}

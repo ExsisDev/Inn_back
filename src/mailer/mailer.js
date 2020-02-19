@@ -15,13 +15,13 @@ const transporter = nodemailer.createTransport({
 
 /**
  * Enviar correo a un destinatario con un mensaje en formato de texto.
- * @param {String} recipent Email del destinatario
+ * @param {String} recipient Email del destinatario
  * @param {String} msg Mensaje a ser enviado
  */
-const sendTextMail = function (recipent, msg) {
+const sendTextMail = function (recipient, msg) {
     var mailOptions = {
         from: 'innovalab2020@gmail.com',
-        to: recipent,
+        to: recipient,
         subject: 'Sending Email using Node.js',
         text: msg
     };
