@@ -4,16 +4,14 @@ var Sequelize = require('sequelize');
 
 var sequelize = require('../utils/database');
 
-var Question_Answer = require('./QuestionAnswer');
-
-var Answer_Option = sequelize.define('answer_option', {
+var AnswerOption = sequelize.define('answer_options', {
   id_answer_option: {
     type: Sequelize.INTEGER,
     autoIncrement: true,
     primaryKey: true
   },
   answer_option: {
-    type: Sequelize.ARRAY,
+    type: Sequelize.ARRAY(Sequelize.STRING),
     allowNull: false
   },
   answer_option_name: {
@@ -24,15 +22,5 @@ var Answer_Option = sequelize.define('answer_option', {
   timestamps: true,
   updatedAt: 'updated_at',
   createdAt: 'created_at'
-}); 
-
-Answer_Option.hasMany(Question_Answer, {
-  foreignKey: 'fk_id_answer_option',
-  sourceKey: 'id_answer_option'
 });
-Question_Answer.belongsTo(Answer_Option, {
-  foreignKey: 'fk_id_answer_option',
-  targetKey: 'id_answer_option'
-});
-
-module.exports = Question;
+module.exports = AnswerOption;

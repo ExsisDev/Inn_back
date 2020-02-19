@@ -5,11 +5,14 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.createProposal = createProposal;
 exports.searchProposalByState = searchProposalByState;
+exports.searchProposalByChallengeAndState = searchProposalByChallengeAndState;
 exports.updateProposalState = updateProposalState;
 
 var _Proposal = require("../schemas/Proposal.validation");
 
 var Proposal = require('../models/Proposal');
+
+var Ally = require('../models/Ally');
 
 var ProposalState = require('../models/ProposalState');
 
@@ -20,6 +23,8 @@ var Company = require('../models/Company');
 var ChallengeCategory = require('../models/ChallengeCategory');
 
 var ChCategories = require('../models/ChCategory');
+
+var Resource = require('../models/Resource');
 
 var _require = require('../schemas/Proposal.validation'),
     validateBodyProposalCreation = _require.validateBodyProposalCreation;
@@ -187,6 +192,166 @@ function searchProposalByState(req, res) {
   }, null, null, [[4, 40, 44, 47], [14, 26, 30, 38], [31,, 33, 37]]);
 }
 /**
+ * Encontrar las propuestas por el id del reto, dado un estado y una página
+ * @param {*} req 
+ * @param {*} res 
+ */
+
+
+function searchProposalByChallengeAndState(req, res) {
+  var itemsByPage, page, state, proposalsByState, challenge_id, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, challenge, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, proposal;
+
+  return regeneratorRuntime.async(function searchProposalByChallengeAndState$(_context3) {
+    while (1) {
+      switch (_context3.prev = _context3.next) {
+        case 0:
+          itemsByPage = 5;
+          page = req.params.page;
+          state = proposalStateEnum.get("".concat(req.params.status.toUpperCase())).value; // let elementsCountByState;
+
+          challenge_id = req.params.id_challenge;
+          _context3.prev = 4;
+          _context3.next = 7;
+          return regeneratorRuntime.awrap(getProposalsByChalengeAndState(itemsByPage, page, state, challenge_id));
+
+        case 7:
+          proposalsByState = _context3.sent;
+          _iteratorNormalCompletion2 = true;
+          _didIteratorError2 = false;
+          _iteratorError2 = undefined;
+          _context3.prev = 11;
+          _iterator2 = proposalsByState[Symbol.iterator]();
+
+        case 13:
+          if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
+            _context3.next = 21;
+            break;
+          }
+
+          challenge = _step2.value;
+          _context3.next = 17;
+          return regeneratorRuntime.awrap(getCategoriesByChallenge(challenge.challenge.id_challenge));
+
+        case 17:
+          challenge.dataValues['categories'] = _context3.sent;
+
+        case 18:
+          _iteratorNormalCompletion2 = true;
+          _context3.next = 13;
+          break;
+
+        case 21:
+          _context3.next = 27;
+          break;
+
+        case 23:
+          _context3.prev = 23;
+          _context3.t0 = _context3["catch"](11);
+          _didIteratorError2 = true;
+          _iteratorError2 = _context3.t0;
+
+        case 27:
+          _context3.prev = 27;
+          _context3.prev = 28;
+
+          if (!_iteratorNormalCompletion2 && _iterator2["return"] != null) {
+            _iterator2["return"]();
+          }
+
+        case 30:
+          _context3.prev = 30;
+
+          if (!_didIteratorError2) {
+            _context3.next = 33;
+            break;
+          }
+
+          throw _iteratorError2;
+
+        case 33:
+          return _context3.finish(30);
+
+        case 34:
+          return _context3.finish(27);
+
+        case 35:
+          _iteratorNormalCompletion3 = true;
+          _didIteratorError3 = false;
+          _iteratorError3 = undefined;
+          _context3.prev = 38;
+          _iterator3 = proposalsByState[Symbol.iterator]();
+
+        case 40:
+          if (_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done) {
+            _context3.next = 48;
+            break;
+          }
+
+          proposal = _step3.value;
+          _context3.next = 44;
+          return regeneratorRuntime.awrap(getResourcesByAlly(proposal.dataValues.fk_id_ally));
+
+        case 44:
+          proposal.dataValues['resources'] = _context3.sent;
+
+        case 45:
+          _iteratorNormalCompletion3 = true;
+          _context3.next = 40;
+          break;
+
+        case 48:
+          _context3.next = 54;
+          break;
+
+        case 50:
+          _context3.prev = 50;
+          _context3.t1 = _context3["catch"](38);
+          _didIteratorError3 = true;
+          _iteratorError3 = _context3.t1;
+
+        case 54:
+          _context3.prev = 54;
+          _context3.prev = 55;
+
+          if (!_iteratorNormalCompletion3 && _iterator3["return"] != null) {
+            _iterator3["return"]();
+          }
+
+        case 57:
+          _context3.prev = 57;
+
+          if (!_didIteratorError3) {
+            _context3.next = 60;
+            break;
+          }
+
+          throw _iteratorError3;
+
+        case 60:
+          return _context3.finish(57);
+
+        case 61:
+          return _context3.finish(54);
+
+        case 62:
+          return _context3.abrupt("return", res.send({
+            result: proposalsByState
+          }));
+
+        case 65:
+          _context3.prev = 65;
+          _context3.t2 = _context3["catch"](4);
+          console.log(_context3.t2);
+          return _context3.abrupt("return", res.status(500).send(_context3.t2));
+
+        case 69:
+        case "end":
+          return _context3.stop();
+      }
+    }
+  }, null, null, [[4, 65], [11, 23, 27, 35], [28,, 30, 34], [38, 50, 54, 62], [55,, 57, 61]]);
+}
+/**
  * Contar los elementos totales del estado
  * 
  * @param {String} state 
@@ -238,10 +403,56 @@ function getChallengesByPageAndState(itemsByPage, page, state, id_user) {
         id_proposal_state: state
       }
     }]
+  });
+}
+/**
+ * Encontrar los elementos por estado, pagina y cantidad
+ * 
+ * @param {Number} itemsByPage 
+ * @param {Number} page 
+ * @param {String} state 
+ */
+
+
+function getProposalsByChalengeAndState(itemsByPage, page, state, challenge_id) {
+  return Proposal.findAll({
+    offset: (page - 1) * itemsByPage,
+    limit: 5,
+    order: [['created_at', 'DESC']],
+    where: {
+      fk_id_challenge: challenge_id
+    },
+    include: [{
+      model: Challenge,
+      include: [{
+        model: Company
+      }]
+    }, {
+      model: ProposalState,
+      where: {
+        id_proposal_state: state
+      }
+    }, {
+      model: Ally
+    }]
   }).then(function (result) {
     return result ? result : null;
   })["catch"](function (error) {
     throw error;
+  });
+}
+/**
+ * Obtener todos los recursos asociados a un aliado
+ * @param {Numeric} idAlly 
+ */
+
+
+function getResourcesByAlly(idAlly) {
+  return Resource.findAll({
+    where: {
+      fk_id_ally: idAlly
+    },
+    attributes: ['id_resource', 'resource_name', 'resource_profile', 'resource_experience']
   });
 }
 /**
@@ -276,9 +487,9 @@ function getCategoriesByChallenge(id_challenge) {
 
 function updateProposalState(req, res) {
   var bodyAttributes;
-  return regeneratorRuntime.async(function updateProposalState$(_context3) {
+  return regeneratorRuntime.async(function updateProposalState$(_context4) {
     while (1) {
-      switch (_context3.prev = _context3.next) {
+      switch (_context4.prev = _context4.next) {
         case 0:
           bodyAttributes = getValidParams(req, res, _Proposal.validateBodyProposalUpdate);
           Proposal.update(bodyAttributes, {
@@ -294,7 +505,7 @@ function updateProposalState(req, res) {
 
         case 2:
         case "end":
-          return _context3.stop();
+          return _context4.stop();
       }
     }
   });

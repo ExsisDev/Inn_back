@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.validateBodySurveyCreation = validateBodySurveyCreation;
 exports.validateBodySurveyUpdate = validateBodySurveyUpdate;
+exports.validateBodyAnswers = validateBodyAnswers;
 
 var Joi = require('@hapi/joi');
 
@@ -23,3 +24,14 @@ function validateBodySurveyUpdate(survey) {
   });
   return updateSurveySchema.validate(survey);
 }
+
+function validateBodyAnswers(answers) {
+  var updateSurveyQuestionSchema = Joi.array().items(answerSchema).required();
+  return updateSurveyQuestionSchema.validate(answers);
+}
+
+var answerSchema = Joi.object({
+  fk_id_survey: Joi.number().integer().positive().required(),
+  fk_id_question: Joi.number().integer().positive().required(),
+  answer: Joi.string().required()
+});

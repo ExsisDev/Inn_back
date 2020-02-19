@@ -11,7 +11,10 @@ var _require2 = require('../middleware/admin'),
     isAdmin = _require2.isAdmin;
 
 var _require3 = require('../controllers/Survey.controller'),
-    createSurvey = _require3.createSurvey;
+    createSurvey = _require3.createSurvey,
+    saveAnswerSurveyQuestion = _require3.saveAnswerSurveyQuestion,
+    getQuestionsBySurvey = _require3.getQuestionsBySurvey,
+    getchallangeState = _require3.getchallangeState;
 /** Rutas para /api/surveys/
 
 /**
@@ -19,7 +22,10 @@ var _require3 = require('../controllers/Survey.controller'),
  * Además enlaza las preguntas correspondientes
  * {"survey_date", "user_id_creator"}
  */
-// router.post('/', [auth, isAdmin], createSurvey);
 
 
+router.post('/', [auth, isAdmin], createSurvey);
+router.get('/:id_challenge', getQuestionsBySurvey);
+router.put('/', [auth], saveAnswerSurveyQuestion);
+router.get('/:id_challenge', getchallangeState);
 module.exports = router;
