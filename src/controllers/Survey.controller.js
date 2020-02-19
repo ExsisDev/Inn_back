@@ -78,6 +78,21 @@ function getAllQuestions() {
 	})
 }
 
+export function getchallangeState(req, res){
+	let challenge_state_temp=0;
+	Challenge.findByPk(
+		req.params.id_challenge
+	).then((result)=>{
+		challenge_state_temp= result.fk_id_challenge_state;
+		console.log("Aquiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii",challenge_state_temp);
+		
+		return (challenge_state_temp);
+
+	}).catch((error) => {
+		return res.status(500).send(error);
+	});
+}
+
 /**
  * Enlazar encuesta con las preguntas
  * 
