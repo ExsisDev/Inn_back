@@ -27,7 +27,14 @@ var Survey = sequelize.define('surveys', {
   timestamps: true,
   updatedAt: 'updated_at',
   createdAt: 'created_at'
-}); // Survey.hasMany(SurveyQuestion, { foreignKey: 'fk_id_survey', sourceKey: 'id_survey' });
-// Survey.hasMany(Challenge, { foreignKey: 'fk_id_survey', sourceKey: 'id_survey' });
+}); 
 
+Survey.hasMany(SurveyQuestion, {
+  foreignKey: 'fk_id_survey',
+  sourceKey: 'id_survey'
+});
+SurveyQuestion.belongsTo(Survey, {
+  foreignKey: 'fk_id_survey',
+  targetKey: 'id_survey'
+});
 module.exports = Survey;
