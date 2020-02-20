@@ -344,14 +344,14 @@ export async function generateRecoveryToken(req, res) {
          where: { id_user: userFound.id_user }
       })
    }).then((resultUpdate) => {
-      let recipient = "dago.fonseca@exsis.com.co";
+      // let recipient = "dago.fonseca@exsis.com.co";
       let message = "<h2>Recuperación de contraseña</h2>";
       message += `<p><a href="http:localhost:3000/recoverPassword/${userFound.id_user}/${hash}">Haz click aquí para recuperar tu contraseña</a></p>`;
-      // Mailer.sendHtmlMail(userFound.user_email, message);
-      Mailer.sendHtmlMail(recipient, message);
+      Mailer.sendHtmlMail(userFound.user_email, message);
+      // Mailer.sendHtmlMail(recipient, message);
       return res.status(200).send("Link the recuperación generado exitosamente");
    }).catch((error) => {
-      return res.status(500).send('Algo salió mal. Mire los logs para mayor información.');
+      return res.status(500).send(config.get('seeLogs'));
    })
 }
 
@@ -366,6 +366,25 @@ export async function recoverPassword(req, res) {
  */
 export async function validateRecoveryToken(req, res) {
    const token = req.params.token;
-   const id_user = req.params.idUser;
-   return res.status(200).send(token);
+   const id_user = parseInt(req.params.idUser); 
+
+   if (!Number.isInteger(id_user) || id_user <= 0) {
+      return res.status(400).send(config.get('user.invalidIdUser'));
+   }
+   User.findByPk(id_user)
+   .then( userFound => {      
+      if(!userFound) {
+         return res.status(404).send("Usuario no encontrado")
+      }
+      if(userFound.recovery_token !== token){
+         return res.status(401).send("El código de recuperación no es válido.");
+      }
+      let recoveryTokenExpirationDate = DateTime.fromJSDate(userFound.recovery_token_expiration);      
+      if(recoveryTokenExpirationDate.diffNow().toObject().milliseconds <= 0){
+         return res.status(410).send("El código de recuperación a expirado.")
+      }
+      return res.status(200).send("Código de recuperarción válido");
+   }).catch( error => {
+      return res.status(500).send(config.get('seeLogs'));
+   })
 }

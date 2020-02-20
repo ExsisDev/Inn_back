@@ -50,8 +50,8 @@ export async function createProposal(req, res) {
       }
       return res.status(500).send(config.get('unableToCreate'));
    }).then((admin) => {
-      // recipient = admin.user_email;
-      recipient = "dago.fonseca@exsis.com.co"
+      recipient = admin.user_email;
+      // recipient = "dago.fonseca@exsis.com.co";
       return Challenge.findByPk(newProposal.fk_id_challenge);
    }).then((challenge) => {
       let creationDate = new Date(responseCreation.created_at);

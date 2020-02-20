@@ -23,3 +23,12 @@ export function validateEmail(userEmail) {
    });
    return emailSchema.validate(userEmail);
 }
+
+export function validateRecoveryPassword(requestBody) {
+   const recoveryPasswordSchema = Joi.object({
+      user_email: Joi.string().email().max(50).required(),
+      new_password: Joi.string().max(10).min(8).required(),
+      confirm_new_password: Joi.string().max(10).min(8).required()
+   });
+   return recoveryPasswordSchema.validate(requestBody);
+}

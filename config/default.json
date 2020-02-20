@@ -20,6 +20,7 @@
       "exceededTryAccess": "Excedió los intentos permitidos",
       "invalidEmailOrPassword": "Correo o contraseña inválida",
       "passwordsDoesntMatch": "Las contraseñas no coinciden",
-      "invalidPassword": "La contraseña es incorrecta"
+      "invalidPassword": "La contraseña es incorrecta",
+      "invalidIdUser": "Id inválido. el id del usuario debe ser un entero positivo"
    }
 }
