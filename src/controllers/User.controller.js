@@ -1,4 +1,4 @@
-const { validateUserAuth, validatePasswordChange, validateEmail } = require('../schemas/User.validations');
+const { validateUserAuth, validatePasswordChange, validateEmail, validateRecoveryPassword } = require('../schemas/User.validations');
 const _ = require('lodash');
 const { DateTime } = require('luxon');
 const bcrypt = require('bcrypt');
@@ -323,24 +323,24 @@ export async function generateRecoveryToken(req, res) {
       where: {
          user_email: bodyParams.user_email
       }
-   }).then((result) => {      
-      if(!result){
+   }).then((result) => {
+      if (!result) {
          return res.status(400).send('El email proporcionado no se encuentra registrado.');
       }
       userFound = result;
-      try {         
+      try {
          hash = crypto.randomBytes(64).toString('hex');
          return hash;
       } catch (error) {
-         console.log(error);         
+         console.log(error);
          return res.status(500).send('Algo salió mal. Para mayor información revisar los logs.');
-      }      
-   }).then((hash)=>{
+      }
+   }).then((hash) => {
       const futureHour = DateTime.local().setZone('America/Bogota').plus({ minutes: minutesUntilAccess });
       return User.update({
          recovery_token: hash,
          recovery_token_expiration: futureHour
-      },{
+      }, {
          where: { id_user: userFound.id_user }
       })
    }).then((resultUpdate) => {
@@ -356,35 +356,78 @@ export async function generateRecoveryToken(req, res) {
 }
 
 export async function recoverPassword(req, res) {
+   const reqBody = getValidParams(req, res, validateRecoveryPassword);
+
+   User.findByPk(id_user)
+   if (userAttributes.new_password == userAttributes.confirm_new_password) {
+      const hashedPassword = await hashPassword(userAttributes.new_password)
+      const updated = await updateUserPassword(hashedPassword, idUser);
+      return res.status(200).send(updated);
+   } else {
+      return res.status(400).send(config.get('user.passwordsDoesntMatch'));
+   }
    return res.status(200).send('recuperando contraseña...');
 }
 
 /**
  * Validar token de recuperación de contraseña
+ * 1. Se revisa que exista un usuario con el id dado
+ * 2. Se valida que el token recibido sea igual al token en base de datos
+ * 3. Se valida que la fecha de expiración del token sea mayor a la fecha actual
  * @param {*} req 
  * @param {*} res 
  */
 export async function validateRecoveryToken(req, res) {
    const token = req.params.token;
-   const id_user = parseInt(req.params.idUser); 
+   const id_user = parseInt(req.params.idUser);
+   let message, code;
 
    if (!Number.isInteger(id_user) || id_user <= 0) {
       return res.status(400).send(config.get('user.invalidIdUser'));
    }
-   User.findByPk(id_user)
-   .then( userFound => {      
-      if(!userFound) {
-         return res.status(404).send("Usuario no encontrado")
-      }
-      if(userFound.recovery_token !== token){
-         return res.status(401).send("El código de recuperación no es válido.");
-      }
-      let recoveryTokenExpirationDate = DateTime.fromJSDate(userFound.recovery_token_expiration);      
-      if(recoveryTokenExpirationDate.diffNow().toObject().milliseconds <= 0){
-         return res.status(410).send("El código de recuperación a expirado.")
-      }
-      return res.status(200).send("Código de recuperarción válido");
-   }).catch( error => {
-      return res.status(500).send(config.get('seeLogs'));
-   })
+   code = await validateRecoveryTokenByUser(id_user, token);
+   switch (code) {
+      case 404:
+         message = "Usuario no encontrado.";
+         break;
+      case 401:
+         message = "El código de recuperación no es válido.";
+         break;
+      case 410:
+         message = "El código de recuperación a expirado.";
+         break;
+      case 200:
+         message = "Código de recuperarción válido";
+         break;
+      case 500:
+         message = config.get('seeLogs');
+         break;      
+   }
+   return res.status(code).send(message);
+}
+/**
+ * 1. Se revisa que exista un usuario con el id dado
+ * 2. Se valida que el token recibido sea igual al token en base de datos
+ * 3. Se valida que la fecha de expiración del token sea mayor a la fecha actual
+ * @param {*} id_user 
+ * @param {*} res 
+ */
+function validateRecoveryTokenByUser(id_user, token) {
+   return User.findByPk(id_user, { attributes: ['recovery_token', 'recovery_token_expiration']})
+      .then(userFound => {
+         if (!userFound) {
+            return 404;
+         }
+         if (userFound.recovery_token !== token) {
+            return 401;
+         }
+         let recoveryTokenExpirationDate = DateTime.fromJSDate(userFound.recovery_token_expiration);
+         if (recoveryTokenExpirationDate.diffNow().toObject().milliseconds <= 0) {
+            return 410;
+         }
+         return 200;
+      }).catch( error => {
+         console.log(error);         
+         return 500;
+      })
 }

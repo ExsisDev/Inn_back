@@ -40,7 +40,7 @@ router.get('/recoverPassword/:idUser/:token', validateRecoveryToken);
 
 /**
  * Recuperar contraseña
- * {id_user, new_password, confirm_new_password}
+ * {id_user, recovery_token,  new_password, confirm_new_password}
  */
 router.put('/recoverPassword/', recoverPassword);
 
