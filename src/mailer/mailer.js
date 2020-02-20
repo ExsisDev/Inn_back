@@ -36,8 +36,31 @@ const sendTextMail = function (recipient, msg) {
 
 }
 
+/**
+ * Enviar correo a un destinatario con un mensaje en formato de html.
+ * @param {String} recipient Email del destinatario
+ * @param {String} msg Mensaje a ser enviado
+ */
+const sendHtmlMail = function (recipient, msg) {
+    var mailOptions = {
+        from: 'innovalab2020@gmail.com',
+        to: recipient,
+        subject: 'Sending Email using Node.js',
+        html: msg
+    };
+
+    transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log('Email sent: ' + info.response);
+        }
+    });
+
+}
 const Mailer = {
-    sendTextMail
+    sendTextMail,
+    sendHtmlMail
 }
 
 module.exports = Mailer;

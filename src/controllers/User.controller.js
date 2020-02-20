@@ -311,7 +311,12 @@ function updateUserPassword(newUnhashedPassword, id_user) {
 //----------------------------------------------------------------------------------
 //-------------------------- Recover password --------------------------------------
 
-export async function recoverPassword(req, res) {
+/**
+ * Generar link con token para recuperar contraseña
+ * @param {*} req 
+ * @param {*} res 
+ */
+export async function generateRecoveryToken(req, res) {
    const bodyParams = getValidParams(req, res, validateEmail);
    let userFound, hash, minutesUntilAccess = 15;
    User.findOne({
@@ -340,10 +345,27 @@ export async function recoverPassword(req, res) {
       })
    }).then((resultUpdate) => {
       let recipient = "dago.fonseca@exsis.com.co";
-      let message = `http:localhost:3000/recoverPassword/${userFound.id_user}/${hash}`;
-      Mailer.sendTextMail(recipient, message);
+      let message = "<h2>Recuperación de contraseña</h2>";
+      message += `<p><a href="http:localhost:3000/recoverPassword/${userFound.id_user}/${hash}">Haz click aquí para recuperar tu contraseña</a></p>`;
+      // Mailer.sendHtmlMail(userFound.user_email, message);
+      Mailer.sendHtmlMail(recipient, message);
       return res.status(200).send("Link the recuperación generado exitosamente");
    }).catch((error) => {
       return res.status(500).send('Algo salió mal. Mire los logs para mayor información.');
    })
+}
+
+export async function recoverPassword(req, res) {
+   return res.status(200).send('recuperando contraseña...');
+}
+
+/**
+ * Validar token de recuperación de contraseña
+ * @param {*} req 
+ * @param {*} res 
+ */
+export async function validateRecoveryToken(req, res) {
+   const token = req.params.token;
+   const id_user = req.params.idUser;
+   return res.status(200).send(token);
 }
