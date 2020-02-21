@@ -6,9 +6,11 @@ const router = express.Router();
 
 const {
    authenticateAttempts,
-   changePassword
+   changePassword,
+   generateRecoveryToken,
+   recoverPassword,
+   validateRecoveryToken
 } = require('../controllers/User.controller');
-
 
 /*** Rutas para /api/allies*/
 
@@ -24,5 +26,22 @@ router.post('/', authenticateAttempts);
  * {actual_password, new_password, confirm_new_password}
  */
 router.post('/changePassword', auth, changePassword);
+
+/**
+ * Generar token para la recuperación de contraseña.
+ * {user_email}
+ */
+router.post('/recoverPassword', generateRecoveryToken);
+
+/**
+ * Validar recovery token
+ */
+router.get('/recoverPassword/:idUser/:token', validateRecoveryToken);
+
+/**
+ * Recuperar contraseña
+ * {id_user, recovery_token,  new_password, confirm_new_password}
+ */
+router.put('/recoverPassword/', recoverPassword);
 
 module.exports = router;
