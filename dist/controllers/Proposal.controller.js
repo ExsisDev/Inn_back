@@ -38,6 +38,13 @@ var _require2 = require('../models/Enums/Challenge_state.enum'),
 
 var _require3 = require('../models/Enums/Proposal_state.enum'),
     proposalStateEnum = _require3.proposalStateEnum;
+
+var Mailer = require('../mailer/mailer');
+
+var _require4 = require('../models/Enums/User_role.enums'),
+    userRoleEnum = _require4.userRoleEnum;
+
+var User = require('../models/User');
 /**
  * Verificar la validéz de los parametros del body
  * 
@@ -55,14 +62,32 @@ function getValidParams(req, res, callBackValidation) {
 }
 
 function createProposal(req, res) {
-  var newProposal;
+  var newProposal, responseCreation, recipient;
   return regeneratorRuntime.async(function createProposal$(_context) {
     while (1) {
       switch (_context.prev = _context.next) {
         case 0:
           newProposal = getValidParams(req, res, validateBodyProposalCreation);
           Proposal.create(newProposal).then(function (result) {
-            return result ? res.status(200).send(result) : res.status(500).send(config.get('unableToCreate'));
+            if (result) {
+              responseCreation = result;
+              return User.findOne({
+                where: {
+                  fk_id_role: userRoleEnum.get('ADMINISTRATOR').value
+                }
+              });
+            }
+
+            return res.status(500).send(config.get('unableToCreate'));
+          }).then(function (admin) {
+            recipient = admin.user_email; // recipient = "dago.fonseca@exsis.com.co";
+
+            return Challenge.findByPk(newProposal.fk_id_challenge);
+          }).then(function (challenge) {
+            var creationDate = new Date(responseCreation.created_at);
+            var msg = "Se recibi\xF3 una nueva propuesta para el reto ".concat(challenge.challenge_name, " el ").concat(creationDate);
+            Mailer.sendTextMail(recipient, msg);
+            return res.status(200).send(responseCreation);
           })["catch"](function (error) {
             if (error.errors[0].type === "unique violation") {
               return res.status(409).send("La propuesta ya ha sido enviada");
