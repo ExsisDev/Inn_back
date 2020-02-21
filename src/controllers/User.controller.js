@@ -1,11 +1,12 @@
 const { validateUserAuth, validatePasswordChange, validateEmail, validateRecoveryPassword } = require('../schemas/User.validations');
+const sequelize = require('../utils/database');
 const _ = require('lodash');
 const { DateTime } = require('luxon');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 const User = require('../models/User');
 const config = require('config');
 const Mailer = require('../mailer/mailer');
-const crypto = require('crypto');
 
 /**
  * Verificar la validéz de los parametros del body
@@ -280,10 +281,8 @@ function findUserById(id_user) {
 function hashPassword(unhashedPassword) {
    return bcrypt.hash(unhashedPassword, 10).then((hash) => {
       return hash ? hash : undefined;
-
    }).catch((error) => {
       throw error;
-
    });
 }
 
@@ -294,9 +293,9 @@ function hashPassword(unhashedPassword) {
  * @param {String} newPassword 
  * @param {Number} id_user 
  */
-function updateUserPassword(newUnhashedPassword, id_user) {
+function updateUserPassword(newHashedPassword, id_user) {
    return User.update({
-      user_password: newUnhashedPassword
+      user_password: newHashedPassword
    }, {
       where: {
          id_user: id_user
@@ -355,18 +354,52 @@ export async function generateRecoveryToken(req, res) {
    })
 }
 
+/**
+ * Recuperar contraseña del usuario
+ * 1. Se validan los parametros del request
+ * 2. Se valida el recovery token
+ * 3. Se validan que las contraseñas coincidan
+ * 4. Se actualiza user_password, recovery_token y recovery_token_expiration
+ * @param {*} req 
+ * @param {*} res 
+ */
 export async function recoverPassword(req, res) {
    const reqBody = getValidParams(req, res, validateRecoveryPassword);
-
-   User.findByPk(id_user)
-   if (userAttributes.new_password == userAttributes.confirm_new_password) {
-      const hashedPassword = await hashPassword(userAttributes.new_password)
-      const updated = await updateUserPassword(hashedPassword, idUser);
-      return res.status(200).send(updated);
-   } else {
+   let message, code;
+   code = await validateRecoveryTokenByUser(reqBody.id_user, reqBody.recovery_token);
+   if (code !== 200) {
+      switch (code) {
+         case 404:
+            message = "Usuario no encontrado.";
+            break;
+         case 401:
+            message = "El código de recuperación no es válido.";
+            break;
+         case 410:
+            message = "El código de recuperación a expirado.";
+            break;
+         case 500:
+            message = config.get('seeLogs');
+            break;
+      }
+      return res.status(code).send(message);
+   }
+   if (reqBody.new_password !== reqBody.confirm_new_password) {
       return res.status(400).send(config.get('user.passwordsDoesntMatch'));
    }
-   return res.status(200).send('recuperando contraseña...');
+   try {
+      const hashedPassword = await hashPassword(reqBody.new_password)
+      await User.update({
+         user_password: hashedPassword,
+         recovery_token: null,
+         recovery_token_expiration: null
+      }, {
+         where: { id_user: reqBody.id_user }
+      });
+      return res.status(200).send("Contraseña recuperada con éxito.");
+   } catch (error) {
+      return res.status(500).send(config.get('seeLogs'));
+   }
 }
 
 /**
@@ -401,7 +434,7 @@ export async function validateRecoveryToken(req, res) {
          break;
       case 500:
          message = config.get('seeLogs');
-         break;      
+         break;
    }
    return res.status(code).send(message);
 }
@@ -413,7 +446,7 @@ export async function validateRecoveryToken(req, res) {
  * @param {*} res 
  */
 function validateRecoveryTokenByUser(id_user, token) {
-   return User.findByPk(id_user, { attributes: ['recovery_token', 'recovery_token_expiration']})
+   return User.findByPk(id_user, { attributes: ['recovery_token', 'recovery_token_expiration'] })
       .then(userFound => {
          if (!userFound) {
             return 404;
@@ -426,8 +459,8 @@ function validateRecoveryTokenByUser(id_user, token) {
             return 410;
          }
          return 200;
-      }).catch( error => {
-         console.log(error);         
+      }).catch(error => {
+         console.log(error);
          return 500;
       })
 }
