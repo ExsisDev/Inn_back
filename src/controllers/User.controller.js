@@ -345,7 +345,7 @@ export async function generateRecoveryToken(req, res) {
    }).then((resultUpdate) => {
       // let recipient = "dago.fonseca@exsis.com.co";
       let message = "<h2>Recuperación de contraseña</h2>";
-      message += `<p><a href="http:localhost:3000/recoverPassword/${userFound.id_user}/${hash}">Haz click aquí para recuperar tu contraseña</a></p>`;
+      message += `<p><a href="http:localhost:3000/recover-password/${userFound.id_user}/${hash}">Haz click aquí para recuperar tu contraseña</a></p>`;
       Mailer.sendHtmlMail(userFound.user_email, message);
       // Mailer.sendHtmlMail(recipient, message);
       return res.status(200).send("Link the recuperación generado exitosamente");
