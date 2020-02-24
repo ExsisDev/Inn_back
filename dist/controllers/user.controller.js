@@ -497,7 +497,7 @@ function generateRecoveryToken(req, res) {
           }).then(function (resultUpdate) {
             // let recipient = "dago.fonseca@exsis.com.co";
             var message = "<h2>Recuperación de contraseña</h2>";
-            message += "<p><a href=\"http:localhost:3000/recoverPassword/".concat(userFound.id_user, "/").concat(hash, "\">Haz click aqu\xED para recuperar tu contrase\xF1a</a></p>");
+            message += "<p><a href=\"".concat(config.get('url_front'), "/recover-password/").concat(userFound.id_user, "/").concat(hash, "\">Haz click aqu\xED para recuperar tu contrase\xF1a</a></p>");
             Mailer.sendHtmlMail(userFound.user_email, message); // Mailer.sendHtmlMail(recipient, message);
 
             return res.status(200).send("Link the recuperación generado exitosamente");
