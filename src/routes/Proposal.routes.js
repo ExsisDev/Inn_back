@@ -7,7 +7,8 @@ const router = express.Router();
 const {
    createProposal,
    searchProposalByState,
-   searchProposalByChallengeAndState
+   searchProposalByChallengeAndState,
+   updateProposalByChallengeAndAlly
 } = require ('../controllers/Proposal.controller');
 
 //Rutas para proposals/
@@ -30,4 +31,10 @@ router.get('/:status/:page', [auth], searchProposalByState);
  */
 router.get('/:id_challenge/:status/:page', [auth], searchProposalByChallengeAndState);
 
+/**
+ * Actualizar estado de una propuesta a Asignada
+ * :id_challenge -> id del reto actual
+ * :id_ally -> id del aliado actual
+ */
+router.put('/:id_challenge/:id_ally', [auth], updateProposalByChallengeAndAlly);
 module.exports = router;

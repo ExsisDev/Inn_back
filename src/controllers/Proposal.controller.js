@@ -108,6 +108,26 @@ export async function searchProposalByChallengeAndState(req, res) {
 }
 
 
+
+/**
+ * Encontrar la propuesta por el id del reto y el id del aliado dados.
+ * @param {*} req 
+ * @param {*} res 
+ */
+export async function updateProposalByChallengeAndAlly(req, res) {
+   let challenge_id = req.params.id_challenge;
+   let ally_id = req.params.id_ally;
+   let proposalUpdate;
+
+   try {
+      proposalUpdate = await putProposalByChallengeAndAlly(challenge_id, ally_id);
+      return res.status(200).send({ msg: "Propuesta asignada correctamente" });
+   } catch (error) {
+      console.log(error);
+      return res.status(500).send(error);
+   }
+}
+
 /**
  * Contar los elementos totales del estado
  * 
@@ -246,4 +266,20 @@ function getCategoriesByChallenge(id_challenge) {
       throw error;
 
    });
+}
+
+/**
+ * Actualizar el estado de la propuesta de "SEND" a "ASSIGNED"
+ * @param {*} id_challenge 
+ * @param {*} id_ally 
+ */
+
+function putProposalByChallengeAndAlly(id_challenge, id_ally){
+   return Proposal.update(
+      {
+         fk_id_proposal_state: 3 
+      },{where: {
+         fk_id_challenge: id_challenge,
+         fk_id_ally: id_ally 
+      }});
 }

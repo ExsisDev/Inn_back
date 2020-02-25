@@ -249,6 +249,32 @@ export async function updateAlly(req, res) {
    return res.status(answer.status).send(answer.data);
 }
 
+/**
+ * Obtener la lista de todos los aliados
+ * @param {*} id_ally 
+ */
+export function getAllAllies(req, res) {
+
+   try {
+      return Ally.findAll().then(response => {
+         if (response === null) {
+            const error = {
+               code: 404,
+               message: config.get('No se encontraron aliados.')
+            };
+            return error;
+         };
+         console.log(response.length);
+         
+         return res.status(200).send(response);
+      })   
+   } catch (error) {
+      console.log(error);
+      return res.status(500).send(error);
+   }
+   
+}
+
 
 /**
  * Obtener la información del aliado con sus respectivas categorías.
