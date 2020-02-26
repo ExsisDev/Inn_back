@@ -5,10 +5,17 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.authenticateAttempts = authenticateAttempts;
 exports.changePassword = changePassword;
+exports.generateRecoveryToken = generateRecoveryToken;
+exports.recoverPassword = recoverPassword;
+exports.validateRecoveryToken = validateRecoveryToken;
 
 var _require = require('../schemas/User.validations'),
     validateUserAuth = _require.validateUserAuth,
-    validatePasswordChange = _require.validatePasswordChange;
+    validatePasswordChange = _require.validatePasswordChange,
+    validateEmail = _require.validateEmail,
+    validateRecoveryPassword = _require.validateRecoveryPassword;
+
+var sequelize = require('../utils/database');
 
 var _ = require('lodash');
 
@@ -17,9 +24,13 @@ var _require2 = require('luxon'),
 
 var bcrypt = require('bcrypt');
 
+var crypto = require('crypto');
+
 var User = require('../models/User');
 
 var config = require('config');
+
+var Mailer = require('../mailer/mailer');
 /**
  * Verificar la validéz de los parametros del body
  * 
@@ -423,9 +434,9 @@ function hashPassword(unhashedPassword) {
  */
 
 
-function updateUserPassword(newUnhashedPassword, id_user) {
+function updateUserPassword(newHashedPassword, id_user) {
   return User.update({
-    user_password: newUnhashedPassword
+    user_password: newHashedPassword
   }, {
     where: {
       id_user: id_user
@@ -434,5 +445,262 @@ function updateUserPassword(newUnhashedPassword, id_user) {
     return result ? result : undefined;
   })["catch"](function (error) {
     throw error;
+  });
+} //----------------------------------------------------------------------------------
+//-------------------------- Recover password --------------------------------------
+
+/**
+ * Generar link con token para recuperar contraseña
+ * @param {*} req 
+ * @param {*} res 
+ */
+
+
+function generateRecoveryToken(req, res) {
+  var bodyParams, userFound, hash, minutesUntilAccess;
+  return regeneratorRuntime.async(function generateRecoveryToken$(_context4) {
+    while (1) {
+      switch (_context4.prev = _context4.next) {
+        case 0:
+          bodyParams = getValidParams(req, res, validateEmail);
+          minutesUntilAccess = 15;
+          User.findOne({
+            where: {
+              user_email: bodyParams.user_email
+            }
+          }).then(function (result) {
+            if (!result) {
+              return res.status(400).send('El email proporcionado no se encuentra registrado.');
+            }
+
+            userFound = result;
+
+            try {
+              hash = crypto.randomBytes(64).toString('hex');
+              return hash;
+            } catch (error) {
+              console.log(error);
+              return res.status(500).send('Algo salió mal. Para mayor información revisar los logs.');
+            }
+          }).then(function (hash) {
+            var futureHour = DateTime.local().setZone('America/Bogota').plus({
+              minutes: minutesUntilAccess
+            });
+            return User.update({
+              recovery_token: hash,
+              recovery_token_expiration: futureHour
+            }, {
+              where: {
+                id_user: userFound.id_user
+              }
+            });
+          }).then(function (resultUpdate) {
+            // let recipient = "dago.fonseca@exsis.com.co";
+            var message = "<h2>Recuperación de contraseña</h2>";
+            message += "<p><a href=\"".concat(config.get('url_front'), "/recover-password/").concat(userFound.id_user, "/").concat(hash, "\">Haz click aqu\xED para recuperar tu contrase\xF1a</a></p>");
+            Mailer.sendHtmlMail(userFound.user_email, message); // Mailer.sendHtmlMail(recipient, message);
+
+            return res.status(200).send("Link the recuperación generado exitosamente");
+          })["catch"](function (error) {
+            return res.status(500).send(config.get('seeLogs'));
+          });
+
+        case 3:
+        case "end":
+          return _context4.stop();
+      }
+    }
+  });
+}
+/**
+ * Recuperar contraseña del usuario
+ * 1. Se validan los parametros del request
+ * 2. Se valida el recovery token
+ * 3. Se validan que las contraseñas coincidan
+ * 4. Se actualiza user_password, recovery_token y recovery_token_expiration
+ * @param {*} req 
+ * @param {*} res 
+ */
+
+
+function recoverPassword(req, res) {
+  var reqBody, message, code, hashedPassword;
+  return regeneratorRuntime.async(function recoverPassword$(_context5) {
+    while (1) {
+      switch (_context5.prev = _context5.next) {
+        case 0:
+          reqBody = getValidParams(req, res, validateRecoveryPassword);
+          _context5.next = 3;
+          return regeneratorRuntime.awrap(validateRecoveryTokenByUser(reqBody.id_user, reqBody.recovery_token));
+
+        case 3:
+          code = _context5.sent;
+
+          if (!(code !== 200)) {
+            _context5.next = 17;
+            break;
+          }
+
+          _context5.t0 = code;
+          _context5.next = _context5.t0 === 404 ? 8 : _context5.t0 === 401 ? 10 : _context5.t0 === 410 ? 12 : _context5.t0 === 500 ? 14 : 16;
+          break;
+
+        case 8:
+          message = "Usuario no encontrado.";
+          return _context5.abrupt("break", 16);
+
+        case 10:
+          message = "El código de recuperación no es válido.";
+          return _context5.abrupt("break", 16);
+
+        case 12:
+          message = "El código de recuperación a expirado.";
+          return _context5.abrupt("break", 16);
+
+        case 14:
+          message = config.get('seeLogs');
+          return _context5.abrupt("break", 16);
+
+        case 16:
+          return _context5.abrupt("return", res.status(code).send(message));
+
+        case 17:
+          if (!(reqBody.new_password !== reqBody.confirm_new_password)) {
+            _context5.next = 19;
+            break;
+          }
+
+          return _context5.abrupt("return", res.status(400).send(config.get('user.passwordsDoesntMatch')));
+
+        case 19:
+          _context5.prev = 19;
+          _context5.next = 22;
+          return regeneratorRuntime.awrap(hashPassword(reqBody.new_password));
+
+        case 22:
+          hashedPassword = _context5.sent;
+          _context5.next = 25;
+          return regeneratorRuntime.awrap(User.update({
+            user_password: hashedPassword,
+            recovery_token: null,
+            recovery_token_expiration: null
+          }, {
+            where: {
+              id_user: reqBody.id_user
+            }
+          }));
+
+        case 25:
+          return _context5.abrupt("return", res.status(200).send("Contraseña recuperada con éxito."));
+
+        case 28:
+          _context5.prev = 28;
+          _context5.t1 = _context5["catch"](19);
+          return _context5.abrupt("return", res.status(500).send(config.get('seeLogs')));
+
+        case 31:
+        case "end":
+          return _context5.stop();
+      }
+    }
+  }, null, null, [[19, 28]]);
+}
+/**
+ * Validar token de recuperación de contraseña
+ * 1. Se revisa que exista un usuario con el id dado
+ * 2. Se valida que el token recibido sea igual al token en base de datos
+ * 3. Se valida que la fecha de expiración del token sea mayor a la fecha actual
+ * @param {*} req 
+ * @param {*} res 
+ */
+
+
+function validateRecoveryToken(req, res) {
+  var token, id_user, message, code;
+  return regeneratorRuntime.async(function validateRecoveryToken$(_context6) {
+    while (1) {
+      switch (_context6.prev = _context6.next) {
+        case 0:
+          token = req.params.token;
+          id_user = parseInt(req.params.idUser);
+
+          if (!(!Number.isInteger(id_user) || id_user <= 0)) {
+            _context6.next = 4;
+            break;
+          }
+
+          return _context6.abrupt("return", res.status(400).send(config.get('user.invalidIdUser')));
+
+        case 4:
+          _context6.next = 6;
+          return regeneratorRuntime.awrap(validateRecoveryTokenByUser(id_user, token));
+
+        case 6:
+          code = _context6.sent;
+          _context6.t0 = code;
+          _context6.next = _context6.t0 === 404 ? 10 : _context6.t0 === 401 ? 12 : _context6.t0 === 410 ? 14 : _context6.t0 === 200 ? 16 : _context6.t0 === 500 ? 18 : 20;
+          break;
+
+        case 10:
+          message = "Usuario no encontrado.";
+          return _context6.abrupt("break", 20);
+
+        case 12:
+          message = "El código de recuperación no es válido.";
+          return _context6.abrupt("break", 20);
+
+        case 14:
+          message = "El código de recuperación a expirado.";
+          return _context6.abrupt("break", 20);
+
+        case 16:
+          message = "Código de recuperarción válido";
+          return _context6.abrupt("break", 20);
+
+        case 18:
+          message = config.get('seeLogs');
+          return _context6.abrupt("break", 20);
+
+        case 20:
+          return _context6.abrupt("return", res.status(code).send(message));
+
+        case 21:
+        case "end":
+          return _context6.stop();
+      }
+    }
+  });
+}
+/**
+ * 1. Se revisa que exista un usuario con el id dado
+ * 2. Se valida que el token recibido sea igual al token en base de datos
+ * 3. Se valida que la fecha de expiración del token sea mayor a la fecha actual
+ * @param {*} id_user 
+ * @param {*} res 
+ */
+
+
+function validateRecoveryTokenByUser(id_user, token) {
+  return User.findByPk(id_user, {
+    attributes: ['recovery_token', 'recovery_token_expiration']
+  }).then(function (userFound) {
+    if (!userFound) {
+      return 404;
+    }
+
+    if (userFound.recovery_token !== token) {
+      return 401;
+    }
+
+    var recoveryTokenExpirationDate = DateTime.fromJSDate(userFound.recovery_token_expiration);
+
+    if (recoveryTokenExpirationDate.diffNow().toObject().milliseconds <= 0) {
+      return 410;
+    }
+
+    return 200;
+  })["catch"](function (error) {
+    console.log(error);
+    return 500;
   });
 }

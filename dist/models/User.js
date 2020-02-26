@@ -39,6 +39,14 @@ var User = sequelize.define('users', {
   login_attempts: {
     type: Sequelize.INTEGER,
     allowNull: false
+  },
+  recovery_token: {
+    type: Sequelize.STRING,
+    allowNull: true
+  },
+  recovery_token_expiration: {
+    type: Sequelize.DATE,
+    allowNull: true
   }
 }, {
   timestamps: true,

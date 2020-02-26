@@ -12,5 +12,6 @@
       "user": "db_user_prod",
       "name": "db_name_prod"
    },
-   "jwtPrivateKey": "jwtPrivateKey"
+   "jwtPrivateKey": "jwtPrivateKey",
+   "url_front": "url_front"
 } 

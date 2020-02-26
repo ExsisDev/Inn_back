@@ -26,7 +26,8 @@ export function validateBodyChallengeUpdate(challenge) {
       close_date: Joi.date(),
       survey_date: Joi.date(),
       user_id_creator: Joi.number(),
-      categories_selected: Joi.array()
+      categories_selected: Joi.array(),
+      final_comment: Joi.string()
    });
    return updateChallengeSchema.validate(challenge);
 }

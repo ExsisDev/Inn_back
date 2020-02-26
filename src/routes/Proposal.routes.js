@@ -8,7 +8,8 @@ const {
    createProposal,
    searchProposalByState,
    searchProposalByChallengeAndState,
-   updateProposalByChallengeAndAlly
+   updateProposalByChallengeAndAlly,
+   updateProposalState
 } = require ('../controllers/Proposal.controller');
 
 //Rutas para proposals/
@@ -24,6 +25,11 @@ router.post('/', [auth], createProposal);
 router.get('/:status/:page', [auth], searchProposalByState);
 
 /**
+ * Actualizar la propuesta pasando en el body los atributos
+ */
+router.put('/:idChallenge/:idAlly', [auth], updateProposalState);
+
+/**
  * Obtener las propuestas enviadas para el reto
  * :id_challenge -> id del reto actual
  * :status -> estado de la propuesta
@@ -36,5 +42,5 @@ router.get('/:id_challenge/:status/:page', [auth], searchProposalByChallengeAndS
  * :id_challenge -> id del reto actual
  * :id_ally -> id del aliado actual
  */
-router.put('/:id_challenge/:id_ally', [auth], updateProposalByChallengeAndAlly);
+router.put('/assign/:id_challenge/:id_ally', [auth], updateProposalByChallengeAndAlly);
 module.exports = router;

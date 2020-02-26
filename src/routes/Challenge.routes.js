@@ -9,11 +9,40 @@ const {
    getAllChallenges,
    getChallengesByPageAndStatus,
    getChallengesByPageStatusAndPhrase,
-   deleteChallenge
+   deleteChallenge,
+   updateChallenge,
+   getFinalComment
 } = require('../controllers/Challenge.controller');
 
 
 /*** Rutas para /api/challenge*/
+
+
+/**
+ * Obtener los comentarios finales del reto
+ */
+router.get('/finalComment/:idChallenge', getFinalComment);
+
+/**
+ * Obtener retos por categoría, página y palabra de busqueda
+ */
+router.get('/:page/:status/search', [auth], getChallengesByPageStatusAndPhrase);
+
+/**
+ * Obtener retos por categoría y página
+ */
+router.get('/:page/:status', [auth], getChallengesByPageAndStatus);
+
+/**
+ * Eliminar un reto (Solo usuario administrador)
+ */
+router.delete('/:idChallenge', [auth, isAdmin], deleteChallenge);
+
+
+/**
+ * Actualizar un reto pasando en body los atributos
+ */
+router.put('/:idChallenge', [auth], updateChallenge);
 
 /** 
  * Crear un reto con body (Solo para admin)
@@ -25,24 +54,6 @@ const {
  * "categoies_selected"}
  */
 router.post('/', [auth, isAdmin], createChallenge);
-
-
-/**
- * Obtener retos por categoría y página
- */
-router.get('/:page/:status', [auth], getChallengesByPageAndStatus);
-
-
-/**
- * Obtener retos por categoría, página y palabra de busqueda
- */
-router.get('/:page/:status/search', [auth], getChallengesByPageStatusAndPhrase);
-
-
-/**
- * Eliminar un reto (Solo usuario administrador)
- */
-router.delete('/:idChallenge', [auth, isAdmin], deleteChallenge);
 
 
 module.exports = router;

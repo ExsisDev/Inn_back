@@ -1,3 +1,5 @@
+import { validateBodyProposalUpdate } from '../schemas/Proposal.validation';
+
 const Proposal = require('../models/Proposal');
 const Ally = require('../models/Ally');
 const ProposalState = require('../models/ProposalState');
@@ -11,6 +13,9 @@ const config = require('config');
 const jwt = require('jsonwebtoken');
 const { challengeStateEnum } = require('../models/Enums/Challenge_state.enum');
 const { proposalStateEnum } = require('../models/Enums/Proposal_state.enum');
+const Mailer = require('../mailer/mailer');
+const { userRoleEnum } = require('../models/Enums/User_role.enums');
+const User = require('../models/User');
 
 /**
  * Verificar la validéz de los parametros del body
@@ -27,22 +32,36 @@ function getValidParams(req, res, callBackValidation) {
 
 export async function createProposal(req, res) {
    let newProposal = getValidParams(req, res, validateBodyProposalCreation);
-
+   let responseCreation, recipient;
    Proposal.create(
       newProposal
    ).then((result) => {
-      return result ? res.status(200).send(result) : res.status(500).send(config.get('unableToCreate'));
-
+      if (result) {
+         responseCreation = result;
+         return User.findOne({ where: { fk_id_role: userRoleEnum.get('ADMINISTRATOR').value } });
+      }
+      return res.status(500).send(config.get('unableToCreate'));
+   }).then((admin) => {
+      recipient = admin.user_email;
+      // recipient = "dago.fonseca@exsis.com.co";
+      return Challenge.findByPk(newProposal.fk_id_challenge);
+   }).then((challenge) => {
+      let creationDate = new Date(responseCreation.created_at);
+      let msg = `Se recibió una nueva propuesta para el reto ${challenge.challenge_name} el ${creationDate}`;
+      Mailer.sendTextMail(recipient, msg);
+      return res.status(200).send(responseCreation);
    }).catch((error) => {
       if (error.errors[0].type === "unique violation") {
          return res.status(409).send("La propuesta ya ha sido enviada");
       }
       return res.status(500).send(error);
-
    });
 
 }
 
+
+//----------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------
 
 
 /**
@@ -120,7 +139,7 @@ export async function updateProposalByChallengeAndAlly(req, res) {
    let proposalUpdate;
 
    try {
-      proposalUpdate = await putProposalByChallengeAndAlly(challenge_id, ally_id);
+      proposalUpdate = await assignProposalByChallengeAndAlly(challenge_id, ally_id);
       return res.status(200).send({ msg: "Propuesta asignada correctamente" });
    } catch (error) {
       console.log(error);
@@ -177,8 +196,7 @@ function getChallengesByPageAndState(itemsByPage, page, state, id_user) {
          include: [{
             model: Company
          }]
-      },
-      {
+      }, {
          model: ProposalState,
          where: {
             id_proposal_state: state
@@ -274,7 +292,7 @@ function getCategoriesByChallenge(id_challenge) {
  * @param {*} id_ally 
  */
 
-function putProposalByChallengeAndAlly(id_challenge, id_ally){
+function assignProposalByChallengeAndAlly(id_challenge, id_ally){
    return Proposal.update(
       {
          fk_id_proposal_state: 3 
@@ -283,3 +301,24 @@ function putProposalByChallengeAndAlly(id_challenge, id_ally){
          fk_id_ally: id_ally 
       }});
 }
+
+//----------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------
+
+
+export async function updateProposalState(req, res) {
+   const bodyAttributes = getValidParams(req, res, validateBodyProposalUpdate);
+
+   Proposal.update(
+      bodyAttributes,
+      {
+         where: {
+            fk_id_challenge: req.params.idChallenge,
+            fk_id_ally: req.params.idAlly
+         }
+      }).then((updated) => {
+         return updated ? res.status(200).send(updated) : res.status(500).send(config.get('challenge.unableToUpdate'));
+      }).catch((error) => {
+         return res.status(500).send(config.get('challenge.unableToUpdate'));
+      })
+} 

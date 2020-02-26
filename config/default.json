@@ -14,12 +14,15 @@
    "challenge": {
       "invalidIdInteger": "Id no válido, idChallenge debe ser un entero.",
       "challengeDeleted": "Reto eliminado",
-      "unableToDelete": "No se pudo eliminar el reto"
+      "unableToDelete": "No se pudo eliminar el reto",
+      "unableToUpdate": "No se pudo actualizar el reto",
+      "notFound": "No se encontró el reto asociado"
    },
    "user": {
       "exceededTryAccess": "Excedió los intentos permitidos",
       "invalidEmailOrPassword": "Correo o contraseña inválida",
       "passwordsDoesntMatch": "Las contraseñas no coinciden",
-      "invalidPassword": "La contraseña es incorrecta"
+      "invalidPassword": "La contraseña es incorrecta",
+      "invalidIdUser": "Id inválido. el id del usuario debe ser un entero positivo"
    }
 }

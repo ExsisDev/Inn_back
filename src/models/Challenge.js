@@ -38,6 +38,11 @@ const Challenge = sequelize.define('challenges', {
       type: Sequelize.BOOLEAN,
       allowNull: false,
       defaultValue: false
+   },
+   final_comment: {
+      type: Sequelize.TEXT,
+      allowNull: false,
+      defaultValue: " "
    }
 }, {
    timestamps: true,

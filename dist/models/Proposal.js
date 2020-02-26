@@ -8,6 +8,8 @@ var ProposalState = require('./ProposalState');
 
 var Challenge = require('./Challenge');
 
+var Ally = require('./Ally');
+
 var Proposal = sequelize.define('proposals', {
   fk_id_challenge: {
     primaryKey: true,
@@ -52,5 +54,13 @@ ProposalState.hasMany(Proposal, {
 Proposal.belongsTo(ProposalState, {
   foreignKey: 'fk_id_proposal_state',
   targetKey: 'id_proposal_state'
+});
+Ally.hasMany(Proposal, {
+  foreignKey: 'fk_id_ally',
+  sourceKey: 'id_ally'
+});
+Proposal.belongsTo(Ally, {
+  foreignKey: 'fk_id_ally',
+  targetKey: 'id_ally'
 });
 module.exports = Proposal;
