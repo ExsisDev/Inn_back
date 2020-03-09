@@ -9,7 +9,8 @@ const {
    updateAlly,
    getAllyById,
    getAllies,
-   getCurrentAlly
+   getCurrentAlly,
+   getAllAllies
 } = require('../controllers/Ally.controller');
 
 
@@ -27,6 +28,8 @@ const {
  *   ally_categories [ { id_category, category_name } ]
  * }
  */
+
+router.get('/', [auth, isAdmin], getAllAllies);
 
 router.get('/me', [auth], getCurrentAlly);
 
