@@ -287,3 +287,22 @@ export async function updateProposalState(req, res) {
          return res.status(500).send(config.get('challenge.unableToUpdate'));
       })
 } 
+
+
+//----------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------
+
+
+export async function getProposalsAssignedByChallenge(req, res) {
+   Proposal.findAll({
+      where: {
+         fk_id_challenge: req.params.idChallenge,
+         fk_id_proposal_state: 3
+      }
+   }).then((result) => {
+      return result ? res.send(result) : res.status(404).send(config.get('emptyResponse'));
+
+   }).catch((error) => {
+      return res.status(500).send(config.get('seeLogs'));
+   })
+}
