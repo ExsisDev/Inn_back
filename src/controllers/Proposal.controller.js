@@ -51,7 +51,7 @@ export async function createProposal(req, res) {
       Mailer.sendTextMail(recipient, msg);
       return res.status(200).send(responseCreation);
    }).catch((error) => {
-      if (error.errors[0].type === "unique violation") {
+      if (error.errors !== undefined && error.errors[0].type === "unique violation") {
          return res.status(409).send("La propuesta ya ha sido enviada");
       }
       return res.status(500).send(error);
@@ -77,6 +77,7 @@ export async function searchProposalByState(req, res) {
    let elementsCountByState;
    let elementsByState;
    const tokenElements = jwt.verify(req.headers['x-auth-token'], config.get('jwtPrivateKey'));
+
 
    try {
       elementsCountByState = await countElementsByState(state, tokenElements.id_user);
@@ -154,14 +155,15 @@ export async function updateProposalByChallengeAndAlly(req, res) {
  */
 function countElementsByState(state, id_user) {
    return Proposal.count({
-
-      where: {
-         fk_id_ally: id_user
-      },
       include: [{
          model: ProposalState,
          where: {
             id_proposal_state: state
+         }
+      }, {
+         model: Ally,
+         where: {
+            fk_id_user: id_user
          }
       }]
    }).then((result) => {
@@ -188,9 +190,6 @@ function getChallengesByPageAndState(itemsByPage, page, state, id_user) {
       order: [
          ['created_at', 'DESC']
       ],
-      where: {
-         fk_id_ally: id_user
-      },
       include: [{
          model: Challenge,
          include: [{
@@ -201,6 +200,11 @@ function getChallengesByPageAndState(itemsByPage, page, state, id_user) {
          where: {
             id_proposal_state: state
          }
+      }, {
+         model: Ally,
+         where: {
+            fk_id_user: id_user
+         },
       }],
    });
 }

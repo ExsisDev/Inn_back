@@ -9,7 +9,8 @@ const {
    changePassword,
    generateRecoveryToken,
    recoverPassword,
-   validateRecoveryToken
+   validateRecoveryToken,
+   createAdmin
 } = require('../controllers/User.controller');
 
 /*** Rutas para /api/allies*/
@@ -43,5 +44,12 @@ router.get('/recoverPassword/:idUser/:token', validateRecoveryToken);
  * {id_user, recovery_token,  new_password, confirm_new_password}
  */
 router.put('/recoverPassword/', recoverPassword);
+
+/**
+ * Crear un administrador
+ * {fk_id_role, fk_user_state, user_email, user_password, login_attemps, recovery_token, 
+ * recovery_token_expiration}
+ */
+router.post('/create/newAdmin', createAdmin);
 
 module.exports = router;

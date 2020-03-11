@@ -1,4 +1,4 @@
-const { validateUserAuth, validatePasswordChange, validateEmail, validateRecoveryPassword } = require('../schemas/User.validations');
+const { validateUserAuth, validatePasswordChange, validateEmail, validateRecoveryPassword, validateAdminCreation } = require('../schemas/User.validations');
 const sequelize = require('../utils/database');
 const _ = require('lodash');
 const { DateTime } = require('luxon');
@@ -280,7 +280,7 @@ function findUserById(id_user) {
  */
 function hashPassword(unhashedPassword) {
    return bcrypt.hash(unhashedPassword, 10).then((hash) => {
-      return hash ? hash : undefined;
+      return hash ? hash : null;
    }).catch((error) => {
       throw error;
    });
@@ -438,6 +438,8 @@ export async function validateRecoveryToken(req, res) {
    }
    return res.status(code).send(message);
 }
+
+
 /**
  * 1. Se revisa que exista un usuario con el id dado
  * 2. Se valida que el token recibido sea igual al token en base de datos
@@ -445,6 +447,8 @@ export async function validateRecoveryToken(req, res) {
  * @param {*} id_user 
  * @param {*} res 
  */
+
+
 function validateRecoveryTokenByUser(id_user, token) {
    return User.findByPk(id_user, { attributes: ['recovery_token', 'recovery_token_expiration'] })
       .then(userFound => {
@@ -463,4 +467,28 @@ function validateRecoveryTokenByUser(id_user, token) {
          console.log(error);
          return 500;
       })
+}
+
+
+//----------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------
+
+/**
+ * Crear un administrador
+ */
+
+export async function createAdmin(req, res) {
+   const adminInfo = getValidParams(req, res, validateAdminCreation);
+   adminInfo.user_password = await hashPassword(adminInfo.user_password);
+   console.log(adminInfo.user_password)
+   adminInfo.user_last_login = DateTime.local().setZone('America/Bogota').toString();
+
+   User.create(
+      adminInfo
+   ).then((result) => {
+      return result ? res.status(200).send(result) : res.status(500).send(config.get('unableToCreate'));
+   }).catch((error) => {
+      console.log(error)
+      return res.status(500).send(config.get('unableToCreate'));
+   })
 }
