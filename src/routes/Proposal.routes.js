@@ -15,6 +15,7 @@ const {
 
 //Rutas para proposals/
 
+/**Crear una propuesta */
 router.post('/', [auth], createProposal);
 
 /**
@@ -45,9 +46,8 @@ router.get('/:status/:page', [auth], searchProposalByState);
 router.put('/:idChallenge/:idAlly', [auth], updateProposalState);
 
 
-
 /**
- * Actualizar estado de una propuesta a Asignada
+ * Actualizar estado de una propuesta y de un reto a Asignada
  * :id_challenge -> id del reto actual
  * :id_ally -> id del aliado actual
  */

@@ -130,17 +130,17 @@ export async function searchProposalByChallengeAndState(req, res) {
 
 
 /**
- * Encontrar la propuesta por el id del reto y el id del aliado dados.
+ * Actualizar los estados de la propuesta y el reto a asignados.
  * @param {*} req 
  * @param {*} res 
  */
 export async function updateProposalByChallengeAndAlly(req, res) {
    let challenge_id = req.params.id_challenge;
    let ally_id = req.params.id_ally;
-   let proposalUpdate;
 
    try {
-      proposalUpdate = await assignProposalByChallengeAndAlly(challenge_id, ally_id);
+      await assignProposalByChallengeAndAlly(challenge_id, ally_id);
+      await assignChallengeById(challenge_id);
       return res.status(200).send({ msg: "Propuesta asignada correctamente" });
    } catch (error) {
       console.log(error);
@@ -296,14 +296,35 @@ function getCategoriesByChallenge(id_challenge) {
  * @param {*} id_ally 
  */
 
-function assignProposalByChallengeAndAlly(id_challenge, id_ally){
+function assignProposalByChallengeAndAlly(id_challenge, id_ally) {
    return Proposal.update(
       {
-         fk_id_proposal_state: 3 
-      },{where: {
+         fk_id_proposal_state: proposalStateEnum.get(`ASSIGNED`).value
+      }, {
+      where: {
          fk_id_challenge: id_challenge,
-         fk_id_ally: id_ally 
-      }});
+         fk_id_ally: id_ally
+      }
+   });
+}
+
+
+/**
+ * Actualizar el estado del reto de "SEND" a "ASSIGNED"
+ * @param {*} id_challenge 
+ * @param {*} id_ally 
+ */
+
+function assignChallengeById(id_challenge) {
+   return Challenge.update(
+      {
+         fk_id_challenge_state: challengeStateEnum.get('ASSIGNED').value
+      }, {
+      where: {
+         id_challenge : id_challenge
+      }
+   }
+   );
 }
 
 //----------------------------------------------------------------------------------------------------------------
@@ -325,7 +346,7 @@ export async function updateProposalState(req, res) {
       }).catch((error) => {
          return res.status(500).send(config.get('challenge.unableToUpdate'));
       })
-} 
+}
 
 
 //----------------------------------------------------------------------------------------------------------------
