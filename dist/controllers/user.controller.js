@@ -8,12 +8,14 @@ exports.changePassword = changePassword;
 exports.generateRecoveryToken = generateRecoveryToken;
 exports.recoverPassword = recoverPassword;
 exports.validateRecoveryToken = validateRecoveryToken;
+exports.createAdmin = createAdmin;
 
 var _require = require('../schemas/User.validations'),
     validateUserAuth = _require.validateUserAuth,
     validatePasswordChange = _require.validatePasswordChange,
     validateEmail = _require.validateEmail,
-    validateRecoveryPassword = _require.validateRecoveryPassword;
+    validateRecoveryPassword = _require.validateRecoveryPassword,
+    validateAdminCreation = _require.validateAdminCreation;
 
 var sequelize = require('../utils/database');
 
@@ -421,7 +423,7 @@ function findUserById(id_user) {
 
 function hashPassword(unhashedPassword) {
   return bcrypt.hash(unhashedPassword, 10).then(function (hash) {
-    return hash ? hash : undefined;
+    return hash ? hash : null;
   })["catch"](function (error) {
     throw error;
   });
@@ -702,5 +704,40 @@ function validateRecoveryTokenByUser(id_user, token) {
   })["catch"](function (error) {
     console.log(error);
     return 500;
+  });
+} //----------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------
+
+/**
+ * Crear un administrador
+ */
+
+
+function createAdmin(req, res) {
+  var adminInfo;
+  return regeneratorRuntime.async(function createAdmin$(_context7) {
+    while (1) {
+      switch (_context7.prev = _context7.next) {
+        case 0:
+          adminInfo = getValidParams(req, res, validateAdminCreation);
+          _context7.next = 3;
+          return regeneratorRuntime.awrap(hashPassword(adminInfo.user_password));
+
+        case 3:
+          adminInfo.user_password = _context7.sent;
+          console.log(adminInfo.user_password);
+          adminInfo.user_last_login = DateTime.local().setZone('America/Bogota').toString();
+          User.create(adminInfo).then(function (result) {
+            return result ? res.status(200).send(result) : res.status(500).send(config.get('unableToCreate'));
+          })["catch"](function (error) {
+            console.log(error);
+            return res.status(500).send(config.get('unableToCreate'));
+          });
+
+        case 7:
+        case "end":
+          return _context7.stop();
+      }
+    }
   });
 }

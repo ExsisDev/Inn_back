@@ -15,7 +15,8 @@ var _require3 = require('../controllers/User.controller'),
     changePassword = _require3.changePassword,
     generateRecoveryToken = _require3.generateRecoveryToken,
     recoverPassword = _require3.recoverPassword,
-    validateRecoveryToken = _require3.validateRecoveryToken;
+    validateRecoveryToken = _require3.validateRecoveryToken,
+    createAdmin = _require3.createAdmin;
 /*** Rutas para /api/allies*/
 
 /** 
@@ -49,4 +50,11 @@ router.get('/recoverPassword/:idUser/:token', validateRecoveryToken);
  */
 
 router.put('/recoverPassword/', recoverPassword);
+/**
+ * Crear un administrador
+ * {fk_id_role, fk_user_state, user_email, user_password, login_attemps, recovery_token, 
+ * recovery_token_expiration}
+ */
+
+router.post('/create/newAdmin', createAdmin);
 module.exports = router;

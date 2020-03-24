@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.createAlly = createAlly;
 exports.updateAlly = updateAlly;
+exports.getAllAllies = getAllAllies;
 exports.getAllyById = getAllyById;
 exports.getAllies = getAllies;
 exports.getCurrentAlly = getCurrentAlly;
@@ -573,6 +574,32 @@ function updateAlly(req, res) {
       }
     }
   }, null, null, [[11, 20]]);
+}
+/**
+ * Obtener la lista de todos los aliados
+ * @param {*} id_ally 
+ */
+
+
+function getAllAllies(req, res) {
+  try {
+    return Ally.findAll().then(function (response) {
+      if (response === null) {
+        var error = {
+          code: 404,
+          message: config.get('No se encontraron aliados.')
+        };
+        return error;
+      }
+
+      ;
+      console.log(response.length);
+      return res.status(200).send(response);
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send(error);
+  }
 }
 /**
  * Obtener la información del aliado con sus respectivas categorías.

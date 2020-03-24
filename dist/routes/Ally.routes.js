@@ -15,7 +15,8 @@ var _require3 = require('../controllers/Ally.controller'),
     updateAlly = _require3.updateAlly,
     getAllyById = _require3.getAllyById,
     getAllies = _require3.getAllies,
-    getCurrentAlly = _require3.getCurrentAlly;
+    getCurrentAlly = _require3.getCurrentAlly,
+    getAllAllies = _require3.getAllAllies;
 /*** Rutas para /api/allies*/
 
 /**
@@ -32,6 +33,7 @@ var _require3 = require('../controllers/Ally.controller'),
  */
 
 
+router.get('/', [auth, isAdmin], getAllAllies);
 router.get('/me', [auth], getCurrentAlly);
 router.get('/:idAlly', [auth, isAdmin], getAllyById);
 router.put('/:idAlly', [auth], updateAlly);

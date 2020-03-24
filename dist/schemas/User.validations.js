@@ -7,6 +7,7 @@ exports.validateUserAuth = validateUserAuth;
 exports.validatePasswordChange = validatePasswordChange;
 exports.validateEmail = validateEmail;
 exports.validateRecoveryPassword = validateRecoveryPassword;
+exports.validateAdminCreation = validateAdminCreation;
 
 var Joi = require('@hapi/joi');
 
@@ -42,4 +43,18 @@ function validateRecoveryPassword(requestBody) {
     confirm_new_password: Joi.string().max(8).min(7).required()
   });
   return recoveryPasswordSchema.validate(requestBody);
+}
+
+function validateAdminCreation(requestBody) {
+  var bodyCreationAdmin = Joi.object({
+    fk_id_role: Joi.number().integer().positive().required(),
+    fk_user_state: Joi.number().integer().positive().required(),
+    user_email: Joi.string().email().required(),
+    user_last_login: Joi.date().required(),
+    user_password: Joi.string().required(),
+    login_attempts: Joi.number().integer().required(),
+    recovery_token: Joi.string(),
+    recovery_token_expiration: Joi.date()
+  });
+  return bodyCreationAdmin.validate(requestBody);
 }
