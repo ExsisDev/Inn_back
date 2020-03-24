@@ -96,57 +96,6 @@ export async function searchProposalByState(req, res) {
    }
 }
 
-/**
- * Encontrar las propuestas por el id del reto, dado un estado y una página
- * @param {*} req 
- * @param {*} res 
- */
-export async function searchProposalByChallengeAndState(req, res) {
-
-   let itemsByPage = 5;
-   let page = req.params.page;
-   let state = proposalStateEnum.get(`${req.params.status.toUpperCase()}`).value;
-   // let elementsCountByState;
-   let proposalsByState;
-   let challenge_id = req.params.id_challenge;
-
-   try {
-      // elementsCountByState = await countElementsByState(state, tokenElements.id_user);
-      proposalsByState = await getProposalsByChalengeAndState(itemsByPage, page, state, challenge_id);
-      for (let challenge of proposalsByState) {
-         challenge.dataValues['categories'] = await getCategoriesByChallenge(challenge.challenge.id_challenge);
-      }
-      for (let proposal of proposalsByState) {
-         proposal.dataValues['resources'] = await getResourcesByAlly(proposal.dataValues.fk_id_ally);
-      }
-
-      return res.send({ result: proposalsByState });
-   } catch (error) {
-      console.log(error);
-      return res.status(500).send(error);
-   }
-}
-
-
-
-/**
- * Actualizar los estados de la propuesta y el reto a asignados.
- * @param {*} req 
- * @param {*} res 
- */
-export async function updateProposalByChallengeAndAlly(req, res) {
-   let challenge_id = req.params.id_challenge;
-   let ally_id = req.params.id_ally;
-
-   try {
-      await assignProposalByChallengeAndAlly(challenge_id, ally_id);
-      await assignChallengeById(challenge_id);
-      return res.status(200).send({ msg: "Propuesta asignada correctamente" });
-   } catch (error) {
-      console.log(error);
-      return res.status(500).send(error);
-   }
-}
 
 /**
  * Contar los elementos totales del estado
@@ -209,6 +158,73 @@ function getChallengesByPageAndState(itemsByPage, page, state, id_user) {
    });
 }
 
+
+/**
+ * Encontrar todas los nombres de categorias por reto 
+ * 
+ * @param {Number} id_challenge 
+ */
+function getCategoriesByChallenge(id_challenge) {
+   return ChallengeCategory.findAll({
+      where: {
+         fk_id_challenge: id_challenge
+      },
+      include: [{
+         model: ChCategories,
+         attributes: ['category_name']
+      }],
+      attributes: []
+
+   }).then((result) => {
+      let AllCategoriesResult = [];
+      result.map((category) => {
+         AllCategoriesResult.push(category.ch_category.category_name);
+      });
+      return result ? AllCategoriesResult : undefined;
+
+   }).catch((error) => {
+      throw error;
+
+   });
+}
+
+
+//----------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------
+
+
+/**
+ * Encontrar las propuestas por el id del reto, dado un estado y una página
+ * @param {*} req 
+ * @param {*} res 
+ */
+export async function searchProposalByChallengeAndState(req, res) {
+
+   let itemsByPage = 5;
+   let page = req.params.page;
+   let state = proposalStateEnum.get(`${req.params.status.toUpperCase()}`).value;
+   // let elementsCountByState;
+   let proposalsByState;
+   let challenge_id = req.params.id_challenge;
+
+   try {
+      // elementsCountByState = await countElementsByState(state, tokenElements.id_user);
+      proposalsByState = await getProposalsByChalengeAndState(itemsByPage, page, state, challenge_id);
+      for (let challenge of proposalsByState) {
+         challenge.dataValues['categories'] = await getCategoriesByChallenge(challenge.challenge.id_challenge);
+      }
+      for (let proposal of proposalsByState) {
+         proposal.dataValues['resources'] = await getResourcesByAlly(proposal.dataValues.fk_id_ally);
+      }
+
+      return res.send({ result: proposalsByState });
+   } catch (error) {
+      console.log(error);
+      return res.status(500).send(error);
+   }
+}
+
+
 /**
  * Encontrar los elementos por estado, pagina y cantidad
  * 
@@ -248,6 +264,7 @@ function getProposalsByChalengeAndState(itemsByPage, page, state, challenge_id) 
    });
 }
 
+
 /**
  * Obtener todos los recursos asociados a un aliado
  * @param {Numeric} idAlly 
@@ -261,41 +278,40 @@ function getResourcesByAlly(idAlly) {
    });
 }
 
+
+//----------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------
+
+
 /**
- * Encontrar todas los nombres de categorias por reto 
- * 
- * @param {Number} id_challenge 
+ * Actualizar los estados de la propuesta y el reto a asignados.
+ * @param {*} req 
+ * @param {*} res 
  */
-function getCategoriesByChallenge(id_challenge) {
-   return ChallengeCategory.findAll({
-      where: {
-         fk_id_challenge: id_challenge
-      },
-      include: [{
-         model: ChCategories,
-         attributes: ['category_name']
-      }],
-      attributes: []
+export async function updateProposalByChallengeAndAlly(req, res) {
+   let challenge_id = req.params.id_challenge;
+   let ally_id = req.params.id_ally;
 
-   }).then((result) => {
-      let AllCategoriesResult = [];
-      result.map((category) => {
-         AllCategoriesResult.push(category.ch_category.category_name);
-      });
-      return result ? AllCategoriesResult : undefined;
-
-   }).catch((error) => {
-      throw error;
-
-   });
+   try {
+      await assignProposalByChallengeAndAlly(challenge_id, ally_id);
+      console.log(1)
+      await assignChallengeById(challenge_id);
+      console.log(2)
+      await changeProposalStateToRejected(challenge_id);
+      console.log(3)
+      return res.status(200).send({ msg: "Propuesta asignada correctamente" });
+   } catch (error) {
+      console.log(error);
+      return res.status(500).send(error);
+   }
 }
+
 
 /**
  * Actualizar el estado de la propuesta de "SEND" a "ASSIGNED"
  * @param {*} id_challenge 
  * @param {*} id_ally 
  */
-
 function assignProposalByChallengeAndAlly(id_challenge, id_ally) {
    return Proposal.update(
       {
@@ -314,24 +330,42 @@ function assignProposalByChallengeAndAlly(id_challenge, id_ally) {
  * @param {*} id_challenge 
  * @param {*} id_ally 
  */
-
 function assignChallengeById(id_challenge) {
    return Challenge.update(
       {
          fk_id_challenge_state: challengeStateEnum.get('ASSIGNED').value
       }, {
       where: {
-         id_challenge : id_challenge
+         id_challenge: id_challenge
       }
    }
    );
 }
 
+/**Change state  */
+function changeProposalStateToRejected(id_challenge) {
+   return Proposal.update(
+      {
+         fk_id_proposal_state: proposalStateEnum.get('REJECTED').value
+      }, {
+      where: {
+         fk_id_challenge: id_challenge,
+         fk_id_proposal_state: 1
+      }
+   });
+}
+
+
 //----------------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------------
 
 
-export async function updateProposalState(req, res) {
+/**
+ * Actualizar la propuesta pasando en el body los atributos
+ * @param {*} req 
+ * @param {*} res 
+ */
+export async function updateProposal(req, res) {
    const bodyAttributes = getValidParams(req, res, validateBodyProposalUpdate);
 
    Proposal.update(
@@ -352,7 +386,11 @@ export async function updateProposalState(req, res) {
 //----------------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------------
 
-
+/**
+ * Obtener propuestas asignada al reto
+ * @param {*} req 
+ * @param {*} res 
+ */
 export async function getProposalsAssignedByChallenge(req, res) {
    Proposal.findAll({
       where: {

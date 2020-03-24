@@ -10,7 +10,7 @@ const {
    searchProposalByChallengeAndState,
    getProposalsAssignedByChallenge,
    updateProposalByChallengeAndAlly,
-   updateProposalState
+   updateProposal
 } = require('../controllers/Proposal.controller');
 
 //Rutas para proposals/
@@ -27,7 +27,7 @@ router.post('/', [auth], createProposal);
 router.get('/:id_challenge/:status/:page', [auth], searchProposalByChallengeAndState);
 
 /**
- * Obtener propuesta asignada al reto
+ * Obtener propuestas asignada al reto
  */
 router.get('/proposalAssigned/:idChallenge', [auth, isAdmin], getProposalsAssignedByChallenge);
 
@@ -43,7 +43,7 @@ router.get('/:status/:page', [auth], searchProposalByState);
 /**
  * Actualizar la propuesta pasando en el body los atributos
  */
-router.put('/:idChallenge/:idAlly', [auth], updateProposalState);
+router.put('/:idChallenge/:idAlly', [auth], updateProposal);
 
 
 /**
