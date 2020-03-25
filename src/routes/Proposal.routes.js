@@ -8,7 +8,8 @@ const {
    createProposal,
    searchProposalByState,
    searchProposalByChallengeAndState,
-   getProposalsAssignedByChallenge,
+   getProposalAssignedByChallenge,
+   getProposalFinishedByChallenge,
    updateProposalByChallengeAndAlly,
    updateProposal
 } = require('../controllers/Proposal.controller');
@@ -27,9 +28,14 @@ router.post('/', [auth], createProposal);
 router.get('/:id_challenge/:status/:page', [auth], searchProposalByChallengeAndState);
 
 /**
- * Obtener propuestas asignada al reto
+ * Obtener propuesta asignada al reto
  */
-router.get('/proposalAssigned/:idChallenge', [auth, isAdmin], getProposalsAssignedByChallenge);
+router.get('/proposalAssigned/:idChallenge', [auth, isAdmin], getProposalAssignedByChallenge);
+
+/**
+ * Obtener propuesta asignada al reto
+ */
+router.get('/proposalFinished/:idChallenge', [auth, isAdmin], getProposalFinishedByChallenge);
 
 /**
  * Obtener los retos de acuerdo al estado de la propuesta

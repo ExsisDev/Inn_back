@@ -1,5 +1,3 @@
-import { validateBodyProposalUpdate } from '../schemas/Proposal.validation';
-
 const Proposal = require('../models/Proposal');
 const Ally = require('../models/Ally');
 const ProposalState = require('../models/ProposalState');
@@ -8,7 +6,7 @@ const Company = require('../models/Company');
 const ChallengeCategory = require('../models/ChallengeCategory');
 const ChCategories = require('../models/ChCategory');
 const Resource = require('../models/Resource');
-const { validateBodyProposalCreation } = require('../schemas/Proposal.validation');
+const { validateBodyProposalCreation, validateBodyProposalUpdate } = require('../schemas/Proposal.validation');
 const config = require('config');
 const jwt = require('jsonwebtoken');
 const { challengeStateEnum } = require('../models/Enums/Challenge_state.enum');
@@ -386,21 +384,51 @@ export async function updateProposal(req, res) {
 //----------------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------------
 
+
 /**
  * Obtener propuestas asignada al reto
  * @param {*} req 
  * @param {*} res 
  */
-export async function getProposalsAssignedByChallenge(req, res) {
+export async function getProposalAssignedByChallenge(req, res) {
    Proposal.findAll({
       where: {
          fk_id_challenge: req.params.idChallenge,
-         fk_id_proposal_state: 3
+         fk_id_proposal_state: proposalStateEnum.get('ASSIGNED').value
       }
    }).then((result) => {
       return result ? res.send(result) : res.status(404).send(config.get('emptyResponse'));
 
    }).catch((error) => {
+      return res.status(500).send(config.get('seeLogs'));
+   })
+}
+
+
+//----------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------
+
+
+/**
+ * Obtener propuestas asignada al reto
+ * @param {*} req 
+ * @param {*} res 
+ */
+export async function getProposalFinishedByChallenge(req, res) {
+   Proposal.findAll({
+      include: [{
+         model: Challenge,
+         attributes: ['final_comment']
+      }],
+      where: {
+         fk_id_challenge: req.params.idChallenge,
+         fk_id_proposal_state: proposalStateEnum.get('FINISHED').value
+      }
+   }).then((result) => {
+      return result ? res.send(result) : res.status(404).send(config.get('emptyResponse'));
+
+   }).catch((error) => {
+      console.log(error)
       return res.status(500).send(config.get('seeLogs'));
    })
 }
